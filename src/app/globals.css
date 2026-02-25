@@ -1,0 +1,229 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   BRAND SYSTEM
+   ========================================================= */
+
+:root {
+  --brand: #3262aa;
+
+  /* restrained UXDA-style palette */
+  --brand-soft: color-mix(in srgb, var(--brand) 14%, white);
+  --brand-surface: color-mix(in srgb, var(--brand) 8%, white);
+  --brand-border: color-mix(in srgb, var(--brand) 22%, white);
+  --brand-glow: color-mix(in srgb, var(--brand) 45%, transparent);
+
+  --ink: #0b1220;
+  --muted: rgba(11,16,32,.66);
+  --line: rgba(11,16,32,.10);
+  --shadow: 0 20px 60px rgba(11,16,32,.08);
+
+  --card-bg: rgba(255,255,255,.92);
+}
+
+/* =========================================================
+   BASE PAGE
+   ========================================================= */
+
+html, body {
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* subtle premium background */
+  background:
+    radial-gradient(1200px 800px at 20% -10%, rgba(50,98,170,0.10), transparent 55%),
+    radial-gradient(900px 600px at 90% 10%, rgba(50,98,170,0.08), transparent 55%),
+    #ffffff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero-surface {
+  background:
+    radial-gradient(900px 600px at 15% 10%, rgba(50,98,170,0.13), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.88));
+
+  border: 1px solid var(--brand-border);
+
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.06),
+    0 1px 0 rgba(15, 23, 42, 0.06);
+}
+
+.hero-glow {
+  background: radial-gradient(
+    circle at center,
+    var(--brand-glow) 0%,
+    transparent 70%
+  );
+  opacity: .55;
+}
+
+.hero-grain{
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(0,0,0,0.10) 1px, transparent 0);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(circle at center, black, transparent 70%);
+}
+
+/* App-like hero preview window (UXDA-ish) */
+.app-window{
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, white);
+  background:
+    radial-gradient(700px 420px at 18% 18%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+  box-shadow:
+    0 22px 60px rgba(11,16,32,.10),
+    inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card{
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--card-bg);
+  padding: 1.5rem;
+
+  box-shadow:
+    0 20px 50px rgba(15,23,42,0.05),
+    0 1px 0 rgba(15,23,42,0.06);
+
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.card:hover{
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--brand) 40%, white);
+  box-shadow:
+    0 30px 70px rgba(15,23,42,0.10),
+    0 1px 0 rgba(15,23,42,0.06);
+}
+
+/* subtle brand edge glow */
+.card{
+  position: relative;
+}
+.card::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius: 1.25rem;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .18s ease;
+  background: radial-gradient(600px 200px at 20% 0%, rgba(50,98,170,0.18), transparent 55%);
+}
+.card:hover::after{
+  opacity:1;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-primary{
+  display:inline-block;
+  border-radius:1rem;
+  padding:.85rem 1.1rem;
+  font-weight:600;
+
+  background: linear-gradient(180deg, #0b1220, #111827);
+  color:white;
+
+  box-shadow:0 14px 40px rgba(11,16,32,.18);
+
+  transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 20px 60px rgba(11,16,32,.22);
+}
+
+.btn-secondary{
+  display:inline-block;
+  border-radius:1rem;
+  padding:.85rem 1.1rem;
+  font-weight:600;
+
+  border:1px solid rgba(11,16,32,.14);
+  background:white;
+
+  box-shadow:0 10px 30px rgba(11,16,32,.06);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.btn-secondary:hover{
+  transform:translateY(-1px);
+  box-shadow:0 16px 50px rgba(11,16,32,.10);
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.link{
+  text-decoration: underline;
+  text-underline-offset:4px;
+  opacity:.85;
+}
+.link:hover{ opacity:1; }
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.logo-tight{
+  object-fit:contain;
+  object-position:left center;
+  transform:scale(1.25);
+  transform-origin:left center;
+}
+
+.logo-glow{
+  background: radial-gradient(
+    circle at center,
+    var(--brand-glow) 0%,
+    transparent 75%
+  );
+  pointer-events:none;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes floaty{
+  0%{ transform:translate(-50%,0px) }
+  50%{ transform:translate(-50%,10px) }
+  100%{ transform:translate(-50%,0px) }
+}
+.animate-float{ animation:floaty 7s ease-in-out infinite; }
+
+@keyframes progressSweep{
+  0%{ width:20% }
+  45%{ width:92% }
+  100%{ width:92% }
+}
+.animate-progress{ animation:progressSweep 2.4s ease-out infinite; }
+
+/* glass header polish */
+header{
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+body { outline: 8px solid hotpink; }
