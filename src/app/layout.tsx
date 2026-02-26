@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Elessen Labs",
@@ -15,6 +16,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+
+      {/* THIS IS THE MISSING PIECE */}
+      <head>
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          strategy="afterInteractive"
+        />
+      </head>
+
       <body className="min-h-screen bg-white text-gray-900">
 
         {/* HEADER */}
@@ -68,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto max-w-5xl px-6 py-8 md:py-12">
           {children}
         </main>
-
+     
         {/* FOOTER */}
         <footer className="border-t border-black/10">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-10 text-sm text-gray-700">
@@ -78,7 +88,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </footer>
-
+      
+      <script
+        src="https://assets.calendly.com/assets/external/widget.js"
+        async
+      ></script>
+        
       </body>
     </html>
   );
