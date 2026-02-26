@@ -1,3 +1,4 @@
+// src/app/api/leads/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -5,25 +6,87 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const email = String(body.email || "").trim();
-    const company = String(body.company || "").trim();
-    const message = String(body.message || "").trim();
-    const page = String(body.page || "").trim();
-    const utm_source = String(body.utm_source || "").trim();
-    const utm_medium = String(body.utm_medium || "").trim();
-    const utm_campaign = String(body.utm_campaign || "").trim();
+    const full_name = String(body.full_name ?? "").trim();
+    const email = String(body.email ?? "").trim();
+    const company = String(body.company ?? "").trim();
+    const budget_range = String(body.budget_range ?? "").trim();
+    const message = String(body.message ?? "").trim();
+    const page = String(body.page ?? "").trim();
+    const utm_source = String(body.utm_source ?? "").trim();
+    const utm_medium = String(body.utm_medium ?? "").trim();
+    const utm_campaign = String(body.utm_campaign ?? "").trim();
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    const turnstileToken = String(body.turnstileToken ?? "").trim();
+
+    // Required fields (all required)
+    if (!full_name || !email || !company || !budget_range || !message) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    // Captcha required
+    if (!turnstileToken) {
+      return NextResponse.json(
+        { error: "Please verify you are human." },
+        { status: 400 }
+      );
+    }
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    // Env guard
+    const secret = process.env.TURNSTILE_SECRET_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!secret || !supabaseUrl || !serviceKey) {
+      return NextResponse.json(
+        { error: "Server misconfigured (missing env vars)." },
+        { status: 500 }
+      );
+    }
+
+    /* ---------------- TURNSTILE VERIFY ---------------- */
+    const verifyRes = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret,
+          response: turnstileToken,
+        }).toString(),
+      }
+    );
+
+    const verification: { success?: boolean; ["error-codes"]?: string[] } =
+      await verifyRes.json().catch(() => ({}));
+
+    if (!verification?.success) {
+      return NextResponse.json(
+        {
+          error: "Failed human verification",
+          codes: verification?.["error-codes"] ?? [],
+        },
+        { status: 403 }
+      );
+    }
+
+    /* ---------------- SUPABASE INSERT ---------------- */
+    const supabase = createClient(supabaseUrl, serviceKey);
 
     const { error } = await supabase.from("leads").insert([
-      { email, company, message, page, utm_source, utm_medium, utm_campaign },
+      {
+        full_name,
+        email,
+        company,
+        budget_range,
+        message,
+        page: page || null,
+        utm_source: utm_source || null,
+        utm_medium: utm_medium || null,
+        utm_campaign: utm_campaign || null,
+      },
     ]);
 
     if (error) {
@@ -31,7 +94,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true }, { status: 200 });
-  } catch {
+  } catch (err) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }
