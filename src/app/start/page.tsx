@@ -1,109 +1,75 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { supabase } from "../lib/supabase";
 
 export default function Start() {
-  const calendlyUrl = "https://calendly.com/elessenlabs/product_clarity_call";
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
+
+  const submitLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("Submitting...");
+
+    const { error } = await supabase.from("leads").insert([
+      {
+        email,
+        company,
+        message,
+      },
+    ]);
+
+    if (error) {
+      setStatus("Something went wrong.");
+      console.error(error);
+    } else {
+      setStatus("You're in — we will contact you shortly.");
+      setEmail("");
+      setCompany("");
+      setMessage("");
+    }
+  };
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <section className="rounded-3xl border bg-white p-10 md:p-12">
-        <div className="space-y-4">
-          <p className="text-sm font-medium opacity-70">Start here</p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Start your product with clarity, not guesswork.
-          </h1>
-          <p className="max-w-2xl text-lg opacity-80">
-            This is a 30-minute Product Clarity Call. We’ll quickly align on scope, define the core user journey,
-            and identify the smallest lovable MVP plan—so your build doesn’t drift or blow budget.
-          </p>
-        </div>
+    <div className="max-w-xl mx-auto py-20">
+      <h1 className="text-3xl font-semibold mb-6">Start your product</h1>
 
-        <div className="mt-7 flex flex-wrap gap-3">
-          <a
-            className="btn-primary"
-            href={calendlyUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Book the 30-min call
-          </a>
+      <form onSubmit={submitLead} className="space-y-4">
+        <input
+          type="email"
+          required
+          placeholder="Your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border rounded-lg px-4 py-3"
+        />
 
-          <Link className="btn-secondary" href="/how-we-help">
-            See the process first
-          </Link>
-        </div>
+        <input
+          type="text"
+          placeholder="Company / Startup name"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          className="w-full border rounded-lg px-4 py-3"
+        />
 
-        <div className="mt-6 text-sm opacity-70">
-          Prefer to email first?{" "}
-          <a className="link" href="mailto:hello@elessenux.com?subject=Project%20inquiry%20—%20Elessen%20Labs">
-            hello@elessenux.com
-          </a>
-        </div>
-      </section>
+        <textarea
+          placeholder="What are you trying to build?"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full border rounded-lg px-4 py-3 h-32"
+        />
 
-      {/* What you get */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-semibold">What you’ll leave with</h2>
+        <button
+          type="submit"
+          className="w-full bg-black text-white rounded-lg py-3 font-semibold hover:opacity-90"
+        >
+          Request a consult
+        </button>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="card">
-            <h3 className="font-semibold">A clear MVP scope</h3>
-            <p className="mt-2 opacity-80">
-              The smallest lovable feature set that actually reaches value.
-            </p>
-          </div>
-
-          <div className="card">
-            <h3 className="font-semibold">Core user journey</h3>
-            <p className="mt-2 opacity-80">
-              The key flow(s) your product must nail to convert and retain.
-            </p>
-          </div>
-
-          <div className="card">
-            <h3 className="font-semibold">Next-step plan</h3>
-            <p className="mt-2 opacity-80">
-              Exactly what to do next—design sprint, MVP blueprint, or fixes before building.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Who it's for / not for */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="card">
-          <h2 className="text-xl font-semibold">This is for</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-6 opacity-80">
-            <li>Founders preparing to build an MVP</li>
-            <li>Teams redesigning or restructuring an existing product</li>
-            <li>Organizations needing product scope before dev</li>
-          </ul>
-        </div>
-
-        <div className="card">
-          <h2 className="text-xl font-semibold">Not a fit if</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-6 opacity-80">
-            <li>You want a “free consulting” call with no build intent</li>
-            <li>You need only a logo/branding engagement</li>
-            <li>There’s no timeline or owner for the project</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* Trust strip */}
-      <section className="rounded-3xl border bg-white p-8 md:p-10">
-        <h2 className="text-xl font-semibold">Trusted experience</h2>
-        <p className="mt-2 max-w-3xl opacity-80">
-          Experience across PwC, Oliver Wyman, BDO, ENMAX, Revie.Homes, and Club76. Many projects are under NDA—
-          we focus on outcomes, decision-making, and execution.
-        </p>
-
-        <div className="mt-6">
-          <a className="btn-primary" href={calendlyUrl} target="_blank" rel="noreferrer">
-            Book the 30-min call
-          </a>
-        </div>
-      </section>
+        {status && <p className="text-sm opacity-70">{status}</p>}
+      </form>
     </div>
   );
 }
