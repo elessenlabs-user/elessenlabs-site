@@ -226,4 +226,14 @@ header{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
 }
-body { outline: 8px solid hotpink; }
+
+/* Calendly popup overlay should sit above everything */
+.calendly-overlay,
+.calendly-popup {
+  z-index: 999999 !important;
+}
+
+.calendly-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+}

@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -16,7 +18,15 @@ export async function POST(req: Request) {
     const utm_medium = String(body.utm_medium ?? "").trim();
     const utm_campaign = String(body.utm_campaign ?? "").trim();
 
-    const turnstileToken = String(body.turnstileToken ?? "").trim();
+   const intent = String(body.intent ?? "book").trim(); // default to book if missing
+
+    // accept ALL possible token keys (Cloudflare sends different ones depending on render mode)
+const turnstileToken = String(
+  body.turnstileToken ??
+  body["cf-turnstile-response"] ??
+  body.turnstile_token ??
+  ""
+).trim();
 
     // Required fields (all required)
     if (!full_name || !email || !company || !budget_range || !message) {
@@ -26,13 +36,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Captcha required
-    if (!turnstileToken) {
-      return NextResponse.json(
-        { error: "Please verify you are human." },
-        { status: 400 }
-      );
-    }
+   // Captcha required ONLY for booking intent
+if (intent === "book" && !turnstileToken) {
+  return NextResponse.json(
+    { error: "Please verify you are human." },
+    { status: 400 }
+  );
+}
 
     // Env guard
     const secret = process.env.TURNSTILE_SECRET_KEY;
@@ -46,32 +56,33 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ---------------- TURNSTILE VERIFY ---------------- */
-    const verifyRes = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret,
-          response: turnstileToken,
-        }).toString(),
-      }
-    );
-
-    const verification: { success?: boolean; ["error-codes"]?: string[] } =
-      await verifyRes.json().catch(() => ({}));
-
-    if (!verification?.success) {
-      return NextResponse.json(
-        {
-          error: "Failed human verification",
-          codes: verification?.["error-codes"] ?? [],
-        },
-        { status: 403 }
-      );
+/* ---------------- TURNSTILE VERIFY (book only) ---------------- */
+if (intent === "book") {
+  const verifyRes = await fetch(
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret,
+        response: turnstileToken,
+      }).toString(),
     }
+  );
 
+  const verification: { success?: boolean; ["error-codes"]?: string[] } =
+    await verifyRes.json().catch(() => ({}));
+
+  if (!verification?.success) {
+    return NextResponse.json(
+      {
+        error: "Failed human verification",
+        codes: verification?.["error-codes"] ?? [],
+      },
+      { status: 403 }
+    );
+  }
+}
     /* ---------------- SUPABASE INSERT ---------------- */
     const supabase = createClient(supabaseUrl, serviceKey);
 
@@ -82,6 +93,7 @@ export async function POST(req: Request) {
         company,
         budget_range,
         message,
+        intent: intent || "book",
         page: page || null,
         utm_source: utm_source || null,
         utm_medium: utm_medium || null,
