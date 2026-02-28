@@ -31,6 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://assets.calendly.com/assets/external/widget.js"
           strategy="afterInteractive"
         />
+        <Script
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+  strategy="afterInteractive"
+/>
 
         {/* HEADER */}
         <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 backdrop-blur-md">
