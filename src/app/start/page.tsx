@@ -830,7 +830,10 @@ window.setTimeout(() => {
                     </div>
                   ) : (
                     <>
-                      <div ref={turnstileContainerRef} />
+                <div
+                  ref={turnstileContainerRef}
+                  className="min-h-[70px] w-full flex justify-center"
+                />
                       {!turnstileToken && <div className="text-sm text-gray-600">Please complete the human verification to continue.</div>}
                       {status && (
                         <div className="text-center text-sm text-red-600">
