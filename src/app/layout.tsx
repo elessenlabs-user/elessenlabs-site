@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   },
 };
 
+<meta name="robots" content="noindex, nofollow" />
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
