@@ -6,15 +6,22 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Elessen Labs",
-  description: "Product design and MVP delivery for startups and teams building real software.",
+  description:
+    "Product design and MVP delivery for startups and teams building real software.",
   icons: {
     icon: "/favicon.ico",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
-<meta name="robots" content="noindex, nofollow" />
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
@@ -31,10 +38,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src="https://assets.calendly.com/assets/external/widget.js"
           strategy="afterInteractive"
         />
-        <Script
-  src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-  strategy="afterInteractive"
-/>
 
         {/* HEADER */}
         <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 backdrop-blur-md">
@@ -42,7 +45,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* LOGO */}
             <Link href="/" className="flex items-center group">
               <span className="relative inline-flex items-center">
-                {/* glow aura */}
                 <span className="absolute -inset-4 rounded-3xl logo-glow opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
 
                 <Image
@@ -70,7 +72,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Readiness
               </Link>
 
-              {/* CTA */}
               <Link
                 href="/start"
                 className="rounded-xl border border-black/20 px-4 py-2 font-semibold transition-all duration-200 hover:border-black hover:-translate-y-[1px] hover:shadow-md"
@@ -82,13 +83,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="mx-auto max-w-5xl px-6 py-8 md:py-12">{children}</main>
+        <main className="mx-auto max-w-5xl px-6 py-8 md:py-12">
+          {children}
+        </main>
 
         {/* FOOTER */}
         <footer className="border-t border-black/10">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-10 text-sm text-gray-700">
             <div>© {new Date().getFullYear()} Elessen Labs</div>
-            <div className="opacity-70">Product design • MVP delivery • Platform strategy</div>
+            <div className="opacity-70">
+              Product design • MVP delivery • Platform strategy
+            </div>
           </div>
         </footer>
       </body>
