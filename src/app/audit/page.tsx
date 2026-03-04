@@ -178,6 +178,20 @@ if (!isValidUrl(normalizedProductUrl)) {
                 can implement immediately.
               </p>
 
+              <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-black/70">
+                <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+                  1 Submit link
+                </span>
+                <span className="opacity-40">→</span>
+                <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+                2 Secure checkout
+                </span>
+                <span className="opacity-40">→</span>
+                <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+                3 Audit delivered in {TURNAROUND}
+                </span>
+            </div>
+
               <div className="mt-5 flex flex-wrap gap-2 text-[12px]">
                 <span className="rounded-full border border-black/10 bg-white px-3 py-1">
                   Delivery: {TURNAROUND}
