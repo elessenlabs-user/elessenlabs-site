@@ -48,7 +48,7 @@ export default function RootLayout({
                 <span className="absolute -inset-4 rounded-3xl logo-glow opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
 
                 <Image
-                  src="/logo-v2.png"
+                  src="/logo.png"
                   alt="Elessen Labs"
                   width={260}
                   height={80}
