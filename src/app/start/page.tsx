@@ -422,44 +422,24 @@ export default function StartPage() {
   return (
     <>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 py-16">
-        {/* Header: show on steps 1–5 only */}
-        {step !== 6 && (
-          <div className="w-full max-w-3xl">
-            <h1 className="text-5xl font-semibold tracking-tight">Start your product</h1>
-            <p className="mt-3 text-lg text-gray-600">
-              Answer a few quick questions so we can recommend the right next step — then book a 15-min Product Clarity Call.
-            </p>
-          </div>
-        )}
-
-        {/* Progress */}
-        <div className="w-full max-w-3xl">
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <div>
-              Step {step} of {STEPS}
-            </div>
-            <div>{progressPct}%</div>
-          </div>
-
-          <div className="mt-3 h-2 w-full rounded-full bg-black/10">
-            <div
-              className={`h-2 rounded-full ${barColor} transition-all duration-500 ease-out`}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
 
         {/* Top block (Header + Progress) */}
 <div className="w-full max-w-3xl">
-  {/* Header: show on steps 1–5 only */}
-  {step !== 6 && (
-    <div className="mb-6">
-      <h1 className="text-5xl font-semibold tracking-tight">Start your product</h1>
-      <p className="mt-3 text-lg text-gray-600">
-        Answer a few quick questions so we can recommend the right next step — then book a 15-min Product Clarity Call.
-      </p>
-    </div>
-  )}
+  
+{/* Header */}
+{step !== 6 ? (
+  <div className="mb-6">
+    <h1 className="text-5xl font-semibold tracking-tight">Start your product</h1>
+    <p className="mt-3 text-lg text-gray-600">
+      Answer a few quick questions so we can recommend the right next step — then book a 15-min Product Clarity Call.
+    </p>
+  </div>
+) : (
+  <div className="mb-6">
+    <div className="text-sm font-semibold tracking-wide text-gray-500">RESULT</div>
+    <h1 className="mt-2 text-4xl font-semibold tracking-tight">Your best next step</h1>
+  </div>
+)}
 
   {/* Progress: show on ALL steps (including step 6) */}
   <div className={step === 6 ? "mb-6" : ""}>
@@ -472,11 +452,11 @@ export default function StartPage() {
 
     <div className="mt-3 h-2 w-full rounded-full bg-black/10">
       <div
-        className={`h-2 rounded-full ${barColor} transition-all duration-500 ease-out`}
-        style={{ width: `${progressPct}%` }}
-      />
-    </div>
-  </div>
+      className={`h-2 rounded-full ${barColor} transition-all duration-500 ease-out`}
+      style={{ width: `${progressPct}%` }}
+    />
+</div>
+</div>
 </div>
 
         {/* Card */}
