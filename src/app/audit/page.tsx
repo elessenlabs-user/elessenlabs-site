@@ -483,7 +483,7 @@ function normalizeUrl(v: string) {
                 focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
                 value={productUrl}
                 onChange={(e) => setProductUrl(e.target.value)}
-                placeholder="https://yourproduct.com or app store link"
+                placeholder="yourproduct.com or app store link"
               />
             </div>
 
