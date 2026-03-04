@@ -39,12 +39,20 @@ export default function AuditPage() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
   }
 
-  function normalizeUrl(v: string) {
-  const s = v.trim();
-  if (!s) return s;
-  if (/^https?:\/\//i.test(s)) return s;
-  // If user pasted "www.example.com" or "example.com", assume https
-  return `https://${s}`;
+function normalizeUrl(v: string) {
+  let url = v.trim();
+
+  if (!url) return url;
+
+  // remove spaces
+  url = url.replace(/\s+/g, "");
+
+  // if protocol missing, add https
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+
+  return url;
 }
 
   function isValidUrl(v: string) {
@@ -56,14 +64,14 @@ export default function AuditPage() {
     }
   }
 
-  const canSubmit = useMemo(() => {
-    return (
-      fullName.trim().length >= 2 &&
-      isValidEmail(email) &&
-      isValidUrl(normalizeUrl(productUrl)) &&
-      !loading
-    );
-  }, [fullName, email, productUrl, loading]);
+ const canSubmit = useMemo(() => {
+  return (
+    fullName.trim().length >= 2 &&
+    isValidEmail(email) &&
+    isValidUrl(normalizeUrl(productUrl)) &&
+    !loading
+  );
+}, [fullName, email, productUrl, loading]);
 
   async function onPay() {
     setStatus("");
@@ -76,10 +84,10 @@ export default function AuditPage() {
       setStatus("Please enter a valid email.");
       return;
     }
-    const normalizedProductUrl = normalizeUrl(productUrl);
+  const normalizedProductUrl = normalizeUrl(productUrl);
 
-if (!isValidUrl(normalizedProductUrl)) {
-  setStatus("Please enter a valid website/app link (e.g., https://...).");
+  if (!isValidUrl(normalizedProductUrl)) {
+  setStatus("Please enter a valid website/app link.");
   return;
 }
 
@@ -409,15 +417,26 @@ if (!isValidUrl(normalizedProductUrl)) {
 
           <div className="mt-6 rounded-3xl border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur">
             <div className="flex flex-wrap items-center justify-between gap-3">
+    
             <div className="text-sm font-semibold">
-            You’ll receive: <span className="text-black/60">PDF audit + prioritized fixes</span>
+              You’ll receive:{" "}
+            <span className="text-black/60">
+              PDF audit + prioritized fixes
+            </span>
           </div>
-        
+
         <div className="flex flex-wrap gap-2 text-[11px] text-black/70">
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1">Secure Stripe</span>
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1">24h delivery</span>
-          <span className="rounded-full border border-black/10 bg-white px-3 py-1">No calls required</span>
-      </div>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+            Secure Stripe
+          </span>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+            24h delivery
+          </span>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+           No calls required
+        </span>
+    </div>
+
   </div>
 </div>
 
