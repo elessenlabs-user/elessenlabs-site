@@ -57,6 +57,8 @@ export default function RootLayout({
                 />
               </span>
             </Link>
+            </div>
+          </header>
 
   {/* MOBILE MENU (no JS) */}
     <div className="md:hidden">
