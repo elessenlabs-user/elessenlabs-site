@@ -5,13 +5,49 @@ import Link from "next/link";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Elessen Labs",
+  metadataBase: new URL("https://elessenlabs.com"),
+  title: {
+    default: "Elessen Labs",
+    template: "%s · Elessen Labs",
+  },
   description:
     "Product design and MVP delivery for startups and teams building real software.",
+  applicationName: "Elessen Labs",
+
+  alternates: {
+    canonical: "/",
+  },
+
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-icon.png",
   },
+
+  openGraph: {
+    type: "website",
+    url: "https://elessenlabs.com",
+    siteName: "Elessen Labs",
+    title: "Elessen Labs",
+    description:
+      "Product design and MVP delivery for startups and teams building real software.",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Elessen Labs",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Elessen Labs",
+    description:
+      "Product design and MVP delivery for startups and teams building real software.",
+    images: ["/og.png"],
+  },
+
   robots: {
     index: true,
     follow: true,
