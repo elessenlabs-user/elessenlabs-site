@@ -58,29 +58,48 @@ export default function RootLayout({
               </span>
             </Link>
 
-            {/* NAV */}
-            <nav className="flex items-center gap-6 text-sm font-medium">
-              <Link href="/how-we-help" className="opacity-70 hover:opacity-100 transition">
-                How we help
-              </Link>
+  {/* MOBILE MENU (no JS) */}
+    <div className="md:hidden">
+        <details className="relative">
+          <summary className="cursor-pointer list-none rounded-xl border border-black/20 px-3 py-2 text-sm font-semibold">
+            Menu
+        </summary>
 
-              <Link href="/experience" className="opacity-70 hover:opacity-100 transition">
-                Experience
-              </Link>
+        <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-black/10 bg-white shadow-lg p-2">
+          <Link href="/how-we-help" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+          How we help
+        </Link>
+        <Link href="/experience" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+          Experience
+        </Link>
+        <Link href="/readiness" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+          Readiness
+        </Link>
+        <Link href="/start" className="mt-1 block rounded-xl border border-black/15 px-3 py-2 text-sm font-semibold hover:bg-black/5">
+          Start your product
+        </Link>
+      </div>
+  </details>
+</div>
 
-              <Link href="/readiness" className="opacity-70 hover:opacity-100 transition">
-                Readiness
-              </Link>
-
-              <Link
-                href="/start"
-                className="rounded-xl border border-black/20 px-4 py-2 font-semibold transition-all duration-200 hover:border-black hover:-translate-y-[1px] hover:shadow-md"
-              >
-                Start your product
-              </Link>
-            </nav>
-          </div>
-        </header>
+{/* DESKTOP NAV */}
+<nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+  <Link href="/how-we-help" className="opacity-70 hover:opacity-100 transition">
+    How we help
+  </Link>
+  <Link href="/experience" className="opacity-70 hover:opacity-100 transition">
+    Experience
+  </Link>
+  <Link href="/readiness" className="opacity-70 hover:opacity-100 transition">
+    Readiness
+  </Link>
+  <Link
+    href="/start"
+    className="rounded-xl border border-black/20 px-4 py-2 font-semibold transition-all duration-200 hover:border-black hover:-translate-y-[1px] hover:shadow-md"
+  >
+    Start your product
+  </Link>
+</nav>
 
         {/* PAGE CONTENT */}
         <main className="mx-auto max-w-5xl px-6 py-8 md:py-12">
