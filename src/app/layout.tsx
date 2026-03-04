@@ -10,10 +10,11 @@ export const metadata: Metadata = {
     "Product design and MVP delivery for startups and teams building real software.",
   icons: {
     icon: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 };
 
@@ -48,18 +49,18 @@ export default function RootLayout({
                 <span className="absolute -inset-4 rounded-3xl logo-glow opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
 
                 <Image
-                  src="/logo-v2.png"
-                  alt="Elessen Labs"
-                  width={260}
-                  height={80}
-                  priority
-                  className="relative h-16 w-auto md:h-[72px] logo-tight"
-                />
+                src="/logo.png"
+                alt="Elessen Labs"
+                width={260}
+                height={80}
+                priority
+                className="relative h-16 w-auto md:h-[72px] logo-tight"
+              />
               </span>
             </Link>
 
             {/* NAV */}
-            <nav className="flex items-center gap-6 text-sm font-medium">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               <Link href="/how-we-help" className="opacity-70 hover:opacity-100 transition">
                 How we help
               </Link>
