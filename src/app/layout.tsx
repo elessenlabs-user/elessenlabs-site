@@ -50,37 +50,37 @@ export default function RootLayout({
                 <Image
                   src="/logo.png"
                   alt="Elessen Labs"
-                  width={260}
-                  height={80}
+                  width={220}
+                  height={70}
                   priority
-                  className="relative h-16 w-auto md:h-[72px] logo-tight"
+                  className="relative h-12 w-auto md:h-[72px]" // bigger on mobile 
                 />
               </span>
             </Link>
             </div>
           </header>
 
-  {/* MOBILE MENU (no JS) */}
-    <div className="md:hidden">
-        <details className="relative">
-          <summary className="cursor-pointer list-none rounded-xl border border-black/20 px-3 py-2 text-sm font-semibold">
-            Menu
-        </summary>
+  {/* MOBILE MENU */}
+<div className="md:hidden">
+  <details className="relative">
+    <summary className="cursor-pointer list-none rounded-xl border border-black/20 px-3 py-2 text-sm font-semibold">
+      Menu
+    </summary>
 
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-black/10 bg-white shadow-lg p-2">
-          <Link href="/how-we-help" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
-          How we help
-        </Link>
-        <Link href="/experience" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
-          Experience
-        </Link>
-        <Link href="/readiness" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
-          Readiness
-        </Link>
-        <Link href="/start" className="mt-1 block rounded-xl border border-black/15 px-3 py-2 text-sm font-semibold hover:bg-black/5">
-          Start your product
-        </Link>
-      </div>
+    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-black/10 bg-white shadow-lg p-2">
+      <Link href="/how-we-help" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+        How we help
+      </Link>
+      <Link href="/experience" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+        Experience
+      </Link>
+      <Link href="/readiness" className="block rounded-xl px-3 py-2 text-sm hover:bg-black/5">
+        Readiness
+      </Link>
+      <Link href="/start" className="mt-1 block rounded-xl border border-black/15 px-3 py-2 text-sm font-semibold hover:bg-black/5">
+        Start your product
+      </Link>
+    </div>
   </details>
 </div>
 
@@ -110,7 +110,7 @@ export default function RootLayout({
 
         {/* FOOTER */}
         <footer className="border-t border-black/10">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-10 text-sm text-gray-700">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:px-6">
             <div>© {new Date().getFullYear()} Elessen Labs</div>
             <div className="opacity-70">
               Product design • MVP delivery • Platform strategy
