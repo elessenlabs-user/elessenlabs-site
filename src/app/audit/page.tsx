@@ -451,7 +451,8 @@ function normalizeUrl(v: string) {
               <div>
                 <label className="text-sm font-medium">Full name</label>
                 <input
-                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition
+                  focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Your name"
@@ -463,8 +464,8 @@ function normalizeUrl(v: string) {
                 <label className="text-sm font-medium">Email</label>
                 <input
                   type="email"
-                  className="mt-2 w-full rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-3 outline-none transition
-                            focus:border-black/20 focus:bg-white focus:ring-4 focus:ring-black/10"
+                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition
+                  focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
@@ -478,7 +479,8 @@ function normalizeUrl(v: string) {
               <label className="text-sm font-medium">Website / Product link</label>
               <input
                 type="url"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition
+                focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
                 value={productUrl}
                 onChange={(e) => setProductUrl(e.target.value)}
                 placeholder="https://yourproduct.com or app store link"
@@ -488,8 +490,9 @@ function normalizeUrl(v: string) {
             <div className="mt-4">
               <label className="text-sm font-medium">Notes (optional)</label>
               <textarea
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
-                value={notes}
+              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition
+              focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
+              value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="What should we focus on? (checkout, onboarding, pricing page, etc.)"
                 rows={4}
