@@ -39,6 +39,14 @@ export default function AuditPage() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
   }
 
+  function normalizeUrl(v: string) {
+  const s = v.trim();
+  if (!s) return s;
+  if (/^https?:\/\//i.test(s)) return s;
+  // If user pasted "www.example.com" or "example.com", assume https
+  return `https://${s}`;
+}
+
   function isValidUrl(v: string) {
     try {
       const u = new URL(v.trim());
@@ -52,7 +60,7 @@ export default function AuditPage() {
     return (
       fullName.trim().length >= 2 &&
       isValidEmail(email) &&
-      isValidUrl(productUrl) &&
+      isValidUrl(normalizeUrl(productUrl)) &&
       !loading
     );
   }, [fullName, email, productUrl, loading]);
@@ -68,10 +76,12 @@ export default function AuditPage() {
       setStatus("Please enter a valid email.");
       return;
     }
-    if (!isValidUrl(productUrl)) {
-      setStatus("Please enter a valid website/app link (https://...).");
-      return;
-    }
+    const normalizedProductUrl = normalizeUrl(productUrl);
+
+if (!isValidUrl(normalizedProductUrl)) {
+  setStatus("Please enter a valid website/app link (e.g., https://...).");
+  return;
+}
 
     setLoading(true);
 
@@ -108,7 +118,7 @@ export default function AuditPage() {
         body: JSON.stringify({
           fullName,
           email,
-          productUrl,
+          productUrl: normalizedProductUrl,
           notes,
         }),
       });
@@ -383,6 +393,20 @@ export default function AuditPage() {
                 </p>
               </div>
 
+          <div className="mt-6 rounded-3xl border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm font-semibold">
+            You’ll receive: <span className="text-black/60">PDF audit + prioritized fixes</span>
+          </div>
+        
+        <div className="flex flex-wrap gap-2 text-[11px] text-black/70">
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">Secure Stripe</span>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">24h delivery</span>
+          <span className="rounded-full border border-black/10 bg-white px-3 py-1">No calls required</span>
+      </div>
+  </div>
+</div>
+
               <div className="mt-2 inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm">
                 <span className="font-semibold">{AUDIT_PRICE}</span>
                 <span className="text-black/50">•</span>
@@ -406,7 +430,8 @@ export default function AuditPage() {
                 <label className="text-sm font-medium">Email</label>
                 <input
                   type="email"
-                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+                  className="mt-2 w-full rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-3 outline-none transition
+                            focus:border-black/20 focus:bg-white focus:ring-4 focus:ring-black/10"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
