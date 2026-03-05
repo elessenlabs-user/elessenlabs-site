@@ -6,22 +6,65 @@ export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+// Accept:
+// - elessenux.com
+// - www.elessenux.com
+// - https://elessenux.com
+// - https://www.elessenux.com
+// - app store links, etc.
+function normalizeUrl(input: string) {
+  let s = (input ?? "").trim();
+
+  if (!s) return "";
+
+  // remove internal whitespace
+  s = s.replace(/\s+/g, "");
+
+  // if missing scheme, default to https
+  if (!/^https?:\/\//i.test(s)) {
+    s = `https://${s}`;
+  }
+
+  return s;
+}
+
+function isValidHttpUrl(input: string) {
+  try {
+    const u = new URL(input);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { fullName, email, productUrl, notes } = await req.json();
 
     if (!fullName || !email || !productUrl) {
-      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields." },
+        { status: 400 }
+      );
+    }
+
+    const normalizedProductUrl = normalizeUrl(String(productUrl));
+
+    if (!isValidHttpUrl(normalizedProductUrl)) {
+      return NextResponse.json(
+        { error: "Invalid URL. Please include a valid website/app link." },
+        { status: 400 }
+      );
     }
 
     // 1) Create audit request immediately (pending payment)
     const { data: created, error: createErr } = await supabaseAdmin
       .from("audit_requests")
       .insert({
-        full_name: fullName,
-        email,
-        product_url: productUrl,
-        notes: notes || "",
+        full_name: String(fullName).trim(),
+        email: String(email).trim(),
+        product_url: normalizedProductUrl, // ✅ ALWAYS store normalized URL
+        notes: (notes ?? "").toString(),
         status: "pending_payment",
         payment_status: "unpaid",
       })
@@ -30,7 +73,10 @@ export async function POST(req: Request) {
 
     if (createErr || !created?.id) {
       console.error("audit_requests insert failed:", createErr);
-      return NextResponse.json({ error: "Failed to create audit request." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create audit request." },
+        { status: 500 }
+      );
     }
 
     const auditRequestId = created.id as string;
@@ -38,13 +84,17 @@ export async function POST(req: Request) {
     // 2) Create Stripe session
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      customer_email: email,
+      customer_email: String(email).trim(),
       line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID!, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/audit?canceled=1`,
       metadata: {
         auditRequestId,
         intent: "audit",
+        // Optional but helpful for debugging/support:
+        productUrl: normalizedProductUrl,
+        email: String(email).trim(),
+        fullName: String(fullName).trim(),
       },
     });
 
@@ -59,6 +109,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error(err);
-    return NextResponse.json({ error: err?.message || "Checkout failed." }, { status: 500 });
+    return NextResponse.json(
+      { error: err?.message || "Checkout failed." },
+      { status: 500 }
+    );
   }
 }
