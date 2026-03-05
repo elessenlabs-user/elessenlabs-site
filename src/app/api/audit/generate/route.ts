@@ -1,20 +1,23 @@
+// src/app/api/audit/generate/route.ts
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase-admin";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
-  return NextResponse.json({ ok: true, message: "audit generator alive" });
-}
-
 /**
  * Protect this route with a secret so random users can't trigger generation.
- * Add this to Vercel env vars (Production + Preview):
- *   AUDIT_ENGINE_SECRET = some-long-random-string
+ * Vercel env vars (Production + Preview):
+ *   AUDIT_ENGINE_SECRET = <long-random-string>
  *
- * And call with:
- *   curl -X POST https://elessenlabs.com/api/audit/generate -H "x-audit-secret: YOUR_SECRET"
+ * Call:
+ *   curl -i -X POST "https://www.elessenlabs.com/api/audit/generate" \
+ *     -H "x-audit-secret: <YOUR_SECRET>"
  */
+
+export async function GET() {
+  // lightweight health check (safe)
+  return NextResponse.json({ ok: true, message: "audit generator alive" });
+}
 
 function requireSecret(req: Request) {
   const expected = process.env.AUDIT_ENGINE_SECRET;
@@ -40,10 +43,13 @@ function extractSignals(html: string, url: string) {
   const text = html || "";
 
   const title =
-    (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "").replace(/\s+/g, " ").trim();
+    (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "")
+      .replace(/\s+/g, " ")
+      .trim();
 
   const metaDescription =
-    (text.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)?.[1] || "").trim();
+    (text.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)?.[1] || "")
+      .trim();
 
   const h1 = uniq(
     Array.from(text.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)).map((m) =>
@@ -79,7 +85,6 @@ function extractSignals(html: string, url: string) {
   const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
   const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
 
-  // crude form/input count
   const inputCount = (text.match(/<input\b/gi) || []).length;
   const formCount = (text.match(/<form\b/gi) || []).length;
 
@@ -96,18 +101,9 @@ function extractSignals(html: string, url: string) {
   };
 }
 
-/**
- * OpenAI-compatible REST call.
- * Add env vars:
- *   OPENAI_API_KEY
- *   OPENAI_MODEL (optional) e.g. gpt-4.1-mini / gpt-4.1 / etc
- *
- * If you’re not using OpenAI, you can still keep this shape and swap endpoint.
- */
 async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    // fallback: store a “no AI configured” audit
     return `# Audit (AI not configured)\n\nWe received your request for:\n\n- URL: ${payload?.signals?.url}\n\n**Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
   }
 
@@ -165,11 +161,12 @@ export async function POST(req: Request) {
   const auth = requireSecret(req);
   if (!auth.ok) return NextResponse.json({ error: auth.msg }, { status: 401 });
 
-  // Optional: allow generating a specific audit by id
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
-  // 1) pick a job
+  // NOTE: Your table currently does NOT have "status" — it has "payment_status".
+  // We’ll use payment_status as the lifecycle field for now.
+
   let row: any = null;
 
   if (id) {
@@ -187,7 +184,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
-      .eq("status", "paid_pending_audit")
+      .eq("payment_status", "paid_pending_audit")
       .order("created_at", { ascending: true })
       .limit(1);
 
@@ -196,10 +193,10 @@ export async function POST(req: Request) {
     if (!row) return NextResponse.json({ ok: true, message: "No pending audits." });
   }
 
-  // 2) lock it
+  // lock it (payment_status lifecycle)
   const { error: lockErr } = await supabaseAdmin
     .from("audit_requests")
-    .update({ status: "generating" })
+    .update({ payment_status: "generating" })
     .eq("id", row.id);
 
   if (lockErr) {
@@ -207,7 +204,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // 3) fetch HTML
     const url = String(row.product_url || "").trim();
     const htmlRes = await fetch(url, {
       redirect: "follow",
@@ -220,30 +216,27 @@ export async function POST(req: Request) {
     const html = await htmlRes.text();
     const signals = extractSignals(html, url);
 
-    // 4) generate audit via AI
     const auditMarkdown = await generateAuditMarkdown({
       product_url: row.product_url,
       notes: row.notes,
       signals,
     });
 
-    // 5) save results
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")
       .update({
-        audit_content: clip(auditMarkdown, 250000), // keep under reasonable size
-        status: "ready_for_review",
+        audit_content: clip(auditMarkdown, 250000),
+        payment_status: "ready_for_review",
+        completed_at: new Date().toISOString(),
       })
       .eq("id", row.id);
 
-    if (saveErr) {
-      throw new Error(`Failed to save audit_content: ${saveErr.message}`);
-    }
+    if (saveErr) throw new Error(`Failed to save audit_content: ${saveErr.message}`);
 
     return NextResponse.json({
       ok: true,
       id: row.id,
-      status: "ready_for_review",
+      payment_status: "ready_for_review",
       signals_summary: {
         title: signals.title,
         h1: signals.h1?.[0] || "",
@@ -256,7 +249,7 @@ export async function POST(req: Request) {
     await supabaseAdmin
       .from("audit_requests")
       .update({
-        status: "failed",
+        payment_status: "failed",
         audit_content: clip(`Audit generation failed: ${e?.message || String(e)}`, 8000),
       })
       .eq("id", row.id);
