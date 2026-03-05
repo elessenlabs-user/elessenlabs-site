@@ -5,7 +5,7 @@ import { supabaseAdmin } from "../../../lib/supabase-admin";
 export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2024-02-15.clover",
 });
 
 export async function POST(req: Request) {
