@@ -36,11 +36,17 @@ export default function AuditSuccessPage() {
           </a>
 
           <a
-            href="/"
-            className="rounded-lg bg-black px-6 py-3 text-white transition hover:bg-neutral-800"
-          >
-            Return to Elessen
-          </a>
+  href="/"
+  className="rounded-lg px-6 py-3 transition hover:bg-neutral-800"
+  style={{
+    backgroundColor: "#000000",
+    color: "#ffffff",
+    textDecoration: "none",
+    display: "inline-block",
+     }}
+    >
+        Return to Elessen
+    </a>
         </div>
       </div>
     </main>
