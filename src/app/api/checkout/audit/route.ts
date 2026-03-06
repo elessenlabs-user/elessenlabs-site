@@ -6,35 +6,10 @@ export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Accept:
-// - elessenux.com
-// - www.elessenux.com
-// - https://elessenux.com
-// - https://www.elessenux.com
-// - app store links, etc.
-function normalizeUrl(input: string) {
-  let s = (input ?? "").trim();
-
-  if (!s) return "";
-
-  // remove internal whitespace
-  s = s.replace(/\s+/g, "");
-
-  // if missing scheme, default to https
-  if (!/^https?:\/\//i.test(s)) {
-    s = `https://${s}`;
-  }
-
-  return s;
-}
-
-function isValidHttpUrl(input: string) {
-  try {
-    const u = new URL(input);
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
-  }
+function withHttps(url: string) {
+  const s = (url || "").trim();
+  if (!s) return s;
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
 }
 
 export async function POST(req: Request) {
@@ -42,18 +17,30 @@ export async function POST(req: Request) {
     const { fullName, email, productUrl, notes } = await req.json();
 
     if (!fullName || !email || !productUrl) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+    }
+
+    // Always normalize URLs server-side (even if the client already does it)
+    const normalizedProductUrl = withHttps(String(productUrl).replace(/\s+/g, ""));
+
+    // Ensure we have a proper site URL for Stripe redirects
+    const originFromReq =
+      req.headers.get("origin") ||
+      (req.headers.get("host") ? `https://${req.headers.get("host")}` : "");
+
+    const siteUrl = withHttps(process.env.NEXT_PUBLIC_SITE_URL || originFromReq);
+
+    if (!siteUrl) {
       return NextResponse.json(
-        { error: "Missing required fields." },
-        { status: 400 }
+        { error: "Server misconfigured: NEXT_PUBLIC_SITE_URL is missing." },
+        { status: 500 }
       );
     }
 
-    const normalizedProductUrl = normalizeUrl(String(productUrl));
-
-    if (!isValidHttpUrl(normalizedProductUrl)) {
+    if (!process.env.STRIPE_AUDIT_PRICE_ID) {
       return NextResponse.json(
-        { error: "Invalid URL. Please include a valid website/app link." },
-        { status: 400 }
+        { error: "Server misconfigured: STRIPE_AUDIT_PRICE_ID is missing." },
+        { status: 500 }
       );
     }
 
@@ -61,10 +48,10 @@ export async function POST(req: Request) {
     const { data: created, error: createErr } = await supabaseAdmin
       .from("audit_requests")
       .insert({
-        full_name: String(fullName).trim(),
-        email: String(email).trim(),
-        product_url: normalizedProductUrl, // ✅ ALWAYS store normalized URL
-        notes: (notes ?? "").toString(),
+        full_name: fullName,
+        email,
+        product_url: normalizedProductUrl,
+        notes: notes || "",
         status: "pending_payment",
         payment_status: "unpaid",
       })
@@ -73,10 +60,7 @@ export async function POST(req: Request) {
 
     if (createErr || !created?.id) {
       console.error("audit_requests insert failed:", createErr);
-      return NextResponse.json(
-        { error: "Failed to create audit request." },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to create audit request." }, { status: 500 });
     }
 
     const auditRequestId = created.id as string;
@@ -84,34 +68,25 @@ export async function POST(req: Request) {
     // 2) Create Stripe session
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      customer_email: String(email).trim(),
-      line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID!, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/audit?canceled=1`,
+      customer_email: email,
+      line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID, quantity: 1 }],
+      success_url: `${siteUrl}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/audit?canceled=1`,
       metadata: {
         auditRequestId,
         intent: "audit",
-        // Optional but helpful for debugging/support:
-        productUrl: normalizedProductUrl,
-        email: String(email).trim(),
-        fullName: String(fullName).trim(),
       },
     });
 
     // 3) Update row with stripe session id
     await supabaseAdmin
       .from("audit_requests")
-      .update({
-        stripe_session_id: session.id,
-      })
+      .update({ stripe_session_id: session.id })
       .eq("id", auditRequestId);
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    console.error(err);
-    return NextResponse.json(
-      { error: err?.message || "Checkout failed." },
-      { status: 500 }
-    );
+    console.error("checkout/audit error:", err);
+    return NextResponse.json({ error: err?.message || "Checkout failed." }, { status: 500 });
   }
 }

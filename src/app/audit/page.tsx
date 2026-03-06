@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const AUDIT_PRICE = "$149";
 const TURNAROUND = "24 hours";
 
+
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0 },
@@ -17,6 +18,7 @@ const stagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
+
 
 function TrustPill({ children }: { children: React.ReactNode }) {
   return (
@@ -34,47 +36,62 @@ export default function AuditPage() {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [productUrlError, setProductUrlError] = useState("");
 
   function isValidEmail(v: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
   }
-
 function normalizeUrl(v: string) {
-  let url = v.trim();
+  let s = (v ?? "").trim();
 
-  if (!url) return url;
+  if (!s) return "";
 
-  // remove spaces
-  url = url.replace(/\s+/g, "");
+  // remove whitespace inside (people paste with spaces sometimes)
+  s = s.replace(/\s+/g, "");
 
-  // if protocol missing, add https
-  if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
-  }
+  // allow things like "elessenux.com" or "www.elessenux.com"
+  // if scheme missing, default to https
+  if (!/^https?:\/\//i.test(s)) s = `https://${s}`;
 
-  return url;
+  // If user typed "https://www.elessenux.com/" keep it; that's fine
+  return s;
 }
 
-  function isValidUrl(v: string) {
-    try {
-      const u = new URL(v.trim());
-      return u.protocol === "http:" || u.protocol === "https:";
-    } catch {
-      return false;
-    }
+function isValidHttpUrl(v: string) {
+  try {
+    const u = new URL(v);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function getUrlError(rawInput: string) {
+  const normalized = normalizeUrl(rawInput);
+
+  if (!rawInput.trim()) return "Please enter a website/app link.";
+
+  if (!isValidHttpUrl(normalized)) {
+    return "Enter a valid URL (e.g. elessenux.com or https://elessenux.com).";
   }
 
- const canSubmit = useMemo(() => {
+  return "";
+}
+
+const canSubmit = useMemo(() => {
+  const urlErr = getUrlError(productUrl);
+
   return (
     fullName.trim().length >= 2 &&
     isValidEmail(email) &&
-    isValidUrl(normalizeUrl(productUrl)) &&
+    !urlErr &&
     !loading
   );
 }, [fullName, email, productUrl, loading]);
 
   async function onPay() {
     setStatus("");
+    setProductUrlError("");
 
     if (!fullName.trim() || fullName.trim().length < 2) {
       setStatus("Please enter your name.");
@@ -84,12 +101,17 @@ function normalizeUrl(v: string) {
       setStatus("Please enter a valid email.");
       return;
     }
-  const normalizedProductUrl = normalizeUrl(productUrl);
-
-  if (!isValidUrl(normalizedProductUrl)) {
-  setStatus("Please enter a valid website/app link.");
+  
+    const urlErr = getUrlError(productUrl);
+if (urlErr) {
+  setProductUrlError(urlErr);
+  setStatus(""); // keep banner clean; field shows the real issue
   return;
 }
+
+  const normalizedProductUrl = normalizeUrl(productUrl);
+
+ 
 
     setLoading(true);
 
@@ -109,7 +131,7 @@ function normalizeUrl(v: string) {
             "Audit request",
             `Name: ${fullName}`,
             `Email: ${email}`,
-            `Product URL: ${productUrl}`,
+            `Product URL: ${normalizedProductUrl}`,
             `Notes: ${notes || "—"}`,
             `Offer: 24-hour UX Conversion Blueprint (${AUDIT_PRICE})`,
           ].join("\n"),
@@ -476,16 +498,43 @@ function normalizeUrl(v: string) {
             </div>
 
             <div className="mt-4">
-              <label className="text-sm font-medium">Website / Product link</label>
-              <input
-                type="url"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition
-                focus:border-black focus:ring-2 focus:ring-black/20 caret-black"
-                value={productUrl}
-                onChange={(e) => setProductUrl(e.target.value)}
-                placeholder="yourproduct.com or app store link"
-              />
-            </div>
+  <label className="text-sm font-medium">Website / Product link</label>
+
+  <input
+    type="text"
+    className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition
+      focus:ring-2 caret-black
+      ${productUrlError
+        ? "border-red-500/40 focus:border-red-500 focus:ring-red-500/20"
+        : "border-black/10 focus:border-black focus:ring-black/20"
+      }`}
+    value={productUrl}
+    onChange={(e) => {
+      setProductUrl(e.target.value);
+      if (productUrlError) setProductUrlError("");
+      if (status) setStatus("");
+    }}
+    onBlur={() => {
+      const normalized = normalizeUrl(productUrl);
+      setProductUrl(normalized);
+      const err = getUrlError(normalized);
+      setProductUrlError(err);
+    }}
+    placeholder="elessenux.com / www.elessenux.com / https://elessenux.com"
+    autoComplete="url"
+    inputMode="url"
+  />
+
+  {productUrlError && (
+    <p className="mt-2 text-sm text-red-600">{productUrlError}</p>
+  )}
+
+  {!productUrlError && (
+    <p className="mt-2 text-xs text-black/50">
+      Tip: you can paste without https — we’ll add it automatically.
+    </p>
+  )}
+</div>
 
             <div className="mt-4">
               <label className="text-sm font-medium">Notes (optional)</label>

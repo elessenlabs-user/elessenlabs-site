@@ -27,12 +27,23 @@ export default function AuditSuccessPage() {
           A confirmation email and delivery flow will be connected next.
         </p>
 
+        <div className="flex gap-4 mt-6">
+
         <a
-          href="/"
-          className="mt-8 inline-flex rounded-2xl bg-black px-5 py-3 text-sm font-semibold text-white"
-        >
-          Back to homepage
+            href="/audit"
+            className="bg-[#F97316] text-white rounded-lg px-6 py-3 font-medium hover:opacity-90 transition"
+  >
+        Submit another audit
         </a>
+
+        <a
+            href="/"
+            className="bg-black text-white rounded-lg px-6 py-3 hover:bg-neutral-800 transition"
+        >
+        Return to Elessen
+         </a>
+
+</div>
       </div>
     </main>
   );
