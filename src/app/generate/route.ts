@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "../../../lib/supabase-admin";
+import { supabaseAdmin } from "../../lib/supabase-admin";
 
 export const runtime = "nodejs";
+
+export async function POST(req: Request) {
+  return NextResponse.json({ ok: true, message: "audit generator alive" });
+}
+
+/**
+ * Protect this route with a secret so random users can't trigger generation.
+ * Add this to Vercel env vars (Production + Preview):
+ *   AUDIT_ENGINE_SECRET = some-long-random-string
+ *
+ * And call with:
+ *   curl -X POST https://elessenlabs.com/api/audit/generate -H "x-audit-secret: YOUR_SECRET"
+ */
 
 function requireSecret(req: Request) {
   const expected = process.env.AUDIT_ENGINE_SECRET;
@@ -13,7 +26,7 @@ function requireSecret(req: Request) {
   return { ok: true, msg: "" };
 }
 
-function clip(s: string, max = 120000) {
+function clip(s: string, max = 4000) {
   const t = (s || "").trim();
   return t.length > max ? t.slice(0, max) + "…" : t;
 }
@@ -22,6 +35,7 @@ function uniq(arr: string[]) {
   return Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
 }
 
+// very lightweight HTML signal extraction (no extra deps)
 function extractSignals(html: string, url: string) {
   const text = html || "";
 
@@ -47,7 +61,9 @@ function extractSignals(html: string, url: string) {
     Array.from(text.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/gi)).map((m) =>
       m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
     )
-  ).filter((x) => x.length <= 60).slice(0, 20);
+  )
+    .filter((x) => x.length <= 60)
+    .slice(0, 20);
 
   const links = uniq(
     Array.from(text.matchAll(/<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)).map((m) => {
@@ -55,12 +71,15 @@ function extractSignals(html: string, url: string) {
       const label = (m[2] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
       return `${label} -> ${href}`;
     })
-  ).filter((x) => !x.includes("-> #")).slice(0, 30);
+  )
+    .filter((x) => !x.includes("-> #"))
+    .slice(0, 30);
 
   const hasPricing = /pricing|price|plan|plans|billing|subscription/i.test(text);
   const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
   const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
 
+  // crude form/input count
   const inputCount = (text.match(/<input\b/gi) || []).length;
   const formCount = (text.match(/<form\b/gi) || []).length;
 
@@ -77,40 +96,44 @@ function extractSignals(html: string, url: string) {
   };
 }
 
+/**
+ * OpenAI-compatible REST call.
+ * Add env vars:
+ *   OPENAI_API_KEY
+ *   OPENAI_MODEL (optional) e.g. gpt-4.1-mini / gpt-4.1 / etc
+ *
+ * If you’re not using OpenAI, you can still keep this shape and swap endpoint.
+ */
 async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return `# Audit (AI not configured)
-
-We received your request for:
-
-- URL: ${payload?.signals?.url}
-
-Next: add OPENAI_API_KEY to generate full audits automatically.`;
+    // fallback: store a “no AI configured” audit
+    return `# Audit (AI not configured)\n\nWe received your request for:\n\n- URL: ${payload?.signals?.url}\n\n**Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
   }
 
   const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
-  const system = `You are Elessen Labs' senior product and UX auditor.
-Return a practical, founder-friendly audit that is highly actionable.
-No fluff. No generic advice. Use only the evidence visible in the extracted signals.`;
+  const system = `You are Elessen Labs' senior product/UX auditor.
+Return a practical, founder-friendly audit that is extremely actionable.
+No fluff. No generic advice. Use the evidence in the signals.`;
 
   const user = `AUDIT REQUEST
 
 URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
 
-EXTRACTED SIGNALS
+EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
 
 OUTPUT FORMAT (Markdown):
-1. Executive summary (max 5 bullets)
-2. Highest-impact issues (prioritized with severity and reason)
-3. Conversion + UX fixes (table: Issue | Evidence | Fix | Effort | Expected impact)
-4. Copy and CTA rewrite suggestions
-5. SEO quick wins
-6. 7-day action plan
-7. Questions / assumptions to validate`;
+1) Executive summary (5 bullets max)
+2) Highest-impact issues (prioritized list with severity + why)
+3) Conversion + UX fixes (table: Issue | Evidence | Fix | Effort | Expected impact)
+4) Copy & CTA rewrite suggestions (3–8 specific rewrites)
+5) SEO quick wins (only what’s visible from signals; do NOT hallucinate analytics)
+6) Next 7-day sprint plan (day-by-day tasks)
+7) Questions to confirm (max 6)
+`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -120,11 +143,11 @@ OUTPUT FORMAT (Markdown):
     },
     body: JSON.stringify({
       model,
-      temperature: 0.25,
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },
       ],
+      temperature: 0.25,
     }),
   });
 
@@ -134,18 +157,19 @@ OUTPUT FORMAT (Markdown):
   }
 
   const json = await res.json();
-  return (json?.choices?.[0]?.message?.content || "").trim();
+  const content = json?.choices?.[0]?.message?.content || "";
+  return content.trim();
 }
 
 export async function POST(req: Request) {
   const auth = requireSecret(req);
-  if (!auth.ok) {
-    return NextResponse.json({ error: auth.msg }, { status: 401 });
-  }
+  if (!auth.ok) return NextResponse.json({ error: auth.msg }, { status: 401 });
 
+  // Optional: allow generating a specific audit by id
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
+  // 1) pick a job
   let row: any = null;
 
   if (id) {
@@ -158,7 +182,6 @@ export async function POST(req: Request) {
     if (error || !data) {
       return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
     }
-
     row = data;
   } else {
     const { data, error } = await supabaseAdmin
@@ -168,16 +191,12 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: true })
       .limit(1);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     row = data?.[0];
-    if (!row) {
-      return NextResponse.json({ ok: true, message: "No pending audits." });
-    }
+    if (!row) return NextResponse.json({ ok: true, message: "No pending audits." });
   }
 
+  // 2) lock it
   const { error: lockErr } = await supabaseAdmin
     .from("audit_requests")
     .update({ status: "generating" })
@@ -188,8 +207,8 @@ export async function POST(req: Request) {
   }
 
   try {
+    // 3) fetch HTML
     const url = String(row.product_url || "").trim();
-
     const htmlRes = await fetch(url, {
       redirect: "follow",
       headers: {
@@ -201,16 +220,18 @@ export async function POST(req: Request) {
     const html = await htmlRes.text();
     const signals = extractSignals(html, url);
 
+    // 4) generate audit via AI
     const auditMarkdown = await generateAuditMarkdown({
       product_url: row.product_url,
       notes: row.notes,
       signals,
     });
 
+    // 5) save results
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")
       .update({
-        audit_content: clip(auditMarkdown),
+        audit_content: clip(auditMarkdown, 250000), // keep under reasonable size
         status: "ready_for_review",
       })
       .eq("id", row.id);
@@ -223,11 +244,15 @@ export async function POST(req: Request) {
       ok: true,
       id: row.id,
       status: "ready_for_review",
-      title: signals.title,
-      top_h1: signals.h1?.[0] || "",
-      top_ctas: signals.ctas?.slice(0, 5) || [],
+      signals_summary: {
+        title: signals.title,
+        h1: signals.h1?.[0] || "",
+        ctas: signals.ctas?.slice(0, 5) || [],
+      },
     });
   } catch (e: any) {
+    console.error(e);
+
     await supabaseAdmin
       .from("audit_requests")
       .update({
@@ -236,6 +261,6 @@ export async function POST(req: Request) {
       })
       .eq("id", row.id);
 
-    return NextResponse.json({ error: e?.message || "Audit generation failed." }, { status: 500 });
+    return NextResponse.json({ error: "Audit generation failed." }, { status: 500 });
   }
 }
