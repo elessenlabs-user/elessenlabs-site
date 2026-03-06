@@ -47,22 +47,54 @@ export default async function AuditResultPage({
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
       <div className="rounded-3xl border border-black/10 bg-white p-10 shadow-sm">
-        <div className="mb-8">
-          <div className="text-xs font-semibold tracking-[0.18em] text-black/50">
-            UX CONVERSION BLUEPRINT
-          </div>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            Audit for {data.full_name || "Client"}
-          </h1>
-          <div className="mt-3 text-sm text-black/55">
-            <div>{data.product_url}</div>
-            <div>Status: {data.payment_status}</div>
-            {data.completed_at && <div>Generated: {data.completed_at}</div>}
-          </div>
-        </div>
+        <main className="mx-auto max-w-4xl px-6 py-16">
+  <div className="rounded-3xl border border-black/10 bg-white p-10 shadow-sm">
+    <div className="mb-10 border-b border-black/10 pb-6">
+      <div className="text-xs font-semibold tracking-[0.18em] text-black/45">
+        UX CONVERSION BLUEPRINT
+      </div>
 
-        <article className="prose prose-neutral max-w-none">
-          <ReactMarkdown>{data.audit_content}</ReactMarkdown>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+        Audit for {data.full_name || "Client"}
+      </h1>
+
+      <div className="mt-4 space-y-1 text-sm text-black/60">
+        <div><strong className="text-black/75">Product:</strong> {data.product_url}</div>
+        <div><strong className="text-black/75">Status:</strong> {data.payment_status}</div>
+        {data.completed_at && (
+          <div><strong className="text-black/75">Generated:</strong> {data.completed_at}</div>
+        )}
+      </div>
+    </div>
+
+    <article
+      className="prose prose-lg max-w-none
+      prose-h1:text-3xl
+      prose-h2:text-2xl
+      prose-h3:text-xl
+      prose-p:text-gray-700
+      prose-strong:text-black
+      prose-table:border
+      prose-th:bg-gray-100
+      prose-td:border
+      prose-li:marker:text-black"
+    >
+      <ReactMarkdown>{data.audit_content}</ReactMarkdown>
+    </article>
+  </div>
+</main>
+
+        <article className="prose prose-lg max-w-none
+        prose-h1:text-3xl
+        prose-h2:text-2xl
+        prose-h3:text-xl
+        prose-p:text-gray-700
+        prose-strong:text-black
+        prose-table:border
+        prose-th:bg-gray-100
+        prose-td:border
+        prose-li:marker:text-black">
+            <ReactMarkdown>{data.audit_content}</ReactMarkdown>
         </article>
       </div>
     </main>
