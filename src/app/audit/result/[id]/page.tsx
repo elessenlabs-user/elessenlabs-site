@@ -8,15 +8,18 @@ export default async function AuditResult({ params }: any) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data } = await supabase
-    .from("audit_requests")
-    .select("audit_content, product_url, full_name")
-    .eq("id", params.id)
-    .single()
+const { data } = await supabase
+  .from("audit_requests")
+  .select("audit_content, payment_status")
+  .eq("id", params.id)
+  .single();
 
   if (!data) {
     return <div>Audit not found</div>
   }
+    <ReactMarkdown>
+        {data.audit_content}
+    </ReactMarkdown>
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-20">
