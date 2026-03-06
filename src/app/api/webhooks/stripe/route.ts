@@ -35,14 +35,13 @@ export async function POST(req: Request) {
       const paymentStatus = session.payment_status || "paid";
 
       if (!auditRequestId) {
-        console.error("Missing auditRequestId in Stripe session metadata:", session.id);
+        console.error("Missing auditRequestId in session metadata:", session.id);
         return NextResponse.json(
           { error: "Missing auditRequestId in metadata." },
           { status: 400 }
         );
       }
 
-      // Update the row that was already created during checkout session creation
       const { error: updateErr } = await supabaseAdmin
         .from("audit_requests")
         .update({
