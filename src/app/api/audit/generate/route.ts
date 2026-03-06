@@ -15,7 +15,6 @@ export const runtime = "nodejs";
  */
 
 export async function GET() {
-  // lightweight health check (safe)
   return NextResponse.json({ ok: true, message: "audit generator alive" });
 }
 
@@ -104,14 +103,23 @@ function extractSignals(html: string, url: string) {
 async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return `# Audit (AI not configured)\n\nWe received your request for:\n\n- URL: ${payload?.signals?.url}\n\n**Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
+    return `# Audit (AI not configured)
+
+We received your request for:
+
+- URL: ${payload?.signals?.url}
+
+**Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
   }
 
   const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 
   const system = `You are Elessen Labs' senior product/UX auditor.
-Return a practical, founder-friendly audit that is extremely actionable.
-No fluff. No generic advice. Use the evidence in the signals.`;
+Return a practical, founder-friendly audit that is highly actionable.
+No fluff. No generic advice.
+Use only the evidence visible in the extracted signals.
+Do not hallucinate analytics, user behavior, conversions, or traffic data.
+Write like an experienced product designer and conversion strategist.`;
 
   const user = `AUDIT REQUEST
 
@@ -121,15 +129,50 @@ Notes: ${payload.notes || "—"}
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
 
-OUTPUT FORMAT (Markdown):
-1) Executive summary (5 bullets max)
-2) Highest-impact issues (prioritized list with severity + why)
-3) Conversion + UX fixes (table: Issue | Evidence | Fix | Effort | Expected impact)
-4) Copy & CTA rewrite suggestions (3–8 specific rewrites)
-5) SEO quick wins (only what’s visible from signals; do NOT hallucinate analytics)
-6) Next 7-day sprint plan (day-by-day tasks)
-7) Questions to confirm (max 6)
-`;
+RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
+
+## Executive Summary
+- Max 5 bullets
+- Focus on overall product, messaging, and conversion clarity
+
+## Critical Issues
+- Prioritized list
+- For each issue include:
+  - Severity: Critical / High / Medium / Low
+  - Evidence
+  - Why it matters
+  - Recommended fix
+
+## Conversion Improvements
+Create a markdown table with these exact columns:
+| Issue | Evidence | Fix | Effort | Expected Impact |
+
+## UI Improvements
+- Focus on layout, hierarchy, CTA placement, readability, trust signals, spacing, navigation
+- Make recommendations specific and practical
+
+## Copy Improvements
+- Rewrite the main headline
+- Rewrite the primary CTA
+- Suggest 3–5 messaging improvements
+
+## SEO Quick Wins
+- Only use evidence visible from the extracted signals
+- Do not invent analytics or rankings
+
+## 7-Day Sprint Plan
+- Day-by-day action plan
+- Keep it practical and implementation-ready
+
+## Questions / Assumptions
+- Max 6 bullets
+- Only include items that would materially improve the audit
+
+IMPORTANT:
+- Use only these headings
+- Do not add extra top-level headings
+- Do not wrap the entire response in code fences
+- Keep the report concise, premium, and founder-friendly`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -164,9 +207,6 @@ export async function POST(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
-  // NOTE: Your table currently does NOT have "status" — it has "payment_status".
-  // We’ll use payment_status as the lifecycle field for now.
-
   let row: any = null;
 
   if (id) {
@@ -193,7 +233,6 @@ export async function POST(req: Request) {
     if (!row) return NextResponse.json({ ok: true, message: "No pending audits." });
   }
 
-  // lock it (payment_status lifecycle)
   const { error: lockErr } = await supabaseAdmin
     .from("audit_requests")
     .update({ payment_status: "generating" })
