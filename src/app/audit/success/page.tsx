@@ -23,47 +23,25 @@ export default function AuditSuccessPage() {
           </ul>
         </div>
 
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-black/10 bg-orange-50 p-6">
-         <div className="text-sm font-semibold">
-            Know another founder who needs a UX audit?
-        </div>
-
-        <p className="mt-2 text-sm text-black/70">
-            Share Elessen and help another founder improve their product. 
-            If they book an audit, you'll receive a discount on your next one.
+        <p className="mt-6 text-sm text-black/55">
+          You’ll receive a confirmation email shortly. Your audit will be delivered within 24 hours.
         </p>
 
-        <a
-            href="https://elessenlabs.com/audit"
-            className="inline-block mt-4 bg-[#F97316] text-white rounded-lg px-5 py-2 text-sm font-medium hover:opacity-90 transition"
-        >
-            Share the audit link
-        </a>
-    </div>
-
-    <p className="mt-6 text-sm text-black/55">
-        You’ll receive a confirmation email shortly. Your audit will be delivered within 24 hours.
-    </p>
-
-        <div className="flex gap-4 mt-6">
-
-        <a
+        <div className="mt-6 flex gap-4">
+          <a
             href="/audit"
-            className="bg-[#F97316] text-white rounded-lg px-6 py-3 font-medium hover:opacity-90 transition"
-  >
-        Submit another audit
-        </a>
+            className="rounded-lg bg-[#F97316] px-6 py-3 font-medium text-white transition hover:opacity-90"
+          >
+            Submit another audit
+          </a>
 
-        <a
+          <a
             href="/"
-            className="bg-black text-white rounded-lg px-6 py-3 hover:bg-neutral-800 transition"
-        >
-        Return to Elessen
-         </a>
-
-</div>
+            className="rounded-lg bg-black px-6 py-3 text-white transition hover:bg-neutral-800"
+          >
+            Return to Elessen
+          </a>
+        </div>
       </div>
     </main>
   );
