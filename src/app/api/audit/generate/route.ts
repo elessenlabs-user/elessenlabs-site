@@ -112,7 +112,7 @@ We received your request for:
 **Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
   }
 
-  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
   const system = `You are Elessen Labs' senior product/UX auditor.
 Return a practical, founder-friendly audit that is highly actionable.
@@ -144,35 +144,46 @@ RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
   - Recommended fix
 
 ## Conversion Improvements
-Create a markdown table with these exact columns:
-| Issue | Evidence | Fix | Effort | Expected Impact |
+List the issues as structured bullet blocks.
+
+Each issue MUST follow this exact format:
+
+- 🚨 Issue title
+  Evidence: what proves this problem from the extracted signals
+  Fix: recommended solution
+  Effort: Low / Medium / High
+  Impact: Low / Medium / High
 
 ## UI Improvements
-- Focus on layout, hierarchy, CTA placement, readability, trust signals, spacing, navigation
-- Make recommendations specific and practical
+- bullet recommendations about layout, hierarchy, navigation, readability
 
 ## Copy Improvements
 - Rewrite the main headline
 - Rewrite the primary CTA
-- Suggest 3–5 messaging improvements
+- Suggest messaging improvements
 
 ## SEO Quick Wins
-- Only use evidence visible from the extracted signals
-- Do not invent analytics or rankings
+- Only use evidence visible from extracted signals
 
 ## 7-Day Sprint Plan
-- Day-by-day action plan
-- Keep it practical and implementation-ready
+- Day 1:
+- Day 2:
+- Day 3:
+- Day 4:
+- Day 5:
+- Day 6:
+- Day 7:
 
 ## Questions / Assumptions
-- Max 6 bullets
-- Only include items that would materially improve the audit
+- bullet points
 
 IMPORTANT:
-- Use only these headings
-- Do not add extra top-level headings
-- Do not wrap the entire response in code fences
-- Keep the report concise, premium, and founder-friendly`;
+- Do not output tables
+- Do not output ASCII formatting
+- Use bullet lists only
+- Do not wrap the response in code fences
+- Keep the report concise and actionable
+`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

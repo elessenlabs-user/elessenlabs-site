@@ -18,23 +18,28 @@ function splitSections(markdown: string) {
 }
 
 function parseBulletCards(content: string) {
-  return content
+  const items = content
     .split(/\n(?=- )/g)
     .map((item) => item.trim())
-    .filter(Boolean)
-    .map((item) => {
-      const clean = item.replace(/^- /, "").trim();
+    .filter(Boolean);
 
-      let icon = "•";
-      if (/copy|headline|cta|messaging/i.test(clean)) icon = "✍️";
-      else if (/ui|layout|design|hierarchy|spacing|navigation/i.test(clean)) icon = "🎨";
-      else if (/conversion|pricing|email|form|capture|impact/i.test(clean)) icon = "📈";
-      else if (/seo|meta|search|keyword/i.test(clean)) icon = "🔎";
-      else if (/sprint|day/i.test(clean)) icon = "🗓️";
-      else if (/critical|issue|severity/i.test(clean)) icon = "🚨";
+  return items.map((item) => {
+    const clean = item.replace(/^- /, "").trim();
 
-      return { icon, text: clean };
-    });
+    let icon = "•";
+
+    if (/email|form|capture/i.test(clean)) icon = "📧";
+    else if (/cta|conversion|pricing/i.test(clean)) icon = "📈";
+    else if (/ui|layout|design|navigation/i.test(clean)) icon = "🎨";
+    else if (/copy|headline|messaging/i.test(clean)) icon = "✍️";
+    else if (/seo|meta|search/i.test(clean)) icon = "🔎";
+    else if (/critical|issue|severity/i.test(clean)) icon = "🚨";
+
+    return {
+      icon,
+      text: clean,
+    };
+  });
 }
 
 function computeAuditScore(auditContent: string) {
@@ -63,7 +68,7 @@ function Section({
 }) {
   const isCritical = title.toLowerCase().includes("critical");
   const isCardSection =
-    /critical|conversion|ui|copy|seo|sprint|question/i.test(title);
+  /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
 
   const cards = parseBulletCards(content);
 
