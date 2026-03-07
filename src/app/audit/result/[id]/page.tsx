@@ -77,7 +77,8 @@ function Section({
       className={`mb-6 rounded-2xl border bg-white shadow-sm ${
         isCritical ? "border-red-200 ring-1 ring-red-100" : "border-black/10"
       }`}
-      open
+      open={isCritical}
+      
     >
       <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
         <div className="flex items-center gap-3">
