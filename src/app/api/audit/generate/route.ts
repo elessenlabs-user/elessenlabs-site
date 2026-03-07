@@ -121,7 +121,7 @@ Use only the evidence visible in the extracted signals.
 Do not hallucinate analytics, user behavior, conversions, or traffic data.
 Write like an experienced product designer and conversion strategist.`;
 
-  const user = `AUDIT REQUEST
+ const user = `AUDIT REQUEST
 
 URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
@@ -133,57 +133,67 @@ RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
 
 ## Executive Summary
 - Max 5 bullets
-- Focus on overall product, messaging, and conversion clarity
+- Focus on product clarity, messaging, and conversion
 
 ## Critical Issues
-- Prioritized list
-- For each issue include:
-  - Severity: Critical / High / Medium / Low
-  - Evidence
-  - Why it matters
-  - Recommended fix
+For each issue use this exact format:
+
+- Severity: Critical / High / Medium / Low
+  Issue: short issue title
+  Evidence: what proves this problem from the extracted signals
+  Why it matters: why this hurts UX or conversion
+  Recommended fix: specific action
 
 ## Conversion Improvements
-List the issues as structured bullet blocks.
+For each improvement use this exact format:
 
-Each issue MUST follow this exact format:
-
-- 🚨 Issue title
-  Evidence: what proves this problem from the extracted signals
-  Fix: recommended solution
+- Issue: short issue title
+  Evidence: what proves this problem
+  Fix: recommended action
   Effort: Low / Medium / High
   Impact: Low / Medium / High
 
+Do NOT use tables.
+Do NOT use ASCII formatting.
+Do NOT use pipes or separators.
+
 ## UI Improvements
-- bullet recommendations about layout, hierarchy, navigation, readability
+- One recommendation per bullet
+- Keep each bullet short and specific
 
 ## Copy Improvements
-- Rewrite the main headline
-- Rewrite the primary CTA
-- Suggest messaging improvements
+- Main headline rewrite:
+- Primary CTA rewrite:
+- Messaging improvement:
+- Messaging improvement:
+- Messaging improvement:
 
 ## SEO Quick Wins
-- Only use evidence visible from extracted signals
+- One recommendation per bullet
 
 ## 7-Day Sprint Plan
-- Day 1:
-- Day 2:
-- Day 3:
-- Day 4:
-- Day 5:
-- Day 6:
-- Day 7:
+Use exactly this format:
+
+- Day 1: task
+- Day 2: task
+- Day 3: task
+- Day 4: task
+- Day 5: task
+- Day 6: task
+- Day 7: task
+
+Only one line per day.
+Do NOT add sub-bullets.
 
 ## Questions / Assumptions
-- bullet points
+- Max 6 bullets
 
 IMPORTANT:
-- Do not output tables
-- Do not output ASCII formatting
+- Use only these headings
 - Use bullet lists only
-- Do not wrap the response in code fences
-- Keep the report concise and actionable
-`;
+- Do not use markdown tables
+- Do not use code fences
+- Keep the report concise, premium, and implementation-ready`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
