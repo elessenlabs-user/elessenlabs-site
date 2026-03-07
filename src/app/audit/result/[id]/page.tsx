@@ -210,15 +210,15 @@ export default async function AuditResultPage({
     </div>
 
     <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
-      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
-        NEXT STEP
-      </div>
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
+      NEXT STEP
+    </div>
 
     <h2 className="mt-3 text-2xl font-semibold text-black">
-        Want Elessen to fix these issues for you?
+    Want Elessen to fix these issues for you?
     </h2>
 
-    <p className="mt-3 max-w-2xl text-sm text-black/75">
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-black/75">
       Turn this audit into an execution plan. We can help refine the UX,
       improve conversion, tighten the messaging, and turn the highest-impact
       recommendations into a practical sprint.
@@ -227,19 +227,19 @@ export default async function AuditResultPage({
     <div className="mt-6 flex flex-wrap gap-3">
       <a
         href="mailto:hello@elessenlabs.com?subject=Need%20Implementation%20Support"
-        className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
+        className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
       >
-      Contact us for implementation
-    </a>
+        Contact us for implementation
+      </a>
 
       <a
         href="/how-we-help"
-        className="inline-flex items-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+        className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
       >
-      Explore implementation support
-    </a>
-  </div>
-</div> 
+        Explore implementation support
+      </a>
+    </div>
+</div>
     </main>
   );
 }
