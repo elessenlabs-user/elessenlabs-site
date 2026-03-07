@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
+import PrintActions from "./PrintActions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,68 +16,49 @@ function splitSections(markdown: string) {
     })
     .filter((s) => s.content);
 }
-<div className="mt-6 flex flex-wrap gap-3">
-  <a
-    href="#"
-    onClick={(e) => {
-      e.preventDefault();
-      window.print();
-    }}
-    className="inline-flex items-center rounded-xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition hover:bg-black hover:text-white"
-  >
-    Download PDF
-  </a>
 
-  <a
-    href="/start"
-    className="inline-flex items-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-  >
-    Book another audit
-  </a>
-</div>
+function parseBulletCards(content: string) {
+  return content
+    .split(/\n(?=- )/g)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const clean = item.replace(/^- /, "").trim();
 
-function Section({
-  title,
-  content,
-}: {
-  title: string;
-  content: string;
-}) {
-  const isCritical = title.toLowerCase().includes("critical");
+      let icon = "•";
+      if (/copy|headline|cta|messaging/i.test(clean)) icon = "✍️";
+      else if (/ui|layout|design|hierarchy|spacing|navigation/i.test(clean)) icon = "🎨";
+      else if (/conversion|pricing|email|form|capture|impact/i.test(clean)) icon = "📈";
+      else if (/seo|meta|search|keyword/i.test(clean)) icon = "🔎";
+      else if (/sprint|day/i.test(clean)) icon = "🗓️";
+      else if (/critical|issue|severity/i.test(clean)) icon = "🚨";
 
-  return (
-    <details
-      className={`mb-6 rounded-2xl border bg-white shadow-sm ${
-        isCritical
-          ? "border-red-200 ring-1 ring-red-100"
-          : "border-black/10"
-      }`}
-      open={!isCritical ? false : true}
-    >
-      <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
-        <div className="flex items-center gap-3">
-          {isCritical && (
-            <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
-              Priority
-            </span>
-          )}
-          <span>{title}</span>
-        </div>
-
-        {isCritical && (
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
-          </span>
-        )}
-      </summary>
-
-      <div className="px-6 pb-6 pt-2 prose prose-lg max-w-none prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black">
-        <ReactMarkdown>{content}</ReactMarkdown>
-      </div>
-    </details>
-  );
+      return { icon, text: clean };
+    });
 }
+
+<div className="mb-10 grid gap-4 md:grid-cols-4">
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
+    <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
+    <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+  </div>
+
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
+    <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
+  </div>
+
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
+    <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
+  </div>
+
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
+    <div className="mt-2 text-lg font-semibold">Structured Review</div>
+  </div>
+</div>
 
 export default async function AuditResultPage({
   params,
@@ -137,7 +119,12 @@ export default async function AuditResultPage({
               </div>
             )}
           </div>
+          {/* PRINT + ACTION BUTTONS */}
+          <PrintActions />
         </div>
+
+         {/* METRIC CARDS */}
+        <div className="mb-10 grid gap-4 md:grid-cols-3"></div>
 
         <div className="mb-10 grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-black/10 p-5">
@@ -178,19 +165,20 @@ export default async function AuditResultPage({
 
   <div className="mt-6 flex flex-wrap gap-3">
     <a
-  href="/start"
-  className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
+      href="/start"
+      className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
     >
-    Start another product audit
-  </a>
+      Start another product audit
+    </a>
 
     <a
-  href="/how-we-help"
-  className="inline-flex items-center rounded-xl border border-white/40 px-5 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black"
+      href="/how-we-help"
+      className="inline-flex items-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
     >
-    Explore implementation support
-  </a>
-  </div>
+      Explore implementation support
+    </a>
+</div>
+
 </div>
     </main>
   );
