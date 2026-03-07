@@ -109,7 +109,21 @@ function Section({
           </div>
         ) : (
           <div className="prose prose-lg max-w-none prose-p:leading-7 prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black prose-ul:space-y-2">
-            <ReactMarkdown>{content}</ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                table: ({node, ...props}) => (
+                  <table className="w-full border-collapse text-sm" {...props} />
+            ),
+            th: ({node, ...props}) => (
+              <th className="border border-black/10 bg-gray-50 px-3 py-2 text-left font-semibold" {...props} />
+           ),
+            td: ({node, ...props}) => (
+            <td className="border border-black/10 px-3 py-2" {...props} />
+          )
+  }}
+>
+  {content}
+</ReactMarkdown>
           </div>
         )}
       </div>
