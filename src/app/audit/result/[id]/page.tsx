@@ -37,28 +37,85 @@ function parseBulletCards(content: string) {
     });
 }
 
-<div className="mb-10 grid gap-4 md:grid-cols-4">
-  <div className="rounded-2xl border border-black/10 p-5">
-    <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
-    <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
-    <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
-  </div>
+function computeAuditScore(auditContent: string) {
+  let score = 78;
 
-  <div className="rounded-2xl border border-black/10 p-5">
-    <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
-    <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
-  </div>
+  if (/no email capture|no forms|no input/i.test(auditContent)) score -= 10;
+  if (/no pricing|unclear pricing/i.test(auditContent)) score -= 10;
+  if (/weak cta|vague cta|not prominent/i.test(auditContent)) score -= 8;
+  if (/poor navigation|minimal links|no sticky nav/i.test(auditContent)) score -= 6;
+  if (/no trust signals|no testimonials|no social proof/i.test(auditContent)) score -= 8;
 
-  <div className="rounded-2xl border border-black/10 p-5">
-    <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-    <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
-  </div>
+  if (score < 35) score = 35;
+  if (score > 95) score = 95;
 
-  <div className="rounded-2xl border border-black/10 p-5">
-    <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
-    <div className="mt-2 text-lg font-semibold">Structured Review</div>
-  </div>
-</div>
+  if (score >= 75) return { score, label: "Strong base" };
+  if (score >= 60) return { score, label: "Needs improvement" };
+  return { score, label: "High priority fixes" };
+}
+
+function Section({
+  title,
+  content,
+}: {
+  title: string;
+  content: string;
+}) {
+  const isCritical = title.toLowerCase().includes("critical");
+  const isCardSection =
+    /critical|conversion|ui|copy|seo|sprint|question/i.test(title);
+
+  const cards = parseBulletCards(content);
+
+  return (
+    <details
+      className={`mb-6 rounded-2xl border bg-white shadow-sm ${
+        isCritical ? "border-red-200 ring-1 ring-red-100" : "border-black/10"
+      }`}
+      open={isCritical}
+    >
+      <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
+        <div className="flex items-center gap-3">
+          {isCritical && (
+            <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
+              Priority
+            </span>
+          )}
+          <span>{title}</span>
+        </div>
+
+        {isCritical && (
+          <span className="relative flex h-3 w-3">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+          </span>
+        )}
+      </summary>
+
+      <div className="px-6 pb-6 pt-2">
+        {isCardSection ? (
+          <div className="grid gap-3">
+            {cards.map((card, index) => (
+              <div
+                key={index}
+                className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-lg">{card.icon}</div>
+                  <div className="text-sm leading-6 text-black/75">{card.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="prose prose-lg max-w-none prose-p:leading-7 prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black prose-ul:space-y-2">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
 
 export default async function AuditResultPage({
   params,
@@ -93,6 +150,7 @@ export default async function AuditResultPage({
   }
 
   const sections = splitSections(data.audit_content);
+  const auditScore = computeAuditScore(data.audit_content || "");
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -123,25 +181,28 @@ export default async function AuditResultPage({
           <PrintActions />
         </div>
 
-         {/* METRIC CARDS */}
-        <div className="mb-10 grid gap-4 md:grid-cols-3"></div>
+  <div className="mb-10 grid gap-4 md:grid-cols-4">
+      <div className="rounded-2xl border border-black/10 p-5">
+      <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
+      <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
+      <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+  </div>
 
-        <div className="mb-10 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
-            <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
-          </div>
+  <div className="rounded-2xl border border-black/10 p-5">
+      <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
+      <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
+  </div>
 
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-            <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
-          </div>
+  <div className="rounded-2xl border border-black/10 p-5">
+      <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
+      <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
+  </div>
 
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
-            <div className="mt-2 text-lg font-semibold">Structured Review</div>
-          </div>
-        </div>
+  <div className="rounded-2xl border border-black/10 p-5">
+      <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
+      <div className="mt-2 text-lg font-semibold">Structured Review</div>
+  </div>
+</div>
 
         {sections.map((section, index) => (
           <Section key={index} title={section.title} content={section.content} />
