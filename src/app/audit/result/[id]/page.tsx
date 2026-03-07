@@ -181,66 +181,65 @@ export default async function AuditResultPage({
           <PrintActions />
         </div>
 
-  <div className="mb-10 grid gap-4 md:grid-cols-4">
-      <div className="rounded-2xl border border-black/10 p-5">
-      <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
-      <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
-      <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
-  </div>
+      <div className="mb-10 grid gap-4 md:grid-cols-4">
+        <div className="rounded-2xl border border-black/10 p-5">
+          <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
+          <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
+          <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+        </div>
 
-  <div className="rounded-2xl border border-black/10 p-5">
-      <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
-      <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
-  </div>
+     <div className="rounded-2xl border border-black/10 p-5">
+        <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
+        <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
+    </div>
 
-  <div className="rounded-2xl border border-black/10 p-5">
-      <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-      <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
-  </div>
+    <div className="rounded-2xl border border-black/10 p-5">
+        <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
+        <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
+    </div>
 
-  <div className="rounded-2xl border border-black/10 p-5">
-      <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
-      <div className="mt-2 text-lg font-semibold">Structured Review</div>
-  </div>
+    <div className="rounded-2xl border border-black/10 p-5">
+        <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
+        <div className="mt-2 text-lg font-semibold">Structured Review</div>
+    </div>
 </div>
 
         {sections.map((section, index) => (
           <Section key={index} title={section.title} content={section.content} />
         ))}
-      </div>
-
-      <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-white shadow-lg"> 
-      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
-        NEXT STEP
     </div>
 
-  <h2 className="mt-3 text-2xl font-semibold">
-    Want Elessen to fix these issues for you?
-  </h2>
+    <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
+        NEXT STEP
+      </div>
 
-  <p className="mt-3 max-w-2xl text-sm text-white/75">
-    Turn this audit into an execution plan. We can help refine the UX,
-    improve conversion, tighten the messaging, and turn the highest-impact
-    recommendations into a practical sprint.
-  </p>
+    <h2 className="mt-3 text-2xl font-semibold text-black">
+        Want Elessen to fix these issues for you?
+    </h2>
 
-  <div className="mt-6 flex flex-wrap gap-3">
-    <a
-      href="/start"
-      className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
-    >
-      Start another product audit
+    <p className="mt-3 max-w-2xl text-sm text-black/75">
+      Turn this audit into an execution plan. We can help refine the UX,
+      improve conversion, tighten the messaging, and turn the highest-impact
+      recommendations into a practical sprint.
+    </p>
+
+    <div className="mt-6 flex flex-wrap gap-3">
+      <a
+        href="mailto:hello@elessenlabs.com?subject=Need%20Implementation%20Support"
+        className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
+      >
+      Contact us for implementation
     </a>
 
-    <a
-      href="/how-we-help"
-      className="inline-flex items-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
-    >
+      <a
+        href="/how-we-help"
+        className="inline-flex items-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+      >
       Explore implementation support
     </a>
-</div>
-
-</div>
+  </div>
+</div> 
     </main>
   );
 }
