@@ -15,6 +15,25 @@ function splitSections(markdown: string) {
     })
     .filter((s) => s.content);
 }
+<div className="mt-6 flex flex-wrap gap-3">
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      window.print();
+    }}
+    className="inline-flex items-center rounded-xl border border-black/10 px-4 py-2 text-sm font-medium text-black transition hover:bg-black hover:text-white"
+  >
+    Download PDF
+  </a>
+
+  <a
+    href="/start"
+    className="inline-flex items-center rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+  >
+    Book another audit
+  </a>
+</div>
 
 function Section({
   title,
@@ -23,10 +42,33 @@ function Section({
   title: string;
   content: string;
 }) {
+  const isCritical = title.toLowerCase().includes("critical");
+
   return (
-    <details className="mb-6 rounded-2xl border border-black/10 bg-white shadow-sm" open>
-      <summary className="cursor-pointer px-6 py-4 text-lg font-semibold">
-        {title}
+    <details
+      className={`mb-6 rounded-2xl border bg-white shadow-sm ${
+        isCritical
+          ? "border-red-200 ring-1 ring-red-100"
+          : "border-black/10"
+      }`}
+      open={!isCritical ? false : true}
+    >
+      <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
+        <div className="flex items-center gap-3">
+          {isCritical && (
+            <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
+              Priority
+            </span>
+          )}
+          <span>{title}</span>
+        </div>
+
+        {isCritical && (
+          <span className="relative flex h-3 w-3">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+          </span>
+        )}
       </summary>
 
       <div className="px-6 pb-6 pt-2 prose prose-lg max-w-none prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black">
@@ -118,6 +160,38 @@ export default async function AuditResultPage({
           <Section key={index} title={section.title} content={section.content} />
         ))}
       </div>
+
+      <div className="mt-10 rounded-3xl border border-black/10 bg-black p-8 text-white">
+  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
+    NEXT STEP
+  </div>
+
+  <h2 className="mt-3 text-2xl font-semibold">
+    Want Elessen to fix these issues for you?
+  </h2>
+
+  <p className="mt-3 max-w-2xl text-sm text-white/75">
+    Turn this audit into an execution plan. We can help refine the UX,
+    improve conversion, tighten the messaging, and turn the highest-impact
+    recommendations into a practical sprint.
+  </p>
+
+  <div className="mt-6 flex flex-wrap gap-3">
+    <a
+      href="/start"
+      className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:opacity-90"
+    >
+      Start another product audit
+    </a>
+
+    <a
+      href="/how-we-help"
+      className="inline-flex items-center rounded-xl border border-white/20 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+    >
+      Explore implementation support
+    </a>
+  </div>
+</div>
     </main>
   );
 }
