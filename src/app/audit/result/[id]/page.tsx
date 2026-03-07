@@ -161,10 +161,10 @@ export default async function AuditResultPage({
         ))}
       </div>
 
-      <div className="mt-10 rounded-3xl border border-black/10 bg-black p-8 text-white">
-  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-    NEXT STEP
-  </div>
+      <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-white shadow-lg"> 
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+        NEXT STEP
+    </div>
 
   <h2 className="mt-3 text-2xl font-semibold">
     Want Elessen to fix these issues for you?
@@ -178,18 +178,18 @@ export default async function AuditResultPage({
 
   <div className="mt-6 flex flex-wrap gap-3">
     <a
-      href="/start"
-      className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:opacity-90"
+  href="/start"
+  className="inline-flex items-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
     >
-      Start another product audit
-    </a>
+    Start another product audit
+  </a>
 
     <a
-      href="/how-we-help"
-      className="inline-flex items-center rounded-xl border border-white/20 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+  href="/how-we-help"
+  className="inline-flex items-center rounded-xl border border-white/40 px-5 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-black"
     >
-      Explore implementation support
-    </a>
+    Explore implementation support
+  </a>
   </div>
 </div>
     </main>
