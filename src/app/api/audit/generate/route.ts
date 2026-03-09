@@ -139,7 +139,18 @@ Write like an experienced product designer and conversion strategist.`;
 URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
 
+AUDIT REQUEST
+
+URL: ${payload.product_url}
+Notes: ${payload.notes || "—"}
+Screenshot: ${payload.screenshot_url || "not available"}
+
 EXTRACTED SIGNALS (from HTML)
+${JSON.stringify(payload.signals, null, 2)}
+
+IMPORTANT:
+Use the screenshot to support UI observations when relevant.
+Reference visible UI elements like navigation, CTA buttons, forms, hero sections, or layout issues.
 ${JSON.stringify(payload.signals, null, 2)}
 
 RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
@@ -171,8 +182,12 @@ Do NOT use ASCII formatting.
 Do NOT use pipes or separators.
 
 ## UI Improvements
-- One recommendation per bullet
-- Keep each bullet short and specific
+
+For each improvement use this format:
+
+- Issue: short issue title
+  Evidence: reference something visible in the screenshot
+  Fix: specific UI change
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -291,10 +306,11 @@ export async function POST(req: Request) {
   const screenshotUrl = await captureScreenshot(url);
 
   const auditMarkdown = await generateAuditMarkdown({
-    product_url: row.product_url,
-    notes: row.notes,
-    signals,
-  });
+  product_url: row.product_url,
+  notes: row.notes,
+  signals,
+  screenshot_url: screenshotUrl
+});
 
     const { error: saveErr } = await supabaseAdmin
   .from("audit_requests")
