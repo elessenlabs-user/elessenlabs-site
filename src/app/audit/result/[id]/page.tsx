@@ -26,21 +26,45 @@ function parseBulletCards(content: string) {
   return blocks.map((block) => {
     const clean = block.replace(/^- /, "").trim();
 
-    const severityMatch = clean.match(/Severity:\s*(.*?)(?=\n|Issue:|Evidence:|Fix:|$)/i);
-    const issueMatch = clean.match(/Issue:\s*(.*?)(?=\n|Evidence:|Fix:|$)/i);
-    const evidenceMatch = clean.match(/Evidence:\s*(.*?)(?=\n|Fix:|$)/i);
-    const fixMatch = clean.match(/Fix:\s*(.*?)(?=\n|Effort:|Impact:|$)/i);
+    const severityMatch = clean.match(
+      /Severity:\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
+    const issueMatch = clean.match(
+      /Issue:\s*(.*?)(?=\n|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
+    const evidenceMatch = clean.match(
+      /Evidence:\s*(.*?)(?=\n|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
+    const whyMatch = clean.match(
+      /Why it matters:\s*(.*?)(?=\n|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
+    const recommendedFixMatch = clean.match(
+      /Recommended fix:\s*(.*?)(?=\n|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
+    const fixMatch = clean.match(
+      /Fix:\s*(.*?)(?=\n|Effort:|Impact:|Expected Impact:|$)/i
+    );
     const effortMatch = clean.match(/Effort:\s*(Low|Medium|High)/i);
-    const impactMatch = clean.match(/Impact:\s*(Low|Medium|High)/i);
+    const impactMatch = clean.match(/(?:Impact|Expected Impact):\s*(Low|Medium|High)/i);
+
+    let icon = "•";
+    if (/critical|severity/i.test(clean)) icon = "🚨";
+    else if (/ui|layout|design|navigation|hierarchy|spacing/i.test(clean)) icon = "🎨";
+    else if (/copy|headline|messaging|cta/i.test(clean)) icon = "✍️";
+    else if (/conversion|pricing|capture|form|email/i.test(clean)) icon = "📈";
+    else if (/seo|meta|search|keyword/i.test(clean)) icon = "🔎";
+    else if (/sprint|day/i.test(clean)) icon = "🗓️";
 
     return {
-      severity: severityMatch?.[1] || "",
-      issue: issueMatch?.[1] || "",
-      evidence: evidenceMatch?.[1] || "",
-      fix: fixMatch?.[1] || "",
-      effort: effortMatch?.[1] || "",
-      impact: impactMatch?.[1] || "",
+      icon,
       raw: clean,
+      severity: severityMatch?.[1]?.trim() || "",
+      issue: issueMatch?.[1]?.trim() || "",
+      evidence: evidenceMatch?.[1]?.trim() || "",
+      why: whyMatch?.[1]?.trim() || "",
+      fix: recommendedFixMatch?.[1]?.trim() || fixMatch?.[1]?.trim() || "",
+      effort: effortMatch?.[1]?.trim() || "",
+      impact: impactMatch?.[1]?.trim() || "",
     };
   });
 }
@@ -48,14 +72,17 @@ function parseBulletCards(content: string) {
 function badgeColor(value: string) {
   const v = value.toLowerCase();
 
-  if (v === "critical" || v === "high")
+  if (v === "critical" || v === "high") {
     return "bg-red-50 text-red-700 ring-red-200";
+  }
 
-  if (v === "medium")
+  if (v === "medium") {
     return "bg-yellow-50 text-yellow-700 ring-yellow-200";
+  }
 
-  if (v === "low")
+  if (v === "low") {
     return "bg-green-50 text-green-700 ring-green-200";
+  }
 
   return "bg-gray-50 text-gray-700 ring-gray-200";
 }
@@ -80,11 +107,15 @@ function computeAuditScore(auditContent: string) {
 function Section({
   title,
   content,
+  screenshotUrl,
 }: {
   title: string;
   content: string;
+  screenshotUrl?: string | null;
 }) {
-  const isCritical = title.toLowerCase().includes("critical");
+  const lowerTitle = title.toLowerCase();
+  const isCritical = lowerTitle.includes("critical");
+  const isUi = lowerTitle.includes("ui");
   const isCardSection =
     /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
 
@@ -117,67 +148,99 @@ function Section({
 
       <div className="px-6 pb-6 pt-2">
         {isCardSection ? (
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             {cards.map((card, index) => (
               <div
                 key={index}
                 className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-lg">
-                    {card.severity === "Critical" && "🚨"}
-                    {card.severity === "High" && "⚠️"}
-                    {card.severity === "Medium" && "📌"}
-                    {card.severity === "Low" && "ℹ️"}
-              </div>
+                  <div className="pt-0.5 text-lg">
+                    {card.icon !== "•"
+                      ? card.icon
+                      : isUi
+                      ? "🎨"
+                      : isCritical
+                      ? "🚨"
+                      : "📌"}
+                  </div>
 
-                  <div className="text-sm leading-6 text-black/75">
+                  <div className="min-w-0 flex-1 text-sm leading-6 text-black/75">
+                    <div className="flex flex-wrap gap-2">
+                      {card.severity && (
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(
+                            card.severity
+                          )}`}
+                        >
+                          Severity: {card.severity}
+                        </span>
+                      )}
 
-  {(card.issue || card.evidence || card.fix) ? (
+                      {card.effort && (
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(
+                            card.effort
+                          )}`}
+                        >
+                          Effort: {card.effort}
+                        </span>
+                      )}
 
-    <div className="space-y-2">
+                      {card.impact && (
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(
+                            card.impact
+                          )}`}
+                        >
+                          Impact: {card.impact}
+                        </span>
+                      )}
+                    </div>
 
-      <div className="flex flex-wrap gap-2 mb-2">
+                    {card.issue || card.evidence || card.fix || card.why ? (
+                      <div className="mt-3 space-y-2">
+                        {card.issue && (
+                          <div>
+                            <strong>Issue:</strong> {card.issue}
+                          </div>
+                        )}
 
-        {card.severity && (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.severity)}`}>
-            Severity: {card.severity}
-          </span>
-        )}
+                        {card.evidence && (
+                          <div>
+                            <strong>Evidence:</strong> {card.evidence}
+                          </div>
+                        )}
 
-        {card.effort && (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.effort)}`}>
-            Effort: {card.effort}
-          </span>
-        )}
+                        {card.why && (
+                          <div>
+                            <strong>Why it matters:</strong> {card.why}
+                          </div>
+                        )}
 
-        {card.impact && (
-          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.impact)}`}>
-            Impact: {card.impact}
-          </span>
-        )}
+                        {card.fix && (
+                          <div>
+                            <strong>Fix:</strong> {card.fix}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mt-3">{card.raw}</div>
+                    )}
 
-      </div>
-
-      {card.issue && (
-        <div><strong>Issue:</strong> {card.issue}</div>
-      )}
-
-      {card.evidence && (
-        <div><strong>Evidence:</strong> {card.evidence}</div>
-      )}
-
-      {card.fix && (
-        <div><strong>Fix:</strong> {card.fix}</div>
-      )}
-
-    </div>
-
-  ) : (
-    <div>{card.raw}</div>
-  )}
-
-</div>
+                    {isUi && screenshotUrl && (
+                      <div className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-white">
+                        <div className="border-b border-black/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
+                          Evidence Screenshot
+                        </div>
+                        <img
+                          src={screenshotUrl}
+                          alt="UI evidence screenshot"
+                          className="h-auto w-full"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -224,7 +287,7 @@ export default async function AuditResultPage({
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-      "id, full_name, product_url, payment_status, audit_content, screenshot_url, completed_at"
+      "id, full_name, product_url, payment_status, audit_content, screenshot_url, marked_screenshot_url, completed_at"
     )
     .eq("id", id)
     .single();
@@ -245,6 +308,7 @@ export default async function AuditResultPage({
 
   const sections = splitSections(data.audit_content);
   const auditScore = computeAuditScore(data.audit_content || "");
+  const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -298,7 +362,7 @@ export default async function AuditResultPage({
           </div>
         </div>
 
-        {data.screenshot_url && (
+        {evidenceScreenshot && (
           <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
               Visual Evidence
@@ -314,7 +378,7 @@ export default async function AuditResultPage({
 
             <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
               <img
-                src={data.screenshot_url}
+                src={evidenceScreenshot}
                 alt="Website screenshot used for audit evidence"
                 className="h-auto w-full"
               />
@@ -323,7 +387,12 @@ export default async function AuditResultPage({
         )}
 
         {sections.map((section, index) => (
-          <Section key={index} title={section.title} content={section.content} />
+          <Section
+            key={index}
+            title={section.title}
+            content={section.content}
+            screenshotUrl={evidenceScreenshot}
+          />
         ))}
       </div>
 
