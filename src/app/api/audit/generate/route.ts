@@ -139,23 +139,11 @@ Write like an experienced product designer and conversion strategist.`;
 URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
 
-AUDIT REQUEST
-
-URL: ${payload.product_url}
-Notes: ${payload.notes || "—"}
-Screenshot: ${payload.screenshot_url || "not available"}
-
-Screenshot URL: ${payload.screenshot_url || "not available"}
+SCREENSHOT
+${payload.screenshot_url || "Not available"}
 
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
-
-IMPORTANT:
-Use the screenshot to support UI observations when relevant.
-Reference visible UI elements like navigation, CTA buttons, forms, hero sections, or layout issues.
-${JSON.stringify(payload.signals, null, 2)}
-
-Screenshot URL: ${payload.screenshot_url || "not available"}
 
 RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
 
@@ -224,11 +212,31 @@ Do NOT add sub-bullets.
 - Max 6 bullets
 
 IMPORTANT:
-- Use only these headings
+You MUST return ALL sections listed below.
+
+Never omit a section even if evidence is limited.
+
+Use exactly these headings in this order:
+
+## Executive Summary
+## Critical Issues
+## Conversion Improvements
+## UI Improvements
+## Copy Improvements
+## SEO Quick Wins
+## 7-Day Sprint Plan
+## Questions / Assumptions
+
+For UI Improvements specifically:
+- Use the screenshot as visual evidence when possible.
+- Each improvement MUST include Issue, Evidence, and Fix.
+- Do not return simple bullet points.
+
+Formatting rules:
 - Use bullet lists only
 - Do not use markdown tables
 - Do not use code fences
-- Keep the report concise, premium, and implementation-ready`;
+- Keep the report concise and implementation-ready`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
