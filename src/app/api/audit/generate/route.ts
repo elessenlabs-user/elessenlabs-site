@@ -145,6 +145,8 @@ URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
 Screenshot: ${payload.screenshot_url || "not available"}
 
+Screenshot URL: ${payload.screenshot_url || "not available"}
+
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
 
@@ -152,6 +154,8 @@ IMPORTANT:
 Use the screenshot to support UI observations when relevant.
 Reference visible UI elements like navigation, CTA buttons, forms, hero sections, or layout issues.
 ${JSON.stringify(payload.signals, null, 2)}
+
+Screenshot URL: ${payload.screenshot_url || "not available"}
 
 RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
 
