@@ -124,7 +124,12 @@ function Section({
                 className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-lg">{card.icon}</div>
+                  <div className="text-lg">
+                    {card.severity === "Critical" && "🚨"}
+                    {card.severity === "High" && "⚠️"}
+                    {card.severity === "Medium" && "📌"}
+                    {card.severity === "Low" && "ℹ️"}
+              </div>
 
                   <div className="text-sm leading-6 text-black/75">
 
