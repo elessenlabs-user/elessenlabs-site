@@ -99,6 +99,19 @@ function extractSignals(html: string, url: string) {
     counts: { inputCount, formCount },
   };
 }
+async function captureScreenshot(url: string) {
+  try {
+    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`;
+
+    const res = await fetch(endpoint);
+
+    const data = await res.json();
+
+    return data?.data?.screenshot?.url || null;
+  } catch {
+    return null;
+  }
+}
 
 async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -264,32 +277,34 @@ export async function POST(req: Request) {
   }
 
   try {
-    const url = String(row.product_url || "").trim();
-    const htmlRes = await fetch(url, {
-      redirect: "follow",
-      headers: {
-        "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
-        Accept: "text/html,*/*",
-      },
-    });
+  const url = String(row.product_url || "").trim();
+  const htmlRes = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
+      Accept: "text/html,*/*",
+    },
+  });
 
-    const html = await htmlRes.text();
-    const signals = extractSignals(html, url);
+  const html = await htmlRes.text();
+  const signals = extractSignals(html, url);
+  const screenshotUrl = await captureScreenshot(url);
 
-    const auditMarkdown = await generateAuditMarkdown({
-      product_url: row.product_url,
-      notes: row.notes,
-      signals,
-    });
+  const auditMarkdown = await generateAuditMarkdown({
+    product_url: row.product_url,
+    notes: row.notes,
+    signals,
+  });
 
     const { error: saveErr } = await supabaseAdmin
-      .from("audit_requests")
-      .update({
-        audit_content: clip(auditMarkdown, 250000),
-        payment_status: "ready_for_review",
-        completed_at: new Date().toISOString(),
-      })
-      .eq("id", row.id);
+  .from("audit_requests")
+  .update({
+    audit_content: clip(auditMarkdown, 250000),
+    screenshot_url: screenshotUrl,
+    payment_status: "ready_for_review",
+    completed_at: new Date().toISOString(),
+  })
+  .eq("id", row.id);
 
     if (saveErr) throw new Error(`Failed to save audit_content: ${saveErr.message}`);
 

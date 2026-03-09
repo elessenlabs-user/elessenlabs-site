@@ -151,7 +151,7 @@ export default async function AuditResultPage({
 
   const { data, error } = await supabase
     .from("audit_requests")
-    .select("id, full_name, product_url, payment_status, audit_content, completed_at")
+    .select("id, full_name, product_url, payment_status, audit_content, screenshot_url, completed_at")
     .eq("id", id)
     .single();
 
@@ -223,6 +223,30 @@ export default async function AuditResultPage({
         <div className="mt-2 text-lg font-semibold">Structured Review</div>
     </div>
 </div>
+
+{data.screenshot_url && (
+  <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
+      Visual Evidence
+    </div>
+
+    <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+      Homepage Screenshot
+    </h2>
+
+    <p className="mt-2 text-sm text-black/60">
+      Captured automatically during audit generation to support UI recommendations.
+    </p>
+
+    <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
+      <img
+        src={data.screenshot_url}
+        alt="Website screenshot used for audit evidence"
+        className="h-auto w-full"
+      />
+    </div>
+  </div>
+)}
 
         {sections.map((section, index) => (
           <Section key={index} title={section.title} content={section.content} />

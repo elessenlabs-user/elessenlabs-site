@@ -422,8 +422,7 @@ export default function StartPage() {
   return (
     <>
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 py-16">
-
-        {/* Top block (Header + Progress) */}
+ {/* Top block (Header + Progress) */}
 <div className="w-full max-w-3xl">
   
 {/* Header */}
