@@ -26,26 +26,38 @@ function parseBulletCards(content: string) {
   return blocks.map((block) => {
     const clean = block.replace(/^- /, "").trim();
 
+    const severityMatch = clean.match(/Severity:\s*(.*?)(?=\n|Issue:|Evidence:|Fix:|$)/i);
     const issueMatch = clean.match(/Issue:\s*(.*?)(?=\n|Evidence:|Fix:|$)/i);
     const evidenceMatch = clean.match(/Evidence:\s*(.*?)(?=\n|Fix:|$)/i);
-    const fixMatch = clean.match(/Fix:\s*(.*?)(?=\n|$)/i);
-
-    let icon = "•";
-    if (/email|form|capture/i.test(clean)) icon = "📧";
-    else if (/cta|conversion|pricing/i.test(clean)) icon = "📈";
-    else if (/ui|layout|design|navigation/i.test(clean)) icon = "🎨";
-    else if (/copy|headline|messaging/i.test(clean)) icon = "✍️";
-    else if (/seo|meta|search/i.test(clean)) icon = "🔎";
-    else if (/critical|issue|severity/i.test(clean)) icon = "🚨";
+    const fixMatch = clean.match(/Fix:\s*(.*?)(?=\n|Effort:|Impact:|$)/i);
+    const effortMatch = clean.match(/Effort:\s*(Low|Medium|High)/i);
+    const impactMatch = clean.match(/Impact:\s*(Low|Medium|High)/i);
 
     return {
-      icon,
+      severity: severityMatch?.[1] || "",
+      issue: issueMatch?.[1] || "",
+      evidence: evidenceMatch?.[1] || "",
+      fix: fixMatch?.[1] || "",
+      effort: effortMatch?.[1] || "",
+      impact: impactMatch?.[1] || "",
       raw: clean,
-      issue: issueMatch?.[1]?.trim() || "",
-      evidence: evidenceMatch?.[1]?.trim() || "",
-      fix: fixMatch?.[1]?.trim() || "",
     };
   });
+}
+
+function badgeColor(value: string) {
+  const v = value.toLowerCase();
+
+  if (v === "critical" || v === "high")
+    return "bg-red-50 text-red-700 ring-red-200";
+
+  if (v === "medium")
+    return "bg-yellow-50 text-yellow-700 ring-yellow-200";
+
+  if (v === "low")
+    return "bg-green-50 text-green-700 ring-green-200";
+
+  return "bg-gray-50 text-gray-700 ring-gray-200";
 }
 
 function computeAuditScore(auditContent: string) {
@@ -115,31 +127,52 @@ function Section({
                   <div className="text-lg">{card.icon}</div>
 
                   <div className="text-sm leading-6 text-black/75">
-                    {card.issue || card.evidence || card.fix ? (
-                      <div className="space-y-2">
-                        {card.issue && (
-                          <div>
-                            <span className="font-semibold text-black">Issue:</span>{" "}
-                            {card.issue}
-                          </div>
-                        )}
-                        {card.evidence && (
-                          <div>
-                            <span className="font-semibold text-black">Evidence:</span>{" "}
-                            {card.evidence}
-                          </div>
-                        )}
-                        {card.fix && (
-                          <div>
-                            <span className="font-semibold text-black">Fix:</span>{" "}
-                            {card.fix}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div>{card.raw}</div>
-                    )}
-                  </div>
+
+  {(card.issue || card.evidence || card.fix) ? (
+
+    <div className="space-y-2">
+
+      <div className="flex flex-wrap gap-2 mb-2">
+
+        {card.severity && (
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.severity)}`}>
+            Severity: {card.severity}
+          </span>
+        )}
+
+        {card.effort && (
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.effort)}`}>
+            Effort: {card.effort}
+          </span>
+        )}
+
+        {card.impact && (
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ring-1 ${badgeColor(card.impact)}`}>
+            Impact: {card.impact}
+          </span>
+        )}
+
+      </div>
+
+      {card.issue && (
+        <div><strong>Issue:</strong> {card.issue}</div>
+      )}
+
+      {card.evidence && (
+        <div><strong>Evidence:</strong> {card.evidence}</div>
+      )}
+
+      {card.fix && (
+        <div><strong>Fix:</strong> {card.fix}</div>
+      )}
+
+    </div>
+
+  ) : (
+    <div>{card.raw}</div>
+  )}
+
+</div>
                 </div>
               </div>
             ))}

@@ -1,5 +1,6 @@
 // src/app/api/audit/generate/route.ts
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
 
 export const runtime = "nodejs";
@@ -99,17 +100,51 @@ function extractSignals(html: string, url: string) {
     counts: { inputCount, formCount },
   };
 }
+
 async function captureScreenshot(url: string) {
   try {
-    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`;
+    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(
+      url
+    )}&screenshot=true&meta=false`;
 
     const res = await fetch(endpoint);
-
     const data = await res.json();
 
     return data?.data?.screenshot?.url || null;
   } catch {
     return null;
+  }
+}
+
+async function addScreenshotMarkers(imageUrl: string) {
+  try {
+    const res = await fetch(imageUrl);
+    const buffer = Buffer.from(await res.arrayBuffer());
+
+    const svg = `
+      <svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="150" r="22" fill="#FF4D4F"/>
+        <text x="200" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">1</text>
+
+        <circle cx="700" cy="150" r="22" fill="#FF4D4F"/>
+        <text x="700" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">2</text>
+
+        <circle cx="1100" cy="150" r="22" fill="#FF4D4F"/>
+        <text x="1100" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">3</text>
+
+        <circle cx="650" cy="450" r="22" fill="#FF4D4F"/>
+        <text x="650" y="458" text-anchor="middle" font-size="18" font-weight="700" fill="white">4</text>
+      </svg>
+    `;
+
+    const out = await sharp(buffer)
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .png()
+      .toBuffer();
+
+    return `data:image/png;base64,${out.toString("base64")}`;
+  } catch {
+    return imageUrl;
   }
 }
 
@@ -130,11 +165,11 @@ We received your request for:
   const system = `You are Elessen Labs' senior product/UX auditor.
 Return a practical, founder-friendly audit that is highly actionable.
 No fluff. No generic advice.
-Use only the evidence visible in the extracted signals.
+Use only the evidence visible in the extracted signals and screenshot.
 Do not hallucinate analytics, user behavior, conversions, or traffic data.
 Write like an experienced product designer and conversion strategist.`;
 
- const user = `AUDIT REQUEST
+  const user = `AUDIT REQUEST
 
 URL: ${payload.product_url}
 Notes: ${payload.notes || "—"}
@@ -156,7 +191,7 @@ For each issue use this exact format:
 
 - Severity: Critical / High / Medium / Low
   Issue: short issue title
-  Evidence: what proves this problem from the extracted signals
+  Evidence: what proves this problem from the extracted signals or screenshot
   Why it matters: why this hurts UX or conversion
   Recommended fix: specific action
 
@@ -178,11 +213,11 @@ Do NOT use pipes or separators.
 For each improvement use EXACTLY this format:
 
 - Issue: short issue title
-  Evidence: reference something visible in the screenshot or UI
+  Evidence: reference something visible in the screenshot or a marker number if relevant
   Fix: specific UI change
 
-Do not return simple bullet points.
 Each improvement must contain Issue, Evidence, and Fix.
+Do not return simple bullet points.
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -229,6 +264,7 @@ Use exactly these headings in this order:
 
 For UI Improvements specifically:
 - Use the screenshot as visual evidence when possible.
+- Reference screenshot marker numbers where helpful, e.g. marker [1], marker [2].
 - Each improvement MUST include Issue, Evidence, and Fix.
 - Do not return simple bullet points.
 
@@ -307,37 +343,45 @@ export async function POST(req: Request) {
   }
 
   try {
-  const url = String(row.product_url || "").trim();
-  const htmlRes = await fetch(url, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
-      Accept: "text/html,*/*",
-    },
-  });
+    const url = String(row.product_url || "").trim();
 
-  const html = await htmlRes.text();
-  const signals = extractSignals(html, url);
-  const screenshotUrl = await captureScreenshot(url);
+    const htmlRes = await fetch(url, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
+        Accept: "text/html,*/*",
+      },
+    });
 
-  const auditMarkdown = await generateAuditMarkdown({
-  product_url: row.product_url,
-  notes: row.notes,
-  signals,
-  screenshot_url: screenshotUrl
-});
+    const html = await htmlRes.text();
+    const signals = extractSignals(html, url);
+
+    const screenshotUrl = await captureScreenshot(url);
+    const markedScreenshotUrl = screenshotUrl
+      ? await addScreenshotMarkers(screenshotUrl)
+      : null;
+
+    const auditMarkdown = await generateAuditMarkdown({
+      product_url: row.product_url,
+      notes: row.notes,
+      signals,
+      screenshot_url: screenshotUrl,
+    });
 
     const { error: saveErr } = await supabaseAdmin
-  .from("audit_requests")
-  .update({
-    audit_content: clip(auditMarkdown, 250000),
-    screenshot_url: screenshotUrl,
-    payment_status: "ready_for_review",
-    completed_at: new Date().toISOString(),
-  })
-  .eq("id", row.id);
+      .from("audit_requests")
+      .update({
+        audit_content: clip(auditMarkdown, 250000),
+        screenshot_url: screenshotUrl,
+        marked_screenshot_url: markedScreenshotUrl,
+        payment_status: "ready_for_review",
+        completed_at: new Date().toISOString(),
+      })
+      .eq("id", row.id);
 
-    if (saveErr) throw new Error(`Failed to save audit_content: ${saveErr.message}`);
+    if (saveErr) {
+      throw new Error(`Failed to save audit_content: ${saveErr.message}`);
+    }
 
     return NextResponse.json({
       ok: true,
