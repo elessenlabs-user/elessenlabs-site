@@ -187,11 +187,14 @@ Do NOT use pipes or separators.
 
 ## UI Improvements
 
-For each improvement use this format:
+For each improvement use EXACTLY this format:
 
 - Issue: short issue title
-  Evidence: reference something visible in the screenshot
+  Evidence: reference something visible in the screenshot or UI
   Fix: specific UI change
+
+Do not return simple bullet points.
+Each improvement must contain Issue, Evidence, and Fix.
 
 ## Copy Improvements
 - Main headline rewrite:

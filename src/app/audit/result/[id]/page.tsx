@@ -18,16 +18,19 @@ function splitSections(markdown: string) {
 }
 
 function parseBulletCards(content: string) {
-  const items = content
+  const blocks = content
     .split(/\n(?=- )/g)
     .map((item) => item.trim())
     .filter(Boolean);
 
-  return items.map((item) => {
-    const clean = item.replace(/^- /, "").trim();
+  return blocks.map((block) => {
+    const clean = block.replace(/^- /, "").trim();
+
+    const issueMatch = clean.match(/Issue:\s*(.*?)(?=\n|Evidence:|Fix:|$)/i);
+    const evidenceMatch = clean.match(/Evidence:\s*(.*?)(?=\n|Fix:|$)/i);
+    const fixMatch = clean.match(/Fix:\s*(.*?)(?=\n|$)/i);
 
     let icon = "•";
-
     if (/email|form|capture/i.test(clean)) icon = "📧";
     else if (/cta|conversion|pricing/i.test(clean)) icon = "📈";
     else if (/ui|layout|design|navigation/i.test(clean)) icon = "🎨";
@@ -37,7 +40,10 @@ function parseBulletCards(content: string) {
 
     return {
       icon,
-      text: clean,
+      raw: clean,
+      issue: issueMatch?.[1]?.trim() || "",
+      evidence: evidenceMatch?.[1]?.trim() || "",
+      fix: fixMatch?.[1]?.trim() || "",
     };
   });
 }
@@ -68,7 +74,7 @@ function Section({
 }) {
   const isCritical = title.toLowerCase().includes("critical");
   const isCardSection =
-  /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
+    /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
 
   const cards = parseBulletCards(content);
 
@@ -78,7 +84,6 @@ function Section({
         isCritical ? "border-red-200 ring-1 ring-red-100" : "border-black/10"
       }`}
       open={isCritical}
-      
     >
       <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
         <div className="flex items-center gap-3">
@@ -108,7 +113,33 @@ function Section({
               >
                 <div className="flex items-start gap-3">
                   <div className="text-lg">{card.icon}</div>
-                  <div className="text-sm leading-6 text-black/75">{card.text}</div>
+
+                  <div className="text-sm leading-6 text-black/75">
+                    {card.issue || card.evidence || card.fix ? (
+                      <div className="space-y-2">
+                        {card.issue && (
+                          <div>
+                            <span className="font-semibold text-black">Issue:</span>{" "}
+                            {card.issue}
+                          </div>
+                        )}
+                        {card.evidence && (
+                          <div>
+                            <span className="font-semibold text-black">Evidence:</span>{" "}
+                            {card.evidence}
+                          </div>
+                        )}
+                        {card.fix && (
+                          <div>
+                            <span className="font-semibold text-black">Fix:</span>{" "}
+                            {card.fix}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div>{card.raw}</div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -117,19 +148,22 @@ function Section({
           <div className="prose prose-lg max-w-none prose-p:leading-7 prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black prose-ul:space-y-2">
             <ReactMarkdown
               components={{
-                table: ({node, ...props}) => (
+                table: ({ node, ...props }) => (
                   <table className="w-full border-collapse text-sm" {...props} />
-            ),
-            th: ({node, ...props}) => (
-              <th className="border border-black/10 bg-gray-50 px-3 py-2 text-left font-semibold" {...props} />
-           ),
-            td: ({node, ...props}) => (
-            <td className="border border-black/10 px-3 py-2" {...props} />
-          )
-  }}
->
-  {content}
-</ReactMarkdown>
+                ),
+                th: ({ node, ...props }) => (
+                  <th
+                    className="border border-black/10 bg-gray-50 px-3 py-2 text-left font-semibold"
+                    {...props}
+                  />
+                ),
+                td: ({ node, ...props }) => (
+                  <td className="border border-black/10 px-3 py-2" {...props} />
+                ),
+              }}
+            >
+              {content}
+            </ReactMarkdown>
           </div>
         )}
       </div>
@@ -151,7 +185,9 @@ export default async function AuditResultPage({
 
   const { data, error } = await supabase
     .from("audit_requests")
-    .select("id, full_name, product_url, payment_status, audit_content, screenshot_url, completed_at")
+    .select(
+      "id, full_name, product_url, payment_status, audit_content, screenshot_url, completed_at"
+    )
     .eq("id", id)
     .single();
 
@@ -197,93 +233,93 @@ export default async function AuditResultPage({
               </div>
             )}
           </div>
-          {/* PRINT + ACTION BUTTONS */}
+
           <PrintActions />
         </div>
 
-      <div className="mb-10 grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-black/10 p-5">
-          <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
-          <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
-          <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+        <div className="mb-10 grid gap-4 md:grid-cols-4">
+          <div className="rounded-2xl border border-black/10 p-5">
+            <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
+            <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
+            <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+          </div>
+
+          <div className="rounded-2xl border border-black/10 p-5">
+            <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
+            <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
+          </div>
+
+          <div className="rounded-2xl border border-black/10 p-5">
+            <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
+            <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
+          </div>
+
+          <div className="rounded-2xl border border-black/10 p-5">
+            <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
+            <div className="mt-2 text-lg font-semibold">Structured Review</div>
+          </div>
         </div>
 
-     <div className="rounded-2xl border border-black/10 p-5">
-        <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
-        <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
-    </div>
+        {data.screenshot_url && (
+          <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
+              Visual Evidence
+            </div>
 
-    <div className="rounded-2xl border border-black/10 p-5">
-        <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-        <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
-    </div>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              Homepage Screenshot
+            </h2>
 
-    <div className="rounded-2xl border border-black/10 p-5">
-        <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
-        <div className="mt-2 text-lg font-semibold">Structured Review</div>
-    </div>
-</div>
+            <p className="mt-2 text-sm text-black/60">
+              Captured automatically during audit generation to support UI recommendations.
+            </p>
 
-{data.screenshot_url && (
-  <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
-      Visual Evidence
-    </div>
-
-    <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-      Homepage Screenshot
-    </h2>
-
-    <p className="mt-2 text-sm text-black/60">
-      Captured automatically during audit generation to support UI recommendations.
-    </p>
-
-    <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
-      <img
-        src={data.screenshot_url}
-        alt="Website screenshot used for audit evidence"
-        className="h-auto w-full"
-      />
-    </div>
-  </div>
-)}
+            <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
+              <img
+                src={data.screenshot_url}
+                alt="Website screenshot used for audit evidence"
+                className="h-auto w-full"
+              />
+            </div>
+          </div>
+        )}
 
         {sections.map((section, index) => (
           <Section key={index} title={section.title} content={section.content} />
         ))}
-    </div>
+      </div>
 
-    <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
-  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
-    NEXT STEP
-  </div>
+      <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
+          NEXT STEP
+        </div>
 
-  <h2 className="mt-3 text-2xl font-semibold text-black">
-    Want Elessen to fix these issues for you?
-  </h2>
+        <h2 className="mt-3 text-2xl font-semibold text-black">
+          Want Elessen to fix these issues for you?
+        </h2>
 
-  <p className="mt-3 max-w-2xl text-sm leading-6 text-black/75">
-    Turn this audit into an execution plan. We can help refine the UX,
-    improve conversion, tighten the messaging, and turn the highest-impact
-    recommendations into a practical sprint.
-  </p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-black/75">
+          Turn this audit into an execution plan. We can help refine the UX,
+          improve conversion, tighten the messaging, and turn the highest-impact
+          recommendations into a practical sprint.
+        </p>
 
-  <div className="mt-6 flex flex-wrap gap-3">
-    <a
-      href="mailto:hello@elessenlabs.com?subject=Need%20Implementation%20Support"
-      className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
-    >
-      Contact us for implementation
-    </a>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a
+            href="mailto:hello@elessenlabs.com?subject=Need%20Implementation%20Support"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-neutral-100"
+          >
+            Contact us for implementation
+          </a>
 
-    <a
-      href="/how-we-help"
-      className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-medium !text-white transition hover:opacity-90"
-    >
-      Explore implementation support
-    </a>
-  </div>
-</div>
+          <a
+            href="/how-we-help"
+            className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-medium !text-white transition hover:opacity-90"
+          >
+            Explore implementation support
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
