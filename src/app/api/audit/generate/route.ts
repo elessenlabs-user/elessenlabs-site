@@ -116,24 +116,39 @@ async function captureScreenshot(url: string) {
   }
 }
 
+const MARKERS = [
+  { x: 200, y: 150, label: 1 },
+  { x: 700, y: 150, label: 2 },
+  { x: 1100, y: 150, label: 3 },
+  { x: 650, y: 450, label: 4 },
+  { x: 300, y: 720, label: 5 },
+  { x: 1080, y: 720, label: 6 },
+];
+
+function clampMarker(marker: number) {
+  if (!Number.isFinite(marker)) return 1;
+  return Math.min(Math.max(Math.trunc(marker), 1), MARKERS.length);
+}
+
+function getMarkerConfig(marker: number) {
+  return MARKERS[clampMarker(marker) - 1];
+}
+
 async function addScreenshotMarkers(imageUrl: string) {
   try {
     const res = await fetch(imageUrl);
     const buffer = Buffer.from(await res.arrayBuffer());
 
+    const markersSvg = MARKERS.map(
+      (m) => `
+        <circle cx="${m.x}" cy="${m.y}" r="22" fill="#FF4D4F"/>
+        <text x="${m.x}" y="${m.y + 8}" text-anchor="middle" font-size="18" font-weight="700" fill="white">${m.label}</text>
+      `
+    ).join("");
+
     const svg = `
       <svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="200" cy="150" r="22" fill="#FF4D4F"/>
-        <text x="200" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">1</text>
-
-        <circle cx="700" cy="150" r="22" fill="#FF4D4F"/>
-        <text x="700" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">2</text>
-
-        <circle cx="1100" cy="150" r="22" fill="#FF4D4F"/>
-        <text x="1100" y="158" text-anchor="middle" font-size="18" font-weight="700" fill="white">3</text>
-
-        <circle cx="650" cy="450" r="22" fill="#FF4D4F"/>
-        <text x="650" y="458" text-anchor="middle" font-size="18" font-weight="700" fill="white">4</text>
+        ${markersSvg}
       </svg>
     `;
 
@@ -146,6 +161,91 @@ async function addScreenshotMarkers(imageUrl: string) {
   } catch {
     return imageUrl;
   }
+}
+
+async function addSingleScreenshotMarker(imageUrl: string, marker: number) {
+  try {
+    const active = getMarkerConfig(marker);
+    const res = await fetch(imageUrl);
+    const buffer = Buffer.from(await res.arrayBuffer());
+
+    const markersSvg = MARKERS.map((m) => {
+      const isActive = m.label === active.label;
+      return `
+        <circle cx="${m.x}" cy="${m.y}" r="${isActive ? 26 : 20}" fill="${
+          isActive ? "#FF4D4F" : "#D1D5DB"
+        }" opacity="${isActive ? "1" : "0.45"}"/>
+        <text x="${m.x}" y="${m.y + 8}" text-anchor="middle" font-size="${
+          isActive ? "20" : "17"
+        }" font-weight="700" fill="white" opacity="${isActive ? "1" : "0.65"}">${m.label}</text>
+      `;
+    }).join("");
+
+    const calloutX = Math.min(active.x + 30, 1280);
+    const calloutY = Math.max(active.y - 24, 24);
+
+    const svg = `
+      <svg width="1440" height="900" xmlns="http://www.w3.org/2000/svg">
+        ${markersSvg}
+        <rect x="${calloutX}" y="${calloutY}" rx="10" ry="10" width="120" height="36" fill="#111827" opacity="0.92"/>
+        <text x="${calloutX + 60}" y="${calloutY + 24}" text-anchor="middle" font-size="16" font-weight="700" fill="white">Issue ${active.label}</text>
+      </svg>
+    `;
+
+    const out = await sharp(buffer)
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .png()
+      .toBuffer();
+
+    return `data:image/png;base64,${out.toString("base64")}`;
+  } catch {
+    return imageUrl;
+  }
+}
+
+type UiEvidenceItem = {
+  marker: number;
+  issue: string;
+  evidence: string;
+  fix: string;
+};
+
+function parseUiEvidence(markdown: string): UiEvidenceItem[] {
+  const sectionMatch = markdown.match(/##\s*UI Improvements([\s\S]*?)(?=\n##\s|$)/i);
+  if (!sectionMatch?.[1]) return [];
+
+  const section = sectionMatch[1].trim();
+
+  const blocks = section
+    .split(/\n(?=- )/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const items: UiEvidenceItem[] = [];
+
+  for (const block of blocks) {
+    const clean = block.replace(/^- /, "").trim();
+
+    const markerMatch = clean.match(/Marker:\s*(\d+)/i);
+    const issueMatch = clean.match(/Issue:\s*(.*?)(?=\n|Evidence:|Fix:|$)/i);
+    const evidenceMatch = clean.match(/Evidence:\s*(.*?)(?=\n|Fix:|$)/i);
+    const fixMatch = clean.match(/Fix:\s*(.*?)(?=\n|$)/i);
+
+    const issue = issueMatch?.[1]?.trim() || "";
+    const evidence = evidenceMatch?.[1]?.trim() || "";
+    const fix = fixMatch?.[1]?.trim() || "";
+
+    if (!issue && !evidence && !fix) continue;
+
+    items.push({
+      marker: clampMarker(Number(markerMatch?.[1] || items.length + 1)),
+      issue,
+      evidence,
+      fix,
+    });
+  }
+
+  return items.slice(0, MARKERS.length);
 }
 
 async function generateAuditMarkdown(payload: any) {
@@ -212,12 +312,17 @@ Do NOT use pipes or separators.
 
 For each improvement use EXACTLY this format:
 
-- Issue: short issue title
-  Evidence: reference something visible in the screenshot or a marker number if relevant
+- Marker: 1-6
+  Issue: short issue title
+  Evidence: reference something visible in the screenshot and match it to the chosen marker
   Fix: specific UI change
 
-Each improvement must contain Issue, Evidence, and Fix.
-Do not return simple bullet points.
+Rules:
+- Each improvement must contain Marker, Issue, Evidence, and Fix.
+- Marker must be a number from 1 to 6.
+- Reuse a marker only if two issues genuinely point to the same area.
+- The issue, evidence, and fix must match the chosen marker.
+- Do not return simple bullet points.
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -264,8 +369,8 @@ Use exactly these headings in this order:
 
 For UI Improvements specifically:
 - Use the screenshot as visual evidence when possible.
-- Reference screenshot marker numbers where helpful, e.g. marker [1], marker [2].
-- Each improvement MUST include Issue, Evidence, and Fix.
+- Each improvement MUST include Marker, Issue, Evidence, and Fix.
+- Marker must align with the area referenced in Evidence.
 - Do not return simple bullet points.
 
 Formatting rules:
@@ -368,12 +473,30 @@ export async function POST(req: Request) {
       screenshot_url: screenshotUrl,
     });
 
+    const uiEvidence = parseUiEvidence(auditMarkdown);
+
+    const uiScreenshotUrls =
+      screenshotUrl && uiEvidence.length > 0
+        ? await Promise.all(
+            uiEvidence.map((item) =>
+              addSingleScreenshotMarker(screenshotUrl, item.marker)
+            )
+          )
+        : [];
+
+    const uiEvidenceWithScreenshots = uiEvidence.map((item, index) => ({
+      ...item,
+      screenshot_url: uiScreenshotUrls[index] || null,
+    }));
+
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")
       .update({
         audit_content: clip(auditMarkdown, 250000),
         screenshot_url: screenshotUrl,
         marked_screenshot_url: markedScreenshotUrl,
+        ui_screenshot_urls: uiScreenshotUrls,
+        ui_evidence: uiEvidenceWithScreenshots,
         payment_status: "ready_for_review",
         completed_at: new Date().toISOString(),
       })
@@ -392,6 +515,7 @@ export async function POST(req: Request) {
         h1: signals.h1?.[0] || "",
         ctas: signals.ctas?.slice(0, 5) || [],
       },
+      ui_evidence_count: uiEvidenceWithScreenshots.length,
     });
   } catch (e: any) {
     console.error(e);
