@@ -420,8 +420,8 @@ export async function POST(req: Request) {
     const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
-      .eq("id", id)
-      .single();
+      .eq("id", id as string)
+      .maybeSingle();
 
     if (error || !data) {
       return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
