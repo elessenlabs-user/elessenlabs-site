@@ -4,6 +4,14 @@ import PrintActions from "./PrintActions";
 
 export const dynamic = "force-dynamic";
 
+type UiEvidenceItem = {
+  marker?: number;
+  issue?: string;
+  evidence?: string;
+  fix?: string;
+  screenshot_url?: string | null;
+};
+
 function splitSections(markdown: string) {
   return markdown
     .split(/(?=## )/g)
@@ -107,15 +115,17 @@ function computeAuditScore(auditContent: string) {
 function Section({
   title,
   content,
-  screenshotUrl,
+  uiEvidence,
 }: {
   title: string;
   content: string;
-  screenshotUrl?: string | null;
+  uiEvidence?: UiEvidenceItem[] | null;
 }) {
   const lowerTitle = title.toLowerCase();
   const isCritical = lowerTitle.includes("critical");
   const isUi = lowerTitle.includes("ui");
+  const isUiSection =
+    lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
   const isCardSection =
     /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
 
@@ -147,7 +157,63 @@ function Section({
       </summary>
 
       <div className="px-6 pb-6 pt-2">
-        {isCardSection ? (
+        {isUiSection && uiEvidence?.length ? (
+          <div className="grid gap-4">
+            {uiEvidence.map((item, index) => (
+              <div
+                key={index}
+                className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="pt-0.5 text-lg">🎨</div>
+
+                  <div className="min-w-0 flex-1 text-sm leading-6 text-black/75">
+                    <div className="flex flex-wrap gap-2">
+                      {item.marker ? (
+                        <span className="px-2 py-1 rounded-full text-xs font-semibold ring-1 bg-red-50 text-red-700 ring-red-200">
+                          Marker: {item.marker}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3 space-y-2">
+                      {item.issue && (
+                        <div>
+                          <strong>Issue:</strong> {item.issue}
+                        </div>
+                      )}
+
+                      {item.evidence && (
+                        <div>
+                          <strong>Evidence:</strong> {item.evidence}
+                        </div>
+                      )}
+
+                      {item.fix && (
+                        <div>
+                          <strong>Fix:</strong> {item.fix}
+                        </div>
+                      )}
+                    </div>
+
+                    {item.screenshot_url && (
+                      <div className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-white">
+                        <div className="border-b border-black/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
+                          Evidence Screenshot
+                        </div>
+                        <img
+                          src={item.screenshot_url}
+                          alt={`UI evidence screenshot ${item.marker || index + 1}`}
+                          className="h-auto w-full"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isCardSection ? (
           <div className="grid gap-4">
             {cards.map((card, index) => (
               <div
@@ -227,19 +293,6 @@ function Section({
                     ) : (
                       <div className="mt-3">{card.raw}</div>
                     )}
-
-                    {isUi && screenshotUrl && (
-                      <div className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-white">
-                        <div className="border-b border-black/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
-                          Evidence Screenshot
-                        </div>
-                        <img
-                          src={screenshotUrl}
-                          alt="UI evidence screenshot"
-                          className="h-auto w-full"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -249,16 +302,16 @@ function Section({
           <div className="prose prose-lg max-w-none prose-p:leading-7 prose-p:text-gray-700 prose-strong:text-black prose-li:marker:text-black prose-ul:space-y-2">
             <ReactMarkdown
               components={{
-                table: ({ node, ...props }) => (
+                table: ({ ...props }) => (
                   <table className="w-full border-collapse text-sm" {...props} />
                 ),
-                th: ({ node, ...props }) => (
+                th: ({ ...props }) => (
                   <th
                     className="border border-black/10 bg-gray-50 px-3 py-2 text-left font-semibold"
                     {...props}
                   />
                 ),
-                td: ({ node, ...props }) => (
+                td: ({ ...props }) => (
                   <td className="border border-black/10 px-3 py-2" {...props} />
                 ),
               }}
@@ -287,7 +340,7 @@ export default async function AuditResultPage({
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-      "id, full_name, product_url, payment_status, audit_content, screenshot_url, marked_screenshot_url, completed_at"
+      "id, full_name, product_url, payment_status, audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"
     )
     .eq("id", id)
     .single();
@@ -391,7 +444,7 @@ export default async function AuditResultPage({
             key={index}
             title={section.title}
             content={section.content}
-            screenshotUrl={evidenceScreenshot}
+            uiEvidence={data.ui_evidence || []}
           />
         ))}
       </div>
