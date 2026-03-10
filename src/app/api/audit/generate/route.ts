@@ -310,19 +310,27 @@ Do NOT use pipes or separators.
 
 ## UI Improvements
 
-For each improvement use EXACTLY this format:
+Each improvement MUST follow this exact structure:
 
-- Marker: 1-6
+- Marker: number from 1–6
   Issue: short issue title
-  Evidence: reference something visible in the screenshot and match it to the chosen marker
-  Fix: specific UI change
+  Evidence: one sentence referencing something visible in the screenshot and clearly tied to the marker location
+  Fix: one specific UI change
+
+Example:
+
+- Marker: 1
+  Issue: Primary CTA lacks visual prominence
+  Evidence: In the screenshot the main CTA in the hero section blends with surrounding navigation elements.
+  Fix: Increase contrast and size of the CTA button and add more spacing around it.
 
 Rules:
-- Each improvement must contain Marker, Issue, Evidence, and Fix.
-- Marker must be a number from 1 to 6.
-- Reuse a marker only if two issues genuinely point to the same area.
-- The issue, evidence, and fix must match the chosen marker.
-- Do not return simple bullet points.
+- Every improvement MUST contain Marker, Issue, Evidence, and Fix.
+- Marker must be a number between 1 and 6.
+- Reuse a marker only if two issues truly refer to the same area of the interface.
+- Evidence must clearly describe what is visible in the screenshot.
+- Do not output simple bullet lists.
+- If the structure is not followed the response is invalid.
 
 ## Copy Improvements
 - Main headline rewrite:

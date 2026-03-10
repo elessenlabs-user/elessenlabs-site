@@ -111,7 +111,16 @@ function computeAuditScore(auditContent: string) {
   if (score >= 60) return { score, label: "Needs improvement" };
   return { score, label: "High priority fixes" };
 }
-
+function getDefaultMarkers(productUrl: string) {
+  return [
+    { id: 1, top: "14%", left: "72%" },
+    { id: 2, top: "10%", left: "18%" },
+    { id: 3, top: "32%", left: "58%" },
+    { id: 4, top: "52%", left: "24%" },
+    { id: 5, top: "68%", left: "70%" },
+    { id: 6, top: "82%", left: "40%" },
+  ];
+}
 function Section({
   title,
   content,
@@ -361,6 +370,7 @@ export default async function AuditResultPage({
 
   const sections = splitSections(data.audit_content);
   const auditScore = computeAuditScore(data.audit_content || "");
+  const markers = getDefaultMarkers(data.product_url || "");
   const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
 
   return (
@@ -429,13 +439,25 @@ export default async function AuditResultPage({
               Captured automatically during audit generation to support UI recommendations.
             </p>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
-              <img
-                src={evidenceScreenshot}
-                alt="Website screenshot used for audit evidence"
-                className="h-auto w-full"
-              />
-            </div>
+            <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
+  <div className="relative overflow-hidden rounded-xl">
+    <img
+      src={evidenceScreenshot}
+      alt="Website screenshot used for audit evidence"
+      className="h-auto w-full"
+    />
+
+    {markers.map((marker) => (
+      <div
+        key={marker.id}
+        className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
+        style={{ top: marker.top, left: marker.left }}
+      >
+        {marker.id}
+      </div>
+    ))}
+  </div>
+</div>
           </div>
         )}
 
