@@ -407,7 +407,9 @@ Formatting rules:
 
 export async function POST(req: Request) {
   const auth = requireSecret(req);
-  if (!auth.ok) return NextResponse.json({ error: auth.msg }, { status: 401 });
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.msg }, { status: 401 });
+  }
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -424,6 +426,7 @@ export async function POST(req: Request) {
     if (error || !data) {
       return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
     }
+
     row = data;
   } else {
     const { data, error } = await supabaseAdmin
@@ -433,9 +436,15 @@ export async function POST(req: Request) {
       .order("created_at", { ascending: true })
       .limit(1);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
     row = data?.[0];
-    if (!row) return NextResponse.json({ ok: true, message: "No pending audits." });
+
+    if (!row) {
+      return NextResponse.json({ ok: true, message: "No pending audits." });
+    }
   }
 
   const { error: lockErr } = await supabaseAdmin
@@ -506,41 +515,37 @@ export async function POST(req: Request) {
       throw new Error(`Failed to save audit_content: ${saveErr.message}`);
     }
 
-    try {
+    return NextResponse.json({
+      ok: true,
+      id: row.id,
+      payment_status: "ready_for_review",
+      signals_summary: {
+        title: signals.title,
+        h1: signals.h1?.[0] || "",
+        ctas: signals.ctas?.slice(0, 5) || [],
+      },
+      ui_evidence_count: uiEvidenceWithScreenshots.length,
+    });
+  } catch (e: any) {
+    console.error("AUDIT_GENERATE_ERROR", e);
 
-  // ... all your audit generation logic
+    await supabaseAdmin
+      .from("audit_requests")
+      .update({
+        payment_status: "failed",
+        audit_content: clip(
+          `Audit generation failed: ${e?.message || String(e)}`,
+          8000
+        ),
+      })
+      .eq("id", row.id);
 
-  return NextResponse.json({
-    ok: true,
-    id: row.id,
-    payment_status: "ready_for_review",
-    signals_summary: {
-      title: signals.title,
-      h1: signals.h1?.[0] || "",
-      ctas: signals.ctas?.slice(0, 5) || [],
-    },
-    ui_evidence_count: uiEvidenceWithScreenshots.length,
-  });
-
-} catch (e: any) {
-  console.error("AUDIT_GENERATE_ERROR", e);
-
-  await supabaseAdmin
-    .from("audit_requests")
-    .update({
-      payment_status: "failed",
-      audit_content: clip(
-        `Audit generation failed: ${e?.message || String(e)}`,
-        8000
-      ),
-    })
-    .eq("id", row.id);
-
-  return NextResponse.json(
-    {
-      error: "Audit generation failed.",
-      detail: e instanceof Error ? e.message : String(e),
-    },
-    { status: 500 }
-  );
+    return NextResponse.json(
+      {
+        error: "Audit generation failed.",
+        detail: e instanceof Error ? e.message : String(e),
+      },
+      { status: 500 }
+    );
+  }
 }
