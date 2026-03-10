@@ -506,28 +506,41 @@ export async function POST(req: Request) {
       throw new Error(`Failed to save audit_content: ${saveErr.message}`);
     }
 
-    return NextResponse.json({
-      ok: true,
-      id: row.id,
-      payment_status: "ready_for_review",
-      signals_summary: {
-        title: signals.title,
-        h1: signals.h1?.[0] || "",
-        ctas: signals.ctas?.slice(0, 5) || [],
-      },
-      ui_evidence_count: uiEvidenceWithScreenshots.length,
-    });
-  } catch (e: any) {
-    console.error(e);
+    try {
 
-    await supabaseAdmin
-      .from("audit_requests")
-      .update({
-        payment_status: "failed",
-        audit_content: clip(`Audit generation failed: ${e?.message || String(e)}`, 8000),
-      })
-      .eq("id", row.id);
+  // ... all your audit generation logic
 
-    return NextResponse.json({ error: "Audit generation failed." }, { status: 500 });
-  }
+  return NextResponse.json({
+    ok: true,
+    id: row.id,
+    payment_status: "ready_for_review",
+    signals_summary: {
+      title: signals.title,
+      h1: signals.h1?.[0] || "",
+      ctas: signals.ctas?.slice(0, 5) || [],
+    },
+    ui_evidence_count: uiEvidenceWithScreenshots.length,
+  });
+
+} catch (e: any) {
+  console.error("AUDIT_GENERATE_ERROR", e);
+
+  await supabaseAdmin
+    .from("audit_requests")
+    .update({
+      payment_status: "failed",
+      audit_content: clip(
+        `Audit generation failed: ${e?.message || String(e)}`,
+        8000
+      ),
+    })
+    .eq("id", row.id);
+
+  return NextResponse.json(
+    {
+      error: "Audit generation failed.",
+      detail: e instanceof Error ? e.message : String(e),
+    },
+    { status: 500 }
+  );
 }
