@@ -419,28 +419,21 @@ export async function POST(req: Request) {
 if (id) {
   const cleanId = String(id).trim();
 
-  console.log("AUDIT_LOOKUP_ID", cleanId);
-
   const { data, error } = await supabaseAdmin
     .from("audit_requests")
     .select("id, full_name, product_url, payment_status")
     .eq("id", cleanId)
     .maybeSingle();
 
-  console.log("AUDIT_LOOKUP_RESULT", { cleanId, data, error });
-
-  if (!data) {
-    return NextResponse.json(
-      {
-        error: "Audit request not found.",
-        detail: `No row found for id ${cleanId}`,
-      },
-      { status: 404 }
-    );
-  }
-
-  row = data;
-} else {
+  return NextResponse.json({
+    debug: true,
+    cleanId,
+    found: !!data,
+    data,
+    error,
+  });
+}
+ else {
     const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
