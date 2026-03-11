@@ -439,13 +439,25 @@ export default async function AuditResultPage({
               Captured automatically during audit generation to support UI recommendations.
             </p>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
+           <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
   <div className="relative overflow-hidden rounded-xl">
     <img
       src={evidenceScreenshot}
       alt="Website screenshot used for audit evidence"
       className="h-auto w-full"
     />
+
+    {markers.map((marker) => (
+      <div
+        key={marker.id}
+        className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
+        style={{ top: marker.top, left: marker.left }}
+      >
+        {marker.id}
+      </div>
+    ))}
+  </div>
+</div>
 
     {markers.map((marker) => (
       <div
