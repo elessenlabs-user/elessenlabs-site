@@ -426,52 +426,54 @@ export default async function AuditResultPage({
         </div>
 
         {evidenceScreenshot && (
-          <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
-              Visual Evidence
-            </div>
+  <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
+      Visual Evidence
+    </div>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Homepage Screenshot
-            </h2>
+    <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+      Homepage Screenshot
+    </h2>
 
-            <p className="mt-2 text-sm text-black/60">
-              Captured automatically during audit generation to support UI recommendations.
-            </p>
+    <p className="mt-2 text-sm text-black/60">
+      Captured automatically during audit generation to support UI recommendations.
+    </p>
 
-           <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
-  <div className="relative overflow-hidden rounded-xl">
-    <img
-      src={evidenceScreenshot}
-      alt="Website screenshot used for audit evidence"
-      className="h-auto w-full"
-    />
+    <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
+      <div className="relative overflow-hidden rounded-xl">
+        <img
+          src={evidenceScreenshot}
+          alt="Website screenshot used for audit evidence"
+          className="h-auto w-full"
+        />
 
-    {markers.map((marker) => (
-      <div
-        key={marker.id}
-        className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
-        style={{ top: marker.top, left: marker.left }}
-      >
-        {marker.id}
-      </div>
-    ))}
-  </div>
-</div>
-
-    {markers.map((marker) => (
-      <div
-        key={marker.id}
-        className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
-        style={{ top: marker.top, left: marker.left }}
-      >
-        {marker.id}
-      </div>
-    ))}
-  </div>
-</div>
+        {markers.map((marker) => (
+          <div
+            key={marker.id}
+            className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
+            style={{ top: marker.top, left: marker.left }}
+          >
+            {marker.id}
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+
+    <div className="mt-4 flex flex-wrap gap-2 text-xs text-black/60">
+      {markers.map((marker) => (
+        <div
+          key={`legend-${marker.id}`}
+          className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1"
+        >
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">
+            {marker.id}
+          </span>
+          <span>Marker {marker.id}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {sections.map((section, index) => (
           <Section
