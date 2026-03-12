@@ -479,13 +479,27 @@ export async function POST(req: Request) {
     }
   }
 
-  const { error: lockErr } = await supabaseAdmin
+    const lockQuery = supabaseAdmin
     .from("audit_requests")
     .update({ status: "generating" })
     .eq("id", row.id);
 
+  if (!id) {
+    lockQuery.eq("status", "paid_pending_audit");
+  }
+
+  const { data: lockedRows, error: lockErr } = await lockQuery
+    .select("id, status");
+
   if (lockErr) {
     return NextResponse.json({ error: "Failed to lock audit request." }, { status: 500 });
+  }
+
+  if (!lockedRows || lockedRows.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      message: "Audit request was already claimed by another run.",
+    });
   }
 
   try {
