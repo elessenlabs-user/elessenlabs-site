@@ -429,23 +429,25 @@ if (id) {
 
   const { data, error } = await supabaseAdmin
     .from("audit_requests")
-    .select("id, full_name, product_url, payment_status")
+    .select("*")
     .eq("id", cleanId)
     .maybeSingle();
 
-  return NextResponse.json({
-    debug: true,
-    cleanId,
-    found: !!data,
-    data,
-    error,
-  });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
+  }
+
+  row = data;
 }
  else {
     const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
-      .eq("payment_status", "paid_pending_audit")
+      .eq("status", "paid_pending_audit")
       .order("created_at", { ascending: true })
       .limit(1);
 
@@ -460,9 +462,9 @@ if (id) {
     }
   }
 
-  const { error: lockErr } = await supabaseAdmin
+    const { error: lockErr } = await supabaseAdmin
     .from("audit_requests")
-    .update({ payment_status: "generating" })
+    .update({ status: "generating" })
     .eq("id", row.id);
 
   if (lockErr) {
@@ -519,7 +521,7 @@ if (id) {
         marked_screenshot_url: markedScreenshotUrl,
         ui_screenshot_urls: uiScreenshotUrls,
         ui_evidence: uiEvidenceWithScreenshots,
-        payment_status: "ready_for_review",
+        status: "ready_for_review",
         completed_at: new Date().toISOString(),
       })
       .eq("id", row.id);
@@ -528,10 +530,10 @@ if (id) {
       throw new Error(`Failed to save audit_content: ${saveErr.message}`);
     }
 
-    return NextResponse.json({
+        return NextResponse.json({
       ok: true,
       id: row.id,
-      payment_status: "ready_for_review",
+      status: "ready_for_review",
       signals_summary: {
         title: signals.title,
         h1: signals.h1?.[0] || "",
@@ -539,19 +541,21 @@ if (id) {
       },
       ui_evidence_count: uiEvidenceWithScreenshots.length,
     });
+
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 
-    await supabaseAdmin
+        await supabaseAdmin
       .from("audit_requests")
       .update({
-        payment_status: "failed",
+        status: "failed",
         audit_content: clip(
           `Audit generation failed: ${e?.message || String(e)}`,
           8000
         ),
       })
       .eq("id", row.id);
+      
 
     return NextResponse.json(
       {
