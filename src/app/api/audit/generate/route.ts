@@ -424,26 +424,43 @@ export async function POST(req: Request) {
 
   let row: any = null;
 
-if (id) {
-  const cleanId = String(id).trim();
+  if (id) {
+    const cleanId = String(id).trim();
 
-  const { data, error } = await supabaseAdmin
-    .from("audit_requests")
-    .select("*")
-    .eq("id", cleanId)
-    .maybeSingle();
+    const { data, error } = await supabaseAdmin
+      .from("audit_requests")
+      .select("*")
+      .eq("id", cleanId)
+      .maybeSingle();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-  if (!data) {
-    return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
-  }
+    if (!data) {
+      return NextResponse.json({ error: "Audit request not found." }, { status: 404 });
+    }
 
-  row = data;
-}
- else {
+    if (data.status === "generating") {
+      return NextResponse.json({
+        ok: true,
+        id: data.id,
+        status: data.status,
+        message: "Audit is already generating.",
+      });
+    }
+
+    if (data.status === "ready_for_review") {
+      return NextResponse.json({
+        ok: true,
+        id: data.id,
+        status: data.status,
+        message: "Audit is already ready for review.",
+      });
+    }
+
+    row = data;
+  } else {
     const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
@@ -462,7 +479,7 @@ if (id) {
     }
   }
 
-    const { error: lockErr } = await supabaseAdmin
+  const { error: lockErr } = await supabaseAdmin
     .from("audit_requests")
     .update({ status: "generating" })
     .eq("id", row.id);
@@ -530,7 +547,7 @@ if (id) {
       throw new Error(`Failed to save audit_content: ${saveErr.message}`);
     }
 
-        return NextResponse.json({
+    return NextResponse.json({
       ok: true,
       id: row.id,
       status: "ready_for_review",
@@ -541,11 +558,10 @@ if (id) {
       },
       ui_evidence_count: uiEvidenceWithScreenshots.length,
     });
-
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 
-        await supabaseAdmin
+    await supabaseAdmin
       .from("audit_requests")
       .update({
         status: "failed",
@@ -555,7 +571,6 @@ if (id) {
         ),
       })
       .eq("id", row.id);
-      
 
     return NextResponse.json(
       {
