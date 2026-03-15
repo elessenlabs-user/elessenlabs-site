@@ -517,9 +517,7 @@ export async function POST(req: Request) {
     const signals = extractSignals(html, url);
 
     const screenshotUrl = await captureScreenshot(url);
-    const markedScreenshotUrl = screenshotUrl
-      ? await addScreenshotMarkers(screenshotUrl)
-      : null;
+    
 
     const auditMarkdown = await generateAuditMarkdown({
       product_url: row.product_url,
@@ -530,18 +528,11 @@ export async function POST(req: Request) {
 
     const uiEvidence = parseUiEvidence(auditMarkdown);
 
-    const uiScreenshotUrls =
-      screenshotUrl && uiEvidence.length > 0
-        ? await Promise.all(
-            uiEvidence.map((item) =>
-              addSingleScreenshotMarker(screenshotUrl, item.marker)
-            )
-          )
-        : [];
-
-    const uiEvidenceWithScreenshots = uiEvidence.map((item, index) => ({
-      ...item,
-      screenshot_url: uiScreenshotUrls[index] || null,
+    const uiEvidenceClean = uiEvidence.map((item) => ({
+      marker: item.marker,
+      issue: item.issue,
+      evidence: item.evidence,
+      fix: item.fix,
     }));
 
     const { error: saveErr } = await supabaseAdmin
@@ -549,13 +540,11 @@ export async function POST(req: Request) {
       .update({
         audit_content: clip(auditMarkdown, 250000),
         screenshot_url: screenshotUrl,
-        marked_screenshot_url: markedScreenshotUrl,
-        ui_screenshot_urls: uiScreenshotUrls,
-        ui_evidence: uiEvidenceWithScreenshots,
+        ui_evidence: uiEvidenceClean,
         status: "ready_for_review",
         completed_at: new Date().toISOString(),
-      })
-      .eq("id", row.id);
+  })
+  .eq("id", row.id);
 
     if (saveErr) {
       throw new Error(`Failed to save audit_content: ${saveErr.message}`);
@@ -570,8 +559,8 @@ export async function POST(req: Request) {
         h1: signals.h1?.[0] || "",
         ctas: signals.ctas?.slice(0, 5) || [],
       },
-      ui_evidence_count: uiEvidenceWithScreenshots.length,
     });
+    
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 

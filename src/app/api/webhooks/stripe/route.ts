@@ -47,9 +47,8 @@ export async function POST(req: Request) {
         .update({
           stripe_session_id: session.id,
           email,
-          payment_status: paymentStatus,
           status: "paid_pending_audit",
-        })
+      })
         .eq("id", auditRequestId);
 
       if (updateErr) {

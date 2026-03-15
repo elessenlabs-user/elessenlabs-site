@@ -343,14 +343,14 @@ export default async function AuditResultPage({
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-      "id, full_name, product_url, payment_status, audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"
-    )
+      "id, full_name, product_url, status, audit_content, screenshot_url, ui_evidence, completed_at"    
+)
     .eq("id", id)
     .single();
 
@@ -371,7 +371,7 @@ export default async function AuditResultPage({
   const sections = splitSections(data.audit_content);
   const auditScore = computeAuditScore(data.audit_content || "");
   const markers = getDefaultMarkers(data.product_url || "");
-  const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
+  const evidenceScreenshot = data.screenshot_url;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -390,7 +390,7 @@ export default async function AuditResultPage({
               <strong className="text-black/75">Product:</strong> {data.product_url}
             </div>
             <div>
-              <strong className="text-black/75">Status:</strong> {data.payment_status}
+              <strong className="text-black/75">Status:</strong> {data.status}
             </div>
             {data.completed_at && (
               <div>
@@ -416,7 +416,7 @@ export default async function AuditResultPage({
 
           <div className="rounded-2xl border border-black/10 p-5">
             <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-            <div className="mt-2 text-lg font-semibold">{data.payment_status}</div>
+            <div className="mt-2 text-lg font-semibold">{data.status}</div>
           </div>
 
           <div className="rounded-2xl border border-black/10 p-5">

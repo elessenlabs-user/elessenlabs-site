@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         product_url: normalizedProductUrl,
         notes: notes || "",
         status: "pending_payment",
-        payment_status: "unpaid",
+        
       })
       .select("id")
       .single();
