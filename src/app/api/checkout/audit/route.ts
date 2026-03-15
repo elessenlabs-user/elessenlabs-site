@@ -14,7 +14,7 @@ function withHttps(url: string) {
 
 export async function POST(req: Request) {
   try {
-    const { fullName, email, productUrl, notes } = await req.json();
+    const { fullName, email, productUrl, focusPageUrl, notes } = await req.json();
 
     if (!fullName || !email || !productUrl) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
@@ -51,10 +51,13 @@ export async function POST(req: Request) {
         full_name: fullName,
         email,
         product_url: normalizedProductUrl,
+        focus_page_url: focusPageUrl
+          ? withHttps(String(focusPageUrl).replace(/\s+/g, ""))
+          : null,
         notes: notes || "",
         status: "pending_payment",
-        
       })
+      
       .select("id")
       .single();
 

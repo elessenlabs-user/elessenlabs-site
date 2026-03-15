@@ -542,8 +542,9 @@ export async function POST(req: Request) {
         screenshot_url: screenshotUrl,
         ui_evidence: uiEvidenceClean,
         status: "ready_for_review",
+        review_due_at: new Date(Date.now() + 15 * 60 * 60 * 1000).toISOString(),
         completed_at: new Date().toISOString(),
-  })
+      })
   .eq("id", row.id);
 
     if (saveErr) {
@@ -560,7 +561,7 @@ export async function POST(req: Request) {
         ctas: signals.ctas?.slice(0, 5) || [],
       },
     });
-    
+
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 

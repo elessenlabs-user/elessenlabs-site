@@ -23,6 +23,7 @@ export default function AuditPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [productUrl, setProductUrl] = useState("");
+  const [focusPageUrl, setFocusPageUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,9 +33,14 @@ export default function AuditPage() {
   }
 
   function isValidUrl(v: string) {
+    const raw = v.trim();
+    if (!raw) return false;
+
+    const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
     try {
-      const u = new URL(v.trim());
-      return u.protocol === "http:" || u.protocol === "https:";
+      const u = new URL(normalized);
+     return !!u.hostname && (u.protocol === "http:" || u.protocol === "https:");
     } catch {
       return false;
     }
@@ -84,9 +90,10 @@ export default function AuditPage() {
             `Name: ${fullName}`,
             `Email: ${email}`,
             `Product URL: ${productUrl}`,
+            `Focus URL / flow: ${focusPageUrl || "—"}`,
             `Notes: ${notes || "—"}`,
             `Offer: 24-hour UX Conversion Blueprint (${AUDIT_PRICE})`,
-          ].join("\n"),
+  ].join("\n"),
           utm_source: "",
           utm_medium: "",
           utm_campaign: "",
@@ -101,6 +108,7 @@ export default function AuditPage() {
           fullName,
           email,
           productUrl,
+          focusPageUrl,
           notes,
         }),
       });
@@ -143,7 +151,8 @@ export default function AuditPage() {
         24-Hour UX Conversion Blueprint
       </h1>
       <p className="mt-3 text-lg opacity-80">
-        Send your website/app. We return a conversion-focused audit you can implement immediately.
+        Send your website, landing page, app store page, or key product flow. 
+        We return a conversion-focused audit you can implement immediately.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-2 text-[12px]">
@@ -324,6 +333,23 @@ export default function AuditPage() {
               onChange={(e) => setProductUrl(e.target.value)}
               placeholder="https://yourproduct.com or app store link"
             />
+          </div>
+
+          <div className="mt-4">
+            <label className="text-sm font-medium">
+              Optional page, screen, or flow to review
+            </label>
+            <input
+              type="url"
+              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+              value={focusPageUrl}
+              onChange={(e) => setFocusPageUrl(e.target.value)}
+              placeholder="https://yourproduct.com/pricing, app store link, onboarding page, or shared flow URL"
+           />
+          <p className="mt-2 text-xs text-black/55">
+            For apps, you can share an app store page, onboarding flow, key screen URL,
+            or recorded beta flow. Full live in-app audit coming soon.
+          </p>
           </div>
 
           <div className="mt-4">

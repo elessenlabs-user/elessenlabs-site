@@ -349,8 +349,8 @@ export default async function AuditResultPage({
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-      "id, full_name, product_url, status, audit_content, screenshot_url, ui_evidence, completed_at"    
-)
+      "id, full_name, product_url, status, audit_content, edited_audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"
+    )
     .eq("id", id)
     .single();
 
@@ -368,10 +368,13 @@ export default async function AuditResultPage({
     );
   }
 
-  const sections = splitSections(data.audit_content);
-  const auditScore = computeAuditScore(data.audit_content || "");
+  const finalAuditContent =
+  data.edited_audit_content || data.audit_content;
+
+  const sections = splitSections(finalAuditContent);  
+  const auditScore = computeAuditScore(finalAuditContent || "");
   const markers = getDefaultMarkers(data.product_url || "");
-  const evidenceScreenshot = data.screenshot_url;
+  const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
