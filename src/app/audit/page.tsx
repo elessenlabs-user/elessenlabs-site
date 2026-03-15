@@ -33,14 +33,19 @@ export default function AuditPage() {
   }
 
   function isValidUrl(v: string) {
-    const raw = v.trim();
+    const raw = v.trim().toLowerCase();
     if (!raw) return false;
+
+    const domainPattern =
+      /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/.*)?$/i;
+
+    if (!domainPattern.test(raw)) return false;
 
     const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 
     try {
       const u = new URL(normalized);
-     return !!u.hostname && (u.protocol === "http:" || u.protocol === "https:");
+      return !!u.hostname;
     } catch {
       return false;
     }
@@ -327,13 +332,18 @@ export default function AuditPage() {
           <div className="mt-4">
             <label className="text-sm font-medium">Website / Product link</label>
             <input
-              type="url"
-              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
-              value={productUrl}
-              onChange={(e) => setProductUrl(e.target.value)}
-              placeholder="https://yourproduct.com or app store link"
-            />
-          </div>
+            type="url"
+            className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+            value={productUrl}
+            onChange={(e) => setProductUrl(e.target.value)}
+            placeholder="airbnb.com, www.airbnb.com, or https://airbnb.com"
+          />
+          {productUrl.trim().length > 0 && !isValidUrl(productUrl) && (
+            <p className="mt-2 text-xs text-red-600">
+            Please enter a valid website URL, such as airbnb.com.
+          </p>
+          )}
+        </div> 
 
           <div className="mt-4">
             <label className="text-sm font-medium">
