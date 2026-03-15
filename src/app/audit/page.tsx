@@ -32,24 +32,37 @@ export default function AuditPage() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
   }
 
-  function isValidUrl(v: string) {
-    const raw = v.trim().toLowerCase();
-    if (!raw) return false;
+ function isValidUrl(v: string) {
+  const raw = v.trim().toLowerCase();
+  if (!raw) return false;
 
-    const domainPattern =
-      /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/.*)?$/i;
+  const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 
-    if (!domainPattern.test(raw)) return false;
+  try {
+    const u = new URL(normalized);
+    const hostname = u.hostname.toLowerCase();
 
-    const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    // must contain at least one dot
+    if (!hostname.includes(".")) return false;
 
-    try {
-      const u = new URL(normalized);
-      return !!u.hostname;
-    } catch {
-      return false;
-    }
+    const parts = hostname.split(".").filter(Boolean);
+
+    // need at least domain + tld
+    if (parts.length < 2) return false;
+
+    // if it starts with www, require at least 3 parts: www + domain + tld
+    if (parts[0] === "www" && parts.length < 3) return false;
+
+    const tld = parts[parts.length - 1];
+
+    // tld must be letters only and reasonable length
+    if (!/^[a-z]{2,24}$/i.test(tld)) return false;
+
+    return true;
+  } catch {
+    return false;
   }
+}
 
   const canSubmit = useMemo(() => {
     return (
