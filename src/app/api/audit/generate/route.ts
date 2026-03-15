@@ -249,6 +249,7 @@ function parseUiEvidence(markdown: string): UiEvidenceItem[] {
 }
 
 async function generateAuditMarkdown(payload: any) {
+  
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return `# Audit (AI not configured)
@@ -271,8 +272,9 @@ Write like an experienced product designer and conversion strategist.`;
 
   const user = `AUDIT REQUEST
 
-URL: ${payload.product_url}
-Notes: ${payload.notes || "—"}
+  URL: ${payload.product_url}
+  FOCUS PAGE: ${payload.focus_page_url || "Not provided"}
+  Notes: ${payload.notes || "—"}
 
 SCREENSHOT
 ${payload.screenshot_url || "Not available"}
@@ -517,10 +519,15 @@ export async function POST(req: Request) {
     const signals = extractSignals(html, url);
 
     const screenshotUrl = await captureScreenshot(url);
+
+    const markedScreenshotUrl = screenshotUrl
+  ? await addScreenshotMarkers(screenshotUrl)
+  : null;
     
 
     const auditMarkdown = await generateAuditMarkdown({
       product_url: row.product_url,
+      focus_page_url: row.focus_page_url || "",
       notes: row.notes,
       signals,
       screenshot_url: screenshotUrl,
@@ -536,15 +543,15 @@ export async function POST(req: Request) {
     }));
 
     const { error: saveErr } = await supabaseAdmin
-      .from("audit_requests")
-      .update({
-        audit_content: clip(auditMarkdown, 250000),
-        screenshot_url: screenshotUrl,
-        ui_evidence: uiEvidenceClean,
-        status: "ready_for_review",
-        review_due_at: new Date(Date.now() + 15 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date().toISOString(),
-      })
+  .from("audit_requests")
+  .update({
+    audit_content: clip(auditMarkdown, 250000),
+    screenshot_url: screenshotUrl,
+    marked_screenshot_url: markedScreenshotUrl,
+    ui_evidence: uiEvidenceClean,
+    status: "ready_for_review",
+    completed_at: new Date().toISOString(),
+  })
   .eq("id", row.id);
 
     if (saveErr) {

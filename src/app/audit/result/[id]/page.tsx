@@ -160,8 +160,7 @@ function Section({
 
       <div className="px-6 pb-6 pt-2">
         {isUiSection && uiEvidence?.length ? (
-          <div className="space-y-6">
-
+  <div className="space-y-6">
     {uiReferenceScreenshot && (
       <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
         <img
@@ -172,51 +171,50 @@ function Section({
       </div>
     )}
 
-          <div className="grid gap-4">
-            {uiEvidence.map((item, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="pt-0.5 text-lg">🎨</div>
+    <div className="grid gap-4">
+      {uiEvidence.map((item, index) => (
+        <div
+          key={index}
+          className="rounded-2xl border border-black/10 bg-black/[0.02] p-4"
+        >
+          <div className="flex items-start gap-3">
+            <div className="pt-0.5 text-lg">🎨</div>
 
-                  <div className="min-w-0 flex-1 text-sm leading-6 text-black/75">
-                    <div className="flex flex-wrap gap-2">
-                      {item.marker ? (
-                        <span className="px-2 py-1 rounded-full text-xs font-semibold ring-1 bg-red-50 text-red-700 ring-red-200">
-                          Marker: {item.marker}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-3 space-y-2">
-                      {item.issue && (
-                        <div>
-                          <strong>Issue:</strong> {item.issue}
-                        </div>
-                      )}
-
-                      {item.evidence && (
-                        <div>
-                          <strong>Evidence:</strong> {item.evidence}
-                        </div>
-                      )}
-
-                      {item.fix && (
-                        <div>
-                          <strong>Fix:</strong> {item.fix}
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-                </div>
+            <div className="min-w-0 flex-1 text-sm leading-6 text-black/75">
+              <div className="flex flex-wrap gap-2">
+                {item.marker ? (
+                  <span className="px-2 py-1 rounded-full text-xs font-semibold ring-1 bg-red-50 text-red-700 ring-red-200">
+                    Marker: {item.marker}
+                  </span>
+                ) : null}
               </div>
-            ))}
+
+              <div className="mt-3 space-y-2">
+                {item.issue && (
+                  <div>
+                    <strong>Issue:</strong> {item.issue}
+                  </div>
+                )}
+
+                {item.evidence && (
+                  <div>
+                    <strong>Evidence:</strong> {item.evidence}
+                  </div>
+                )}
+
+                {item.fix && (
+                  <div>
+                    <strong>Fix:</strong> {item.fix}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        ) : isCardSection ? (
+      ))}
+    </div>
+  </div>
+) : isCardSection ? (
           <div className="grid gap-4">
             {cards.map((card, index) => (
               <div
@@ -384,22 +382,24 @@ export default async function AuditResultPage({
           <div className="mt-4 space-y-1 text-sm text-black/60">
             <div>
               <strong className="text-black/75">Product:</strong> {data.product_url}
-              {data.focus_page_url && (
+          </div>
+
+          {data.focus_page_url && (
             <div>
               <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
-        </div>
-          )}
-            </div>
-            <div>
-              <strong className="text-black/75">Product:</strong> {data.product_url}
-            </div>
+          </div>
+      )}
 
-            {data.focus_page_url && (
           <div>
-            <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
+            <strong className="text-black/75">Status:</strong> {data.status}
           </div>
-        )}
+
+        {data.completed_at && (
+          <div>
+            <strong className="text-black/75">Generated:</strong> {data.completed_at}
           </div>
+      )}
+    </div>
 
           <PrintActions />
         </div>
