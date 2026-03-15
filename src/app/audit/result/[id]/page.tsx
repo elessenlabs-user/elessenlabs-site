@@ -111,25 +111,18 @@ function computeAuditScore(auditContent: string) {
   if (score >= 60) return { score, label: "Needs improvement" };
   return { score, label: "High priority fixes" };
 }
-function getDefaultMarkers(productUrl: string) {
-  return [
-    { id: 1, top: "14%", left: "72%" },
-    { id: 2, top: "10%", left: "18%" },
-    { id: 3, top: "32%", left: "58%" },
-    { id: 4, top: "52%", left: "24%" },
-    { id: 5, top: "68%", left: "70%" },
-    { id: 6, top: "82%", left: "40%" },
-  ];
-}
 function Section({
   title,
   content,
   uiEvidence,
+  uiReferenceScreenshot,
 }: {
   title: string;
   content: string;
   uiEvidence?: UiEvidenceItem[] | null;
+  uiReferenceScreenshot?: string | null;
 }) {
+
   const lowerTitle = title.toLowerCase();
   const isCritical = lowerTitle.includes("critical");
   const isUi = lowerTitle.includes("ui");
@@ -167,6 +160,18 @@ function Section({
 
       <div className="px-6 pb-6 pt-2">
         {isUiSection && uiEvidence?.length ? (
+          <div className="space-y-6">
+
+    {uiReferenceScreenshot && (
+      <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
+        <img
+          src={uiReferenceScreenshot}
+          alt="UI improvements reference screenshot"
+          className="h-auto w-full rounded-xl"
+        />
+      </div>
+    )}
+
           <div className="grid gap-4">
             {uiEvidence.map((item, index) => (
               <div
@@ -205,23 +210,12 @@ function Section({
                       )}
                     </div>
 
-                    {item.screenshot_url && (
-                      <div className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-white">
-                        <div className="border-b border-black/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
-                          Evidence Screenshot
-                        </div>
-                        <img
-                          src={item.screenshot_url}
-                          alt={`UI evidence screenshot ${item.marker || index + 1}`}
-                          className="h-auto w-full"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
+        </div>
         ) : isCardSection ? (
           <div className="grid gap-4">
             {cards.map((card, index) => (
@@ -349,7 +343,7 @@ export default async function AuditResultPage({
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-      "id, full_name, product_url, status, audit_content, edited_audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"
+    "id, full_name, product_url, focus_page_url, status, audit_content, edited_audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"  
     )
     .eq("id", id)
     .single();
@@ -373,7 +367,6 @@ export default async function AuditResultPage({
 
   const sections = splitSections(finalAuditContent);  
   const auditScore = computeAuditScore(finalAuditContent || "");
-  const markers = getDefaultMarkers(data.product_url || "");
   const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
 
   return (
@@ -391,15 +384,21 @@ export default async function AuditResultPage({
           <div className="mt-4 space-y-1 text-sm text-black/60">
             <div>
               <strong className="text-black/75">Product:</strong> {data.product_url}
+              {data.focus_page_url && (
+            <div>
+              <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
+        </div>
+          )}
             </div>
             <div>
-              <strong className="text-black/75">Status:</strong> {data.status}
+              <strong className="text-black/75">Product:</strong> {data.product_url}
             </div>
-            {data.completed_at && (
-              <div>
-                <strong className="text-black/75">Generated:</strong> {data.completed_at}
-              </div>
-            )}
+
+            {data.focus_page_url && (
+          <div>
+            <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
+          </div>
+        )}
           </div>
 
           <PrintActions />
@@ -428,55 +427,6 @@ export default async function AuditResultPage({
           </div>
         </div>
 
-        {evidenceScreenshot && (
-  <div className="mb-10 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
-    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
-      Visual Evidence
-    </div>
-
-    <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-      Homepage Screenshot
-    </h2>
-
-    <p className="mt-2 text-sm text-black/60">
-      Captured automatically during audit generation to support UI recommendations.
-    </p>
-
-    <div className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
-      <div className="relative overflow-hidden rounded-xl">
-        <img
-          src={evidenceScreenshot}
-          alt="Website screenshot used for audit evidence"
-          className="h-auto w-full"
-        />
-
-        {markers.map((marker) => (
-          <div
-            key={marker.id}
-            className="absolute flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-black text-sm font-semibold text-white shadow-lg"
-            style={{ top: marker.top, left: marker.left }}
-          >
-            {marker.id}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="mt-4 flex flex-wrap gap-2 text-xs text-black/60">
-      {markers.map((marker) => (
-        <div
-          key={`legend-${marker.id}`}
-          className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1"
-        >
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-black text-[11px] font-semibold text-white">
-            {marker.id}
-          </span>
-          <span>Marker {marker.id}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
 
         {sections.map((section, index) => (
           <Section
@@ -484,8 +434,10 @@ export default async function AuditResultPage({
             title={section.title}
             content={section.content}
             uiEvidence={data.ui_evidence || []}
+            uiReferenceScreenshot={evidenceScreenshot}
           />
         ))}
+
       </div>
 
       <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
