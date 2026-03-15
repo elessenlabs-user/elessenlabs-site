@@ -354,7 +354,7 @@ export default async function AuditResultPage({
     .eq("id", id)
     .single();
 
-  if (error || !data || !data.audit_content) {
+  if (error || !data) {
     return (
       <main className="mx-auto max-w-5xl px-10 py-24">
         <div className="rounded-3xl border border-black/10 bg-white p-14 shadow-sm">
