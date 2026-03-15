@@ -332,7 +332,7 @@ export default function AuditPage() {
           <div className="mt-4">
             <label className="text-sm font-medium">Website / Product link</label>
             <input
-            type="url"
+            type="text"
             className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
             value={productUrl}
             onChange={(e) => setProductUrl(e.target.value)}
