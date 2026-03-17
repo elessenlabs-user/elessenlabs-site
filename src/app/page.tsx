@@ -1,31 +1,32 @@
 import Link from "next/link";
 
 export default function Home() {
+  const SHOW_AUDIT_BANNER = false;
+
   return (
     <div className="space-y-20">
 
-    {/* 24h Blueprint Banner */}
-<div className="rounded-2xl px-6 py-4" style={{ backgroundColor: "#FF5619" }}>
-  <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
-    
-    <div className="text-sm md:text-base font-semibold text-white">
-      24-Hour UX Conversion Blueprint — $149
+  {SHOW_AUDIT_BANNER && (
+    <div className="rounded-2xl px-6 py-4" style={{ backgroundColor: "#FF5619" }}>
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+      <div className="text-sm md:text-base font-semibold text-white">
+        24-Hour UX Conversion Blueprint — $149
+      </div>
+
+      <Link
+        href="/audit"
+        style={{
+          backgroundColor: "#111111",
+          color: "#FFFFFF",
+          border: "1px solid rgba(255,255,255,0.35)",
+        }}
+        className="inline-flex items-center justify-center rounded-xl px-5 py-2 font-semibold shadow-md transition hover:opacity-95"
+      >
+        Get My Blueprint
+      </Link>
     </div>
-
-    <Link
-  href="/audit"
-  style={{
-    backgroundColor: "#111111",
-    color: "#FFFFFF",
-    border: "1px solid rgba(255,255,255,0.35)",
-  }}
-  className="inline-flex items-center justify-center rounded-xl px-5 py-2 font-semibold shadow-md transition hover:opacity-95"
->
-  Get My Blueprint
-</Link>
-
   </div>
-</div>
+)}
 
  
       {/* Hero */}
