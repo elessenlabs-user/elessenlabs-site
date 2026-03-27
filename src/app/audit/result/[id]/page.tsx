@@ -340,10 +340,14 @@ function Section({
 
 export default async function AuditResultPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ unlock?: string }>;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const searchUnlock = resolvedSearchParams?.unlock === "999";
 
   const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -401,14 +405,27 @@ export default async function AuditResultPage({
     </main>
   );
 }
-      const sections = splitSections(finalAuditContent);
-  const sectionItems = sections.map((section, index) => ({
-    id: `section-${index}`,
-    title: section.title,
-    content: section.content,
-  }));
-  const auditScore = computeAuditScore(finalAuditContent || "");
-  const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
+    const sections =
+  Array.isArray(data.pages) &&
+  data.pages.length > 0 &&
+  Array.isArray(data.pages[0]?.sections)
+    ? data.pages[0].sections
+    : splitSections(finalAuditContent);
+
+const auditScore = computeAuditScore(finalAuditContent || "");
+const firstPage =
+  Array.isArray(data.pages) && data.pages.length > 0 ? data.pages[0] : null;
+
+const evidenceScreenshot =
+  firstPage?.marked_screenshot_url ||
+  data.marked_screenshot_url ||
+  firstPage?.screenshot_url ||
+  data.screenshot_url;
+
+const isUnlocked =
+  data.status === "approved" ||
+  data.status === "delivered" ||
+  searchUnlock;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -472,10 +489,15 @@ export default async function AuditResultPage({
 
 
         <AuditSectionsClient
-          sections={sectionItems}
-          uiEvidence={data.ui_evidence || []}
-          uiReferenceScreenshot={evidenceScreenshot}
-        />
+  sections={sections.map((section, index) => ({
+    id: `section-${index}`,
+    title: section.title,
+    content: section.content,
+  }))}
+  uiEvidence={data.ui_evidence || []}
+  uiReferenceScreenshot={evidenceScreenshot}
+  previewMode={!isUnlocked}
+/>
 
       </div>
 

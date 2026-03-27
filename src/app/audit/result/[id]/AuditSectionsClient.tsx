@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 type UiEvidenceItem = {
@@ -131,27 +131,97 @@ function badgeColor(value: string) {
   return "bg-gray-50 text-gray-700 ring-gray-200";
 }
 
+function isUnlockedSection(title: string) {
+  const t = title.toLowerCase();
+  return t.includes("executive") || t.includes("critical");
+}
+
+function LockedSection({
+  title,
+}: {
+  title: string;
+}) {
+  return (
+    <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
+      <div className="mb-4 text-lg font-semibold">{title}</div>
+
+      <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-8">
+        <div className="pointer-events-none select-none blur-[4px] opacity-50">
+          <div className="space-y-4">
+            <div className="h-24 rounded-2xl bg-white border border-black/10" />
+            <div className="h-24 rounded-2xl bg-white border border-black/10" />
+            <div className="h-24 rounded-2xl bg-white border border-black/10" />
+          </div>
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center p-6">
+          <div className="max-w-md rounded-3xl border border-orange-200 bg-white p-8 text-center shadow-xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-2xl">
+              🔒
+            </div>
+
+            <h3 className="text-xl font-semibold text-black">
+              Unlock the full audit
+            </h3>
+
+            <p className="mt-3 text-sm leading-6 text-black/60">
+              Executive Summary and Critical Issues are visible in preview.
+              Complete payment to unlock the full report, including UI fixes,
+              conversion improvements, copy recommendations, SEO, and sprint plan.
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a
+                href="/audit"
+                className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+              >
+                Complete payment
+              </a>
+
+              <a
+                href="mailto:hello@elessenlabs.com?subject=Question%20about%20unlocking%20audit"
+                className="inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-black/[0.03]"
+              >
+                Ask a question
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SectionContent({
   title,
   content,
   uiEvidence,
   uiReferenceScreenshot,
+    locked,
+  onOpenImage,
 }: {
   title: string;
   content: string;
   uiEvidence?: UiEvidenceItem[] | null;
   uiReferenceScreenshot?: string | null;
+  locked?: boolean;
+  onOpenImage?: (src: string) => void;
 }) {
-    const lowerTitle = title.toLowerCase();
-    const isCritical = lowerTitle.includes("critical");
-    const isExecutive = lowerTitle.includes("executive");
-    const isUiSection =
-      lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
-    const panelTone = getSectionPanelTone(title);
-    const isCardSection =
-      /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
-    const cards = parseBulletCards(content);
-    const executiveBullets = parseExecutiveBullets(content);
+
+  const lowerTitle = title.toLowerCase();
+  const isCritical = lowerTitle.includes("critical");
+  const isExecutive = lowerTitle.includes("executive");
+  const isUiSection =
+    lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
+  const panelTone = getSectionPanelTone(title);
+  const isCardSection =
+    /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
+  const cards = parseBulletCards(content);
+  const executiveBullets = parseExecutiveBullets(content);
+
+  if (locked) {
+    return <LockedSection title={title} />;
+  }
 
   return (
     <section
@@ -159,7 +229,7 @@ function SectionContent({
         isCritical ? "ring-1 ring-red-100" : ""
       }`}
     >
-     <div className="mb-4 flex items-center gap-3 text-lg font-semibold">
+      <div className="mb-4 flex items-center gap-3 text-lg font-semibold">
         {isCritical && (
           <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
             <span className="relative flex h-2.5 w-2.5">
@@ -172,18 +242,80 @@ function SectionContent({
         <span>{title}</span>
       </div>
 
-      {isUiSection && uiReferenceScreenshot && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2">
-          <img
-            src={uiReferenceScreenshot}
-            alt="UI improvements reference screenshot"
-            className="h-auto w-full rounded-xl"
-          />
+            {isUiSection && uiReferenceScreenshot && (
+  <button
+    type="button"
+    onClick={() => onOpenImage?.(uiReferenceScreenshot)}
+    className="relative mb-6 block w-full overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2 text-left transition hover:shadow-md"
+  >
+    <div className="relative">
+      <img
+        src={uiReferenceScreenshot}
+        alt="UI improvements reference screenshot"
+        className="h-auto max-w-full rounded-xl"
+  />
+
+  {(uiEvidence || []).slice(0, 6).map((item, index) => {
+    const positions = [
+      { top: "18%", left: "22%" },
+      { top: "18%", left: "52%" },
+      { top: "18%", left: "82%" },
+      { top: "48%", left: "36%" },
+      { top: "74%", left: "26%" },
+      { top: "74%", left: "78%" },
+    ];
+
+    const pos = positions[index] || positions[0];
+    const markerNumber = item.marker || index + 1;
+
+    return (
+      <div
+        key={`lightbox-marker-${index}`}
+        className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+        style={{ top: pos.top, left: pos.left }}
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-base font-bold text-white shadow-lg ring-2 ring-white">
+          {markerNumber}
         </div>
-      )}
+      </div>
+    );
+  })}
+</div>
+
+    {(uiEvidence || []).slice(0, 6).map((item, index) => {
+      const positions = [
+        { top: "18%", left: "22%" },
+        { top: "18%", left: "52%" },
+        { top: "18%", left: "82%" },
+        { top: "48%", left: "36%" },
+        { top: "74%", left: "26%" },
+        { top: "74%", left: "78%" },
+      ];
+
+      const pos = positions[index] || positions[0];
+      const markerNumber = item.marker || index + 1;
+
+      return (
+        <div
+          key={`marker-${index}`}
+          className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+          style={{ top: pos.top, left: pos.left }}
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+            {markerNumber}
+          </div>
+        </div>
+      );
+    })}
+
+    <div className="mt-2 text-xs text-black/55">
+      Click to enlarge screenshot
+    </div>
+  </button>
+)}
 
       {isUiSection && uiEvidence?.length ? (
-                <div className="grid gap-4">
+        <div className="grid gap-4">
           {uiEvidence.map((item, index) => (
             <div
               key={index}
@@ -192,15 +324,19 @@ function SectionContent({
               <div className="min-w-0 text-sm leading-6 text-black/75">
                 <div className="mb-3 flex items-center gap-2">
                   {item.marker ? (
-                    <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white shadow-sm">
+                    <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-sm ring-2 ring-white">
                       {item.marker}
                     </span>
-                  ) : null}
+            ) : (
+            <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-sm ring-2 ring-white">
+              {index + 1}
+            </span>
+            )}
 
-                  <span className="text-xs font-semibold uppercase tracking-wide text-black/45">
-                    UI Issue
-                  </span>
-                </div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-black/45">
+              UI Issue #{item.marker || index + 1}
+            </span>
+          </div>
 
                 <div className="space-y-2">
                   {item.issue && (
@@ -225,7 +361,6 @@ function SectionContent({
             </div>
           ))}
         </div>
-
       ) : isCardSection ? (
         <div className="grid gap-4">
           {cards.map((card, index) => (
@@ -343,23 +478,43 @@ export default function AuditSectionsClient({
   sections,
   uiEvidence,
   uiReferenceScreenshot,
+  previewMode = false,
 }: {
   sections: SectionItem[];
   uiEvidence?: UiEvidenceItem[] | null;
   uiReferenceScreenshot?: string | null;
+  previewMode?: boolean;
 }) {
-  const [activeId, setActiveId] = useState<string | null>("section-0");
+  const defaultSectionId = useMemo(() => {
+    if (!sections.length) return null;
+
+    if (!previewMode) return sections[0].id;
+
+    const executive = sections.find((s) =>
+      s.title.toLowerCase().includes("executive")
+    );
+
+    return executive ? executive.id : sections[0].id;
+  }, [sections, previewMode]);
+
+  const [activeId, setActiveId] = useState<string | null>(defaultSectionId);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+
+    useEffect(() => {
+    setActiveId(defaultSectionId);
+  }, [defaultSectionId]);
 
   return (
-        <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8">
-                  <div className="self-start">
-                        <div className="sticky top-28 space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+    <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8">
+      <div className="self-start">
+        <div className="sticky top-28 space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
           {sections.map((section) => {
             const tone = getSectionNavTone(section.title);
             const hoverTone = getSectionNavHoverTone(section.title);
             const isActive = activeId === section.id;
-
-                        const isCriticalTab = section.title.toLowerCase().includes("critical");
+            const isCriticalTab = section.title.toLowerCase().includes("critical");
+            const locked = previewMode && !isUnlockedSection(section.title);
 
             return (
               <button
@@ -379,7 +534,12 @@ export default function AuditSectionsClient({
                       <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
                     </span>
                   )}
+
                   <span>{section.title}</span>
+
+                  {locked && (
+                    <span className="ml-1 text-xs text-black/45">🔒</span>
+                  )}
                 </span>
               </button>
             );
@@ -397,9 +557,55 @@ export default function AuditSectionsClient({
               content={section.content}
               uiEvidence={uiEvidence}
               uiReferenceScreenshot={uiReferenceScreenshot}
+              locked={previewMode && !isUnlockedSection(section.title)}
+              onOpenImage={(src) => {
+                setLightboxSrc(src);
+                setLightboxOpen(true);
+              }}
             />
           ))}
       </div>
+            {lightboxOpen && lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6"
+          >
+           {/* overlay click */}
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              setLightboxOpen(false);
+              setLightboxSrc(null);
+            }}
+    />
+          {/* modal */}
+          <div
+            className="max-h-[90vh] max-w-[95vw] overflow-auto rounded-2xl bg-white p-3 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <div className="text-sm font-semibold text-black">
+                UI Improvements Screenshot
+              </div>
+              {/* THIS IS WHERE YOUR BUTTON GOES */}
+              <button
+                type="button"
+                onClick={() => {
+                  setLightboxOpen(false);
+                  setLightboxSrc(null);
+                }}
+                className="rounded-lg border border-black/10 px-3 py-1 text-sm text-black hover:bg-black/[0.04]"
+              >
+                Close
+              </button>
+            </div>
+
+            <img
+              src={lightboxSrc}
+              className="h-auto max-w-full rounded-xl"
+      />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

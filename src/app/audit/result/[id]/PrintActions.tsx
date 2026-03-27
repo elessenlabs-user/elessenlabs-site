@@ -25,9 +25,12 @@ export default function PrintActions() {
         Download PDF
       </button>
 
-      <a href="/start" className="btn-secondary">
-        Book another audit
-      </a>
+      <a
+  href="/audit"
+  className="inline-flex items-center justify-center rounded-2xl bg-[#FF7A00] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+>
+  Start a New Audit
+</a>
     </div>
   );
 }

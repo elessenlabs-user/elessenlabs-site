@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+import { runAuditPipeline } from "../../../../lib/audit/pipeline";
 
 export const runtime = "nodejs";
 
@@ -505,70 +506,38 @@ export async function POST(req: Request) {
   }
 
   try {
-    const url = String(row.product_url || "").trim();
+    const { processedPages } = await runAuditPipeline(row);
 
-    const htmlRes = await fetch(url, {
-      redirect: "follow",
-      headers: {
-        "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
-        Accept: "text/html,*/*",
-      },
-    });
+const firstPage = processedPages?.[0] || null;
 
-    const html = await htmlRes.text();
-    const signals = extractSignals(html, url);
-
-    const screenshotUrl = await captureScreenshot(url);
-
-    const markedScreenshotUrl = screenshotUrl
-  ? await addScreenshotMarkers(screenshotUrl)
-  : null;
-    
-
-    const auditMarkdown = await generateAuditMarkdown({
-      product_url: row.product_url,
-      focus_page_url: row.focus_page_url || "",
-      notes: row.notes,
-      signals,
-      screenshot_url: screenshotUrl,
-    });
-
-    const uiEvidence = parseUiEvidence(auditMarkdown);
-
-    const uiEvidenceClean = uiEvidence.map((item) => ({
-      marker: item.marker,
-      issue: item.issue,
-      evidence: item.evidence,
-      fix: item.fix,
-    }));
-
-    const { error: saveErr } = await supabaseAdmin
+const { error: saveErr } = await supabaseAdmin
   .from("audit_requests")
   .update({
-    audit_content: clip(auditMarkdown, 250000),
-    screenshot_url: screenshotUrl,
-    marked_screenshot_url: markedScreenshotUrl,
-    ui_evidence: uiEvidenceClean,
+    pages: processedPages,
+    screenshot_url: firstPage?.screenshot_url || null,
+    marked_screenshot_url: firstPage?.marked_screenshot_url || null,
+    audit_content: clip(
+      processedPages
+        ?.flatMap((page: any) => page.sections || [])
+        ?.map((section: any) => `## ${section.title}\n${section.content}`)
+        ?.join("\n\n") || "",
+      250000
+    ),
     status: "ready_for_review",
     completed_at: new Date().toISOString(),
   })
   .eq("id", row.id);
 
-    if (saveErr) {
-      throw new Error(`Failed to save audit_content: ${saveErr.message}`);
-    }
+if (saveErr) {
+  throw new Error(`Failed to save processed pages: ${saveErr.message}`);
+}
 
-    return NextResponse.json({
-      ok: true,
-      id: row.id,
-      status: "ready_for_review",
-      signals_summary: {
-        title: signals.title,
-        h1: signals.h1?.[0] || "",
-        ctas: signals.ctas?.slice(0, 5) || [],
-      },
-    });
-
+return NextResponse.json({
+  ok: true,
+  id: row.id,
+  status: "ready_for_review",
+  pageCount: processedPages.length,
+});
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 

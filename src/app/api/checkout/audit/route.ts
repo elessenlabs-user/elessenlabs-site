@@ -76,10 +76,26 @@ export async function POST(req: Request) {
         req.headers.get("host")?.includes("localhost");
 
     if (isLocal) {
-      return NextResponse.json({
-        url: `/audit/result/${auditRequestId}?test_checkout=1`,
-      });
-    }
+  const secret = process.env.AUDIT_ENGINE_SECRET;
+
+  try {
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/audit/generate?id=${auditRequestId}`,
+      {
+        method: "POST",
+        headers: {
+          "x-audit-secret": secret || "",
+        },
+      }
+    );
+  } catch (e) {
+    console.error("LOCAL GENERATE ERROR:", e);
+  }
+
+  return NextResponse.json({
+    url: `/audit/result/${auditRequestId}?test_checkout=1`,
+  });
+}
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
