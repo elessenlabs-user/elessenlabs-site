@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
 import PrintActions from "./PrintActions";
+import AuditSectionsClient from "./AuditSectionsClient";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,11 @@ type UiEvidenceItem = {
   screenshot_url?: string | null;
 };
 
-function splitSections(markdown: string) {
+function splitSections(markdown: string | null | undefined) {
+  if (!markdown || !markdown.trim()) {
+    return [];
+  }
+
   return markdown
     .split(/(?=## )/g)
     .map((section) => {
@@ -111,12 +116,28 @@ function computeAuditScore(auditContent: string) {
   if (score >= 60) return { score, label: "Needs improvement" };
   return { score, label: "High priority fixes" };
 }
+function getSectionNavTone(title: string) {
+  const t = title.toLowerCase();
+
+  if (t.includes("executive")) return "border-orange-300 bg-orange-50";
+  if (t.includes("critical")) return "border-red-300 bg-red-50";
+  if (t.includes("conversion")) return "border-amber-300 bg-amber-50";
+  if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-300 bg-purple-50";
+  if (t.includes("copy")) return "border-blue-300 bg-blue-50";
+  if (t.includes("seo")) return "border-green-300 bg-green-50";
+  if (t.includes("sprint")) return "border-indigo-300 bg-indigo-50";
+  if (t.includes("question")) return "border-neutral-400 bg-neutral-100";
+
+  return "border-black/10 bg-white";
+}
 function Section({
+  id,
   title,
   content,
   uiEvidence,
   uiReferenceScreenshot,
 }: {
+  id: string;
   title: string;
   content: string;
   uiEvidence?: UiEvidenceItem[] | null;
@@ -134,31 +155,22 @@ function Section({
   const cards = parseBulletCards(content);
 
   return (
-    <details
-      className={`mb-6 rounded-2xl border bg-white shadow-sm ${
+            <section
+      id={id}
+      className={`mb-6 scroll-mt-24 rounded-2xl border bg-white p-6 shadow-sm ${
         isCritical ? "border-red-200 ring-1 ring-red-100" : "border-black/10"
       }`}
-      open={isCritical}
     >
-      <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-lg font-semibold list-none">
-        <div className="flex items-center gap-3">
-          {isCritical && (
-            <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
-              Priority
-            </span>
-          )}
-          <span>{title}</span>
-        </div>
-
+      <div className="mb-4 flex items-center gap-3 text-lg font-semibold">
         {isCritical && (
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+          <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
+            Priority
           </span>
         )}
-      </summary>
+        <span>{title}</span>
+      </div>
 
-      <div className="px-6 pb-6 pt-2">
+      <div>
         {isUiSection && uiEvidence?.length ? (
   <div className="space-y-6">
     {uiReferenceScreenshot && (
@@ -322,7 +334,7 @@ function Section({
           </div>
         )}
       </div>
-    </details>
+    </section>
   );
 }
 
@@ -341,8 +353,8 @@ export default async function AuditResultPage({
   const { data, error } = await supabase
     .from("audit_requests")
     .select(
-    "id, full_name, product_url, focus_page_url, status, audit_content, edited_audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"  
-    )
+  "id, full_name, product_url, focus_page_url, pages, status, audit_content, edited_audit_content, screenshot_url, marked_screenshot_url, ui_evidence, completed_at"
+)
     .eq("id", id)
     .single();
 
@@ -361,9 +373,40 @@ export default async function AuditResultPage({
   }
 
   const finalAuditContent =
+  
   data.edited_audit_content || data.audit_content;
 
-  const sections = splitSections(finalAuditContent);  
+  if (!finalAuditContent) {
+  return (
+    <main className="mx-auto max-w-5xl px-10 py-24">
+      <div className="rounded-3xl border border-black/10 bg-white p-14 shadow-sm">
+        <div className="text-xs font-semibold tracking-[0.18em] text-black/45">
+          AUDIT STATUS
+        </div>
+
+        <h1 className="mt-3 text-2xl font-semibold">
+          Your audit request has been created
+        </h1>
+
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">
+          This result page exists, but the audit content has not been generated yet.
+          In localhost test mode, checkout is bypassed, so payment succeeds for testing,
+          but the actual audit pipeline still has not run.
+        </p>
+
+        <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-black/75">
+          <strong>Status:</strong> {data.status || "pending"}
+        </div>
+      </div>
+    </main>
+  );
+}
+      const sections = splitSections(finalAuditContent);
+  const sectionItems = sections.map((section, index) => ({
+    id: `section-${index}`,
+    title: section.title,
+    content: section.content,
+  }));
   const auditScore = computeAuditScore(finalAuditContent || "");
   const evidenceScreenshot = data.marked_screenshot_url || data.screenshot_url;
 
@@ -428,15 +471,11 @@ export default async function AuditResultPage({
         </div>
 
 
-        {sections.map((section, index) => (
-          <Section
-            key={index}
-            title={section.title}
-            content={section.content}
-            uiEvidence={data.ui_evidence || []}
-            uiReferenceScreenshot={evidenceScreenshot}
-          />
-        ))}
+        <AuditSectionsClient
+          sections={sectionItems}
+          uiEvidence={data.ui_evidence || []}
+          uiReferenceScreenshot={evidenceScreenshot}
+        />
 
       </div>
 

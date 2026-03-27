@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const AUDIT_PRICE = "$149";
 const TURNAROUND = "24 hours";
+const BASE_AUDIT_PRICE = 149;
+const EXTRA_PAGE_PRICE = 20;
+const INCLUDED_PAGES = 2;
+const MAX_EXTRA_PAGES = 3;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -20,11 +24,12 @@ const stagger = {
 };
 
 export default function AuditPage() {
-  const [fullName, setFullName] = useState("");
+    const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [productUrl, setProductUrl] = useState("");
   const [focusPageUrl, setFocusPageUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [extraPageUrls, setExtraPageUrls] = useState<string[]>([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +69,10 @@ export default function AuditPage() {
   }
 }
 
+    const totalPrice = BASE_AUDIT_PRICE + extraPageUrls.length * EXTRA_PAGE_PRICE;
+
   const canSubmit = useMemo(() => {
+
     return (
       fullName.trim().length >= 2 &&
       isValidEmail(email) &&
@@ -119,7 +127,7 @@ export default function AuditPage() {
       }).catch(() => {});
 
       // 2) Create Stripe Checkout Session on the server (so webhook has your form data)
-      const res = await fetch("/api/checkout/audit", {
+            const res = await fetch("/api/checkout/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -127,7 +135,9 @@ export default function AuditPage() {
           email,
           productUrl,
           focusPageUrl,
+          extraPageUrls,
           notes,
+          totalPrice,
         }),
       });
 
@@ -160,32 +170,47 @@ export default function AuditPage() {
       className="mx-auto max-w-5xl space-y-10"
     >
 {/* HERO */}
-<div className="rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
+<div className="rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF8F3] p-8 shadow-sm">
   <div className="grid items-start gap-8 md:grid-cols-[1.15fr_.85fr]">
     {/* LEFT */}
     <div>
       <div className="text-xs font-semibold tracking-wide opacity-60">OFFER</div>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight">
-        24-Hour UX Conversion Blueprint
+        Elessen Audit Engine
       </h1>
       <p className="mt-3 text-lg opacity-80">
-        Send your website, landing page, app store page, or key product flow. 
-        We return a conversion-focused audit you can implement immediately.
+        A conversion-focused UX audit customized for your product, powered by AI and sharpened by 15+ years of hands-on product design experience. This is not generic AI output — it is a structured, expert-guided review built to help you act fast.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-2 text-[12px]">
         <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+          Limited intro rate: {AUDIT_PRICE}
+        </span>
+        <span className="rounded-full border border-black/10 bg-white px-3 py-1">
+          Standard audit range: $3,000–$30,000
+        </span>
+        <span className="rounded-full border border-black/10 bg-white px-3 py-1">
           Delivery: {TURNAROUND}
         </span>
         <span className="rounded-full border border-black/10 bg-white px-3 py-1">
-          Price: {AUDIT_PRICE}
+          AI-supported + expert-reviewed
         </span>
-        <span className="rounded-full border border-black/10 bg-white px-3 py-1">
-          Format: PDF + prioritized fixes
-        </span>
-        <span className="rounded-full border border-black/10 bg-white px-3 py-1">
-          Includes: examples + copy tweaks
-        </span>
+      </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+        <Link
+          href="/audit/sample/saas-landing"
+          className="inline-flex items-center justify-center rounded-2xl border border-orange-300 bg-white px-5 py-3 text-sm font-semibold text-black shadow-sm transition hover:bg-orange-50"
+        >
+          View Sample Audit
+        </Link>
+
+        <a
+          href="#audit-form"
+          className="inline-flex items-center justify-center rounded-2xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(255,122,0,0.28)] transition hover:brightness-95"
+        >
+          Start My Audit
+        </a>
       </div>
 
       {/* How it works */}
@@ -216,7 +241,7 @@ export default function AuditPage() {
 
     {/* RIGHT: DELIVERABLE PREVIEW */}
     <div className="md:sticky md:top-24">
-      <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm">
+      <div className="rounded-3xl border border-orange-200 bg-[#FFF8F3] p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="text-sm font-semibold">Deliverable preview</div>
           <div className="text-xs opacity-60">Sample PDF</div>
@@ -233,9 +258,9 @@ export default function AuditPage() {
           />
         </div>
 
-        <div className="mt-3 text-xs opacity-60">
-          You’ll get a clean PDF with prioritized fixes, annotated screenshots, and next steps.
-        </div>
+          <div className="mt-3 text-xs opacity-60">
+            View the style of output generated by the Elessen Audit Engine before purchase.
+          </div>
       </div>
     </div>
   </div>
@@ -243,10 +268,9 @@ export default function AuditPage() {
 
       {/* VALUE CARDS + SAMPLE */}
       <motion.section variants={fadeUp} className="grid gap-6 md:grid-cols-3">
-        <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm md:col-span-2">
+        <div className="rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-6 shadow-sm md:col-span-2">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-black/10 bg-gradient-to-br from-white to-gray-50 p-6">
-              <div className="text-sm font-semibold">What you get</div>
+<div className="rounded-2xl border border-black/10 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">              <div className="text-sm font-semibold">What you get</div>
               <ul className="mt-4 space-y-2 text-sm text-black/70">
                 <li>• Top conversion blockers (prioritized)</li>
                 <li>• Exact UX/UI fixes (with examples)</li>
@@ -256,7 +280,7 @@ export default function AuditPage() {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-gradient-to-br from-white to-gray-50 p-6">
+<div className="rounded-2xl border border-black/10 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
               <div className="text-sm font-semibold">What we need</div>
               <ul className="mt-4 space-y-2 text-sm text-black/70">
                 <li>• A live link (website or app store link)</li>
@@ -268,10 +292,10 @@ export default function AuditPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-6 shadow-sm">
           <div className="text-sm font-semibold">Example insights</div>
           <div className="mt-4 space-y-3 text-sm text-black/70">
-            <div className="rounded-2xl border border-black/10 bg-gray-50 p-4">
+            <div className="rounded-2xl border border-black/10 bg-white p-4 shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
               <div className="font-semibold text-black/80">Pricing clarity</div>
               <div className="mt-1">Mismatch between promise and pricing page CTA hierarchy.</div>
             </div>
@@ -291,36 +315,31 @@ export default function AuditPage() {
       <motion.section
         id="audit-form"
         variants={fadeUp}
-        className="relative overflow-hidden rounded-3xl border border-black/10 bg-white p-8 shadow-sm md:p-10"
+                className="relative overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-8 shadow-sm md:p-10"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white to-gray-50" />
 
         <div className="relative">
-          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-3">
             <div>
-              <div className="text-xs font-semibold tracking-[0.18em] text-black/50">
-                START CHECKOUT
+              <div className="inline-flex items-center rounded-full border border-orange-200 bg-white px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-[#FF7A00] shadow-sm">
+                ELLESSEN AUDIT ENGINE
               </div>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Submit details, then pay securely via Stripe
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+                Get your customized Elessen Audit Engine review
               </h2>
-              <p className="mt-2 text-sm text-black/60">
-                You’ll receive a confirmation email instantly.
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-black/65">
+                Share your product link and we’ll return a focused, conversion-driven audit shaped by AI-supported analysis and real product design experience — not generic output.
               </p>
             </div>
 
-            <div className="mt-2 inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm">
-              <span className="font-semibold">{AUDIT_PRICE}</span>
-              <span className="text-black/50">•</span>
-              <span className="text-black/70">{TURNAROUND} delivery</span>
-            </div>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div>
               <label className="text-sm font-medium">Full name</label>
               <input
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your name"
@@ -332,21 +351,30 @@ export default function AuditPage() {
               <label className="text-sm font-medium">Email</label>
               <input
                 type="email"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                autoComplete="email"
-                inputMode="email"
-              />
-            </div>
+                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:ring-4 ${
+                  email.trim().length > 0 && !isValidEmail(email)
+                  ? "border-red-300 focus:ring-red-100"
+                  : "border-black/10 focus:ring-black/10"
+                } focus:border-orange-300`}
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    placeholder="name@company.com"
+    autoComplete="email"
+    inputMode="email"
+  />
+  {email.trim().length > 0 && !isValidEmail(email) && (
+    <p className="mt-2 text-xs text-red-600">
+      Please enter a valid email address.
+    </p>
+  )}
+</div>
           </div>
 
           <div className="mt-4">
             <label className="text-sm font-medium">Website / Product link</label>
             <input
             type="text"
-            className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+            className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
             value={productUrl}
             onChange={(e) => setProductUrl(e.target.value)}
             placeholder="airbnb.com, www.airbnb.com, or https://airbnb.com"
@@ -358,31 +386,92 @@ export default function AuditPage() {
           )}
         </div> 
 
-          <div className="mt-4">
+                    <div className="mt-4">
             <label className="text-sm font-medium">
-              Optional page, screen, or flow to review
+              Included additional page, screen, or flow
             </label>
             <input
               type="url"
-              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
               value={focusPageUrl}
               onChange={(e) => setFocusPageUrl(e.target.value)}
               placeholder="https://yourproduct.com/pricing, app store link, onboarding page, or shared flow URL"
-           />
-          <p className="mt-2 text-xs text-black/55">
-            For apps, you can share an app store page, onboarding flow, key screen URL,
-            or recorded beta flow. Full live in-app audit coming soon.
-          </p>
+            />
+            <p className="mt-2 text-xs text-black/55">
+              Your audit includes your main page plus 1 additional page or key flow at no extra cost.
+            </p>
           </div>
 
+                    <div className="mt-4 rounded-2xl border border-orange-200 bg-[#FFF4E8] p-5 shadow-[0_8px_24px_rgba(255,122,0,0.08)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-semibold text-black">Add more pages</div>
+                <p className="mt-1 text-xs text-black/60">
+                  Your audit includes your main page plus 1 additional page free. Add up to {MAX_EXTRA_PAGES} more pages at ${EXTRA_PAGE_PRICE} each.
+                </p>
+              </div>
+
+              <div className="text-right">
+                <div className="text-xs uppercase tracking-wide text-black/45">
+                  Current total
+                </div>
+                <div className="mt-1 text-lg font-semibold">${totalPrice}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {extraPageUrls.map((url, index) => (
+                <div key={index} className="rounded-2xl border border-black/10 bg-white p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-xs font-medium text-black/60">
+                      Extra page {index + 3}
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExtraPageUrls((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-xs font-medium text-red-600 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={url}
+                    onChange={(e) =>
+                      setExtraPageUrls((prev) =>
+                        prev.map((item, i) => (i === index ? e.target.value : item))
+                      )
+                    }
+                    placeholder="https://yourproduct.com/page"
+                    className="mt-2 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200"
+                  />
+                </div>
+              ))}
+
+              {extraPageUrls.length < MAX_EXTRA_PAGES && (
+                <button
+                  type="button"
+                  onClick={() => setExtraPageUrls((prev) => [...prev, ""])}
+                  className="inline-flex items-center justify-center rounded-2xl border border-orange-300 bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-orange-50"
+                >
+                  + Add another page (${EXTRA_PAGE_PRICE})
+                </button>
+              )}
+            </div>
+          </div>
+        
           <div className="mt-4">
             <label className="text-sm font-medium">Notes (optional)</label>
             <textarea
-              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-black/10"
+              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="What should we focus on? (checkout, onboarding, pricing page, etc.)"
-              rows={4}
+              rows={5}
             />
           </div>
 
@@ -399,7 +488,7 @@ export default function AuditPage() {
             )}
           </AnimatePresence>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-8 flex flex-col gap-3 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <Link
               className="text-sm underline underline-offset-4 text-black/60 hover:text-black"
               href="/start"
@@ -414,11 +503,11 @@ export default function AuditPage() {
               whileTap={canSubmit ? { scale: 0.98 } : undefined}
               className={`rounded-2xl px-6 py-3 font-semibold text-white shadow-lg transition ${
                 canSubmit
-                  ? "bg-black hover:opacity-95"
+                  ? "bg-[#FF7A00] hover:brightness-95 shadow-[0_10px_30px_rgba(255,122,0,0.28)]"
                   : "cursor-not-allowed bg-gray-400"
               }`}
             >
-              {loading ? "Redirecting…" : `Pay ${AUDIT_PRICE} + Start`}
+                {loading ? "Redirecting…" : `Pay $${totalPrice} + Start`}
             </motion.button>
           </div>
 

@@ -16,14 +16,16 @@ export async function POST(req: Request) {
   try {
     const { fullName, email, productUrl, focusPageUrl, notes } = await req.json();
 
+
     if (!fullName || !email || !productUrl) {
-      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields." },
+        { status: 400 }
+      );
     }
 
-    // Always normalize URLs server-side (even if the client already does it)
     const normalizedProductUrl = withHttps(String(productUrl).replace(/\s+/g, ""));
 
-    // Ensure we have a proper site URL for Stripe redirects
     const originFromReq =
       req.headers.get("origin") ||
       (req.headers.get("host") ? `https://${req.headers.get("host")}` : "");
@@ -44,7 +46,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1) Create audit request immediately (pending payment)
     const { data: created, error: createErr } = await supabaseAdmin
       .from("audit_requests")
       .insert({
@@ -57,18 +58,29 @@ export async function POST(req: Request) {
         notes: notes || "",
         status: "pending_payment",
       })
-      
       .select("id")
       .single();
 
     if (createErr || !created?.id) {
       console.error("audit_requests insert failed:", createErr);
-      return NextResponse.json({ error: "Failed to create audit request." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create audit request." },
+        { status: 500 }
+      );
     }
 
     const auditRequestId = created.id as string;
 
-    // 2) Create Stripe session
+      const isLocal =
+        process.env.NODE_ENV === "development" &&
+        req.headers.get("host")?.includes("localhost");
+
+    if (isLocal) {
+      return NextResponse.json({
+        url: `/audit/result/${auditRequestId}?test_checkout=1`,
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: email,
@@ -81,7 +93,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // 3) Update row with stripe session id
     await supabaseAdmin
       .from("audit_requests")
       .update({ stripe_session_id: session.id })
@@ -90,6 +101,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error("checkout/audit error:", err);
-    return NextResponse.json({ error: err?.message || "Checkout failed." }, { status: 500 });
+    return NextResponse.json(
+      { error: err?.message || "Checkout failed." },
+      { status: 500 }
+    );
   }
 }
