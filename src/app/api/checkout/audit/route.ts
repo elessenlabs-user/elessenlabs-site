@@ -14,7 +14,7 @@ function withHttps(url: string) {
 
 export async function POST(req: Request) {
   try {
-    const { fullName, email, productUrl, focusPageUrl, notes } = await req.json();
+    const { fullName, email, productUrl, focusPageUrl, extraPageUrls, notes } = await req.json();
 
 
     if (!fullName || !email || !productUrl) {
@@ -48,15 +48,25 @@ export async function POST(req: Request) {
 
     const { data: created, error: createErr } = await supabaseAdmin
       .from("audit_requests")
-      .insert({
+            .insert({
         full_name: fullName,
         email,
         product_url: normalizedProductUrl,
         focus_page_url: focusPageUrl
           ? withHttps(String(focusPageUrl).replace(/\s+/g, ""))
           : null,
+        pages: [
+          { url: normalizedProductUrl },
+          ...(focusPageUrl
+            ? [{ url: withHttps(String(focusPageUrl).replace(/\s+/g, "")) }]
+            : []),
+          ...((extraPageUrls || [])
+            .map((url: string) => withHttps(String(url).replace(/\s+/g, "")))
+            .filter(Boolean)
+            .map((url: string) => ({ url }))),
+        ],
         notes: notes || "",
-        status: "pending_payment",
+        status: "preview_ready",
       })
       .select("id")
       .single();

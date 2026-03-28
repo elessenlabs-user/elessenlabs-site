@@ -523,7 +523,9 @@ const { error: saveErr } = await supabaseAdmin
         ?.join("\n\n") || "",
       250000
     ),
-    status: "ready_for_review",
+    status: row.status === "paid_in_review"
+  ? "ready_for_review"
+  : "preview_ready",
     completed_at: new Date().toISOString(),
   })
   .eq("id", row.id);
@@ -535,9 +537,12 @@ if (saveErr) {
 return NextResponse.json({
   ok: true,
   id: row.id,
-  status: "ready_for_review",
+  status: row.status === "paid_in_review"
+  ? "ready_for_review"
+  : "preview_ready",
   pageCount: processedPages.length,
 });
+
   } catch (e: any) {
     console.error("AUDIT_GENERATE_ERROR", e);
 

@@ -138,10 +138,16 @@ function isUnlockedSection(title: string) {
 
 function LockedSection({
   title,
+  currentStatus,
 }: {
   title: string;
+  currentStatus?: string;
 }) {
-  return (
+    const isPreviewReady = currentStatus === "preview_ready";
+    const isInReview =
+      currentStatus === "paid_in_review" || currentStatus === "ready_for_review";
+  
+      return (
     <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
       <div className="mb-4 text-lg font-semibold">{title}</div>
 
@@ -165,18 +171,26 @@ function LockedSection({
             </h3>
 
             <p className="mt-3 text-sm leading-6 text-black/60">
-              Executive Summary and Critical Issues are visible in preview.
-              Complete payment to unlock the full report, including UI fixes,
-              conversion improvements, copy recommendations, SEO, and sprint plan.
+              {isPreviewReady
+                ? "Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report, including UI fixes, conversion improvements, copy recommendations, SEO, and sprint plan."
+                : "Your full Elessen Audit Engine™ report is now in review. It is being finalized and reviewed by Elessen before release within 24 hours."}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <a
-                href="/audit"
-                className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
-              >
-                Complete payment
+              {isPreviewReady ? (
+                <a
+                  href={process.env.NEXT_PUBLIC_STRIPE_AUDIT_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+                >
+                  Pay for Full Report
               </a>
+      ) : (
+            <div className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white">
+              In Review
+            </div>
+        )}
 
               <a
                 href="mailto:hello@elessenlabs.com?subject=Question%20about%20unlocking%20audit"
@@ -197,8 +211,9 @@ function SectionContent({
   content,
   uiEvidence,
   uiReferenceScreenshot,
-    locked,
+  locked,
   onOpenImage,
+  currentStatus,
 }: {
   title: string;
   content: string;
@@ -206,6 +221,7 @@ function SectionContent({
   uiReferenceScreenshot?: string | null;
   locked?: boolean;
   onOpenImage?: (src: string) => void;
+  currentStatus?: string;
 }) {
 
   const lowerTitle = title.toLowerCase();
@@ -220,8 +236,8 @@ function SectionContent({
   const executiveBullets = parseExecutiveBullets(content);
 
   if (locked) {
-    return <LockedSection title={title} />;
-  }
+   return <LockedSection title={title} currentStatus={currentStatus} />;
+}
 
   return (
     <section
@@ -255,31 +271,6 @@ function SectionContent({
         className="h-auto max-w-full rounded-xl"
   />
 
-  {(uiEvidence || []).slice(0, 6).map((item, index) => {
-    const positions = [
-      { top: "18%", left: "22%" },
-      { top: "18%", left: "52%" },
-      { top: "18%", left: "82%" },
-      { top: "48%", left: "36%" },
-      { top: "74%", left: "26%" },
-      { top: "74%", left: "78%" },
-    ];
-
-    const pos = positions[index] || positions[0];
-    const markerNumber = item.marker || index + 1;
-
-    return (
-      <div
-        key={`lightbox-marker-${index}`}
-        className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-        style={{ top: pos.top, left: pos.left }}
-      >
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-base font-bold text-white shadow-lg ring-2 ring-white">
-          {markerNumber}
-        </div>
-      </div>
-    );
-  })}
 </div>
 
     {(uiEvidence || []).slice(0, 6).map((item, index) => {
@@ -479,11 +470,13 @@ export default function AuditSectionsClient({
   uiEvidence,
   uiReferenceScreenshot,
   previewMode = false,
+  currentStatus,
 }: {
   sections: SectionItem[];
   uiEvidence?: UiEvidenceItem[] | null;
   uiReferenceScreenshot?: string | null;
   previewMode?: boolean;
+  currentStatus?: string;
 }) {
   const defaultSectionId = useMemo(() => {
     if (!sections.length) return null;
@@ -558,11 +551,12 @@ export default function AuditSectionsClient({
               uiEvidence={uiEvidence}
               uiReferenceScreenshot={uiReferenceScreenshot}
               locked={previewMode && !isUnlockedSection(section.title)}
+              currentStatus={currentStatus}
               onOpenImage={(src) => {
                 setLightboxSrc(src);
                 setLightboxOpen(true);
               }}
-            />
+        />
           ))}
       </div>
             {lightboxOpen && lightboxSrc && (
@@ -599,10 +593,39 @@ export default function AuditSectionsClient({
               </button>
             </div>
 
-            <img
-              src={lightboxSrc}
-              className="h-auto max-w-full rounded-xl"
-      />
+            <div className="relative">
+  <img
+    src={lightboxSrc}
+    alt="Enlarged UI improvements screenshot"
+    className="h-auto max-w-full rounded-xl"
+  />
+
+  {(uiEvidence || []).slice(0, 6).map((item, index) => {
+    const positions = [
+      { top: "18%", left: "22%" },
+      { top: "18%", left: "52%" },
+      { top: "18%", left: "82%" },
+      { top: "48%", left: "36%" },
+      { top: "74%", left: "26%" },
+      { top: "74%", left: "78%" },
+    ];
+
+    const pos = positions[index] || positions[0];
+    const markerNumber = item.marker || index + 1;
+
+    return (
+      <div
+        key={`lightbox-marker-${index}`}
+        className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+        style={{ top: pos.top, left: pos.left }}
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-base font-bold text-white shadow-lg ring-2 ring-white">
+          {markerNumber}
+        </div>
+      </div>
+    );
+  })}
+</div>
           </div>
         </div>
       )}

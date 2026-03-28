@@ -405,22 +405,45 @@ export default async function AuditResultPage({
     </main>
   );
 }
-    const sections =
-  Array.isArray(data.pages) &&
-  data.pages.length > 0 &&
-  Array.isArray(data.pages[0]?.sections)
-    ? data.pages[0].sections
-    : splitSections(finalAuditContent);
+    const pageGroups =
+  Array.isArray(data.pages) && data.pages.length > 0
+    ? data.pages.map((page: any, pageIndex: number) => ({
+        id: `page-${pageIndex + 1}`,
+        title:
+          pageIndex === 0
+            ? "Main Page"
+            : page.url
+            ? `Additional Page ${pageIndex}: ${page.url}`
+            : `Additional Page ${pageIndex}`,
+        url: page.url || "",
+        screenshot_url: page.screenshot_url || null,
+        marked_screenshot_url: page.marked_screenshot_url || null,
+        sections: Array.isArray(page.sections) ? page.sections : [],
+      }))
+    : [
+        {
+          id: "page-1",
+          title: "Main Page",
+          url: data.product_url || "",
+          screenshot_url: data.screenshot_url || null,
+          marked_screenshot_url: data.marked_screenshot_url || null,
+          sections: splitSections(finalAuditContent),
+        },
+      ];
 
 const auditScore = computeAuditScore(finalAuditContent || "");
-const firstPage =
-  Array.isArray(data.pages) && data.pages.length > 0 ? data.pages[0] : null;
+const firstPage = pageGroups[0] || null;
 
 const evidenceScreenshot =
   firstPage?.marked_screenshot_url ||
-  data.marked_screenshot_url ||
   firstPage?.screenshot_url ||
+  data.marked_screenshot_url ||
   data.screenshot_url;
+
+const isPreviewOnly =
+  data.status === "preview_ready" ||
+  data.status === "paid_in_review" ||
+  data.status === "ready_for_review";
 
 const isUnlocked =
   data.status === "approved" ||
@@ -450,9 +473,39 @@ const isUnlocked =
           </div>
       )}
 
-          <div>
-            <strong className="text-black/75">Status:</strong> {data.status}
+        <div>
+          <strong className="text-black/75">Status:</strong>{" "}
+          {data.status === "preview_ready"
+            ? "Preview Ready"
+            : data.status === "paid_in_review" || data.status === "ready_for_review"
+            ? "In Review"
+            : data.status === "approved"
+            ? "Approved"
+            : data.status === "delivered"
+            ? "Delivered"
+            : data.status}
+        </div>
+
+        {isPreviewOnly && (
+          <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm leading-6 text-black/75">
+            <div className="font-semibold text-black">
+              Your Elessen Audit Engine™ report is being prepared.
           </div>
+          <div className="mt-2">
+            This preview highlights key findings from your product using the Elessen Audit Engine™.
+            Your full report is finalized and reviewed by Elessen before release.
+          </div>
+        <div className="mt-2">
+          Once ready, your final report will be delivered within 24 hours as:
+        </div>
+        <ul className="mt-2 list-disc pl-5">
+          <li>A downloadable PDF</li>
+          <li>A secure online report link</li>
+        </ul>
+      </div>
+        )}
+
+
 
         {data.completed_at && (
           <div>
@@ -488,16 +541,38 @@ const isUnlocked =
         </div>
 
 
-        <AuditSectionsClient
-  sections={sections.map((section, index) => ({
-    id: `section-${index}`,
-    title: section.title,
-    content: section.content,
-  }))}
-  uiEvidence={data.ui_evidence || []}
-  uiReferenceScreenshot={evidenceScreenshot}
-  previewMode={!isUnlocked}
+        {pageGroups.map((page, pageIndex) => (
+  <div key={page.id} className="mb-12">
+
+    {/* PAGE HEADER */}
+    <div className="mb-6">
+      <div className="text-xs uppercase tracking-wide text-black/45">
+        {page.title}
+      </div>
+
+      {page.url && (
+        <div className="mt-1 text-sm text-black/60 break-all">
+          {page.url}
+        </div>
+      )}
+    </div>
+
+    <AuditSectionsClient
+      sections={(page.sections || []).map((section: any, index: number) => ({
+        id: `${page.id}-section-${index}`,
+        title: section.title,
+        content: section.content,
+      }))}
+      uiEvidence={data.ui_evidence || []}
+      uiReferenceScreenshot={
+        page.marked_screenshot_url || page.screenshot_url || null
+      }
+      previewMode={isPreviewOnly && !searchUnlock}
+      currentStatus={data.status}
 />
+
+  </div>
+))}
 
       </div>
 

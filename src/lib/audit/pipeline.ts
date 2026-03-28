@@ -1,4 +1,5 @@
-
+import { chromium } from "playwright";
+import sharp from "sharp";
 
 function uniq(arr: string[]) {
   return Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
@@ -67,17 +68,41 @@ function extractSignals(html: string, url: string) {
 }
 
 async function captureScreenshot(url: string) {
+  let browser: any = null;
+
   try {
-    const endpoint = `https://api.microlink.io/?url=${encodeURIComponent(
-      url
-    )}&screenshot=true&meta=false`;
+    browser = await chromium.launch({ headless: true });
 
-    const res = await fetch(endpoint);
-    const data = await res.json();
+    const page = await browser.newPage({
+      viewport: { width: 1440, height: 1600 },
+      deviceScaleFactor: 1,
+    });
 
-    return data?.data?.screenshot?.url || null;
-  } catch {
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+      timeout: 45000,
+    });
+
+    await page.waitForTimeout(2500);
+
+    const raw = await page.screenshot({
+      fullPage: true,
+      type: "png",
+    });
+
+    const compressed = await sharp(raw)
+      .resize({ width: 1440, withoutEnlargement: true })
+      .jpeg({ quality: 72, mozjpeg: true })
+      .toBuffer();
+
+    return `data:image/jpeg;base64,${compressed.toString("base64")}`;
+  } catch (err) {
+    console.error("PLAYWRIGHT SCREENSHOT ERROR:", url, err);
     return null;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
@@ -91,7 +116,55 @@ const MARKERS = [
 ];
 
 async function addScreenshotMarkers(imageUrl: string) {
-  return imageUrl;
+  try {
+    const base64 = imageUrl.replace(/^data:image\/[a-zA-Z]+;base64,/, "");
+    const buffer = Buffer.from(base64, "base64");
+
+    const meta = await sharp(buffer).metadata();
+    const width = meta.width || 1440;
+    const height = meta.height || 900;
+
+    const markers = [
+      { x: width * 0.14, y: height * 0.12, label: 1 },
+      { x: width * 0.50, y: height * 0.12, label: 2 },
+      { x: width * 0.84, y: height * 0.12, label: 3 },
+      { x: width * 0.50, y: height * 0.42, label: 4 },
+      { x: width * 0.22, y: height * 0.78, label: 5 },
+      { x: width * 0.80, y: height * 0.78, label: 6 },
+    ];
+
+    const svg = `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        ${markers
+          .map(
+            (m) => `
+          <circle cx="${m.x}" cy="${m.y}" r="26" fill="#FF4D4F"/>
+          <circle cx="${m.x}" cy="${m.y}" r="30" fill="none" stroke="white" stroke-width="4"/>
+          <text
+            x="${m.x}"
+            y="${m.y + 8}"
+            text-anchor="middle"
+            font-size="22"
+            font-weight="700"
+            fill="white"
+            font-family="Arial, sans-serif"
+          >${m.label}</text>
+        `
+          )
+          .join("")}
+      </svg>
+    `;
+
+    const out = await sharp(buffer)
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .jpeg({ quality: 78, mozjpeg: true })
+      .toBuffer();
+
+    return `data:image/jpeg;base64,${out.toString("base64")}`;
+  } catch (err) {
+    console.error("MARKER OVERLAY ERROR:", err);
+    return imageUrl;
+  }
 }
 
 async function generateAuditMarkdown(payload: any) {
@@ -238,21 +311,31 @@ Rules:
   const content = json?.choices?.[0]?.message?.content || "";
   return content.trim();
 }
+function buildAuditPages(row: any): string[] {
+  const candidates: string[] = [];
+
+  if (row?.product_url) candidates.push(row.product_url);
+  if (row?.focus_page_url) candidates.push(row.focus_page_url);
+
+  if (Array.isArray(row?.pages)) {
+    for (const item of row.pages) {
+      if (typeof item === "string" && item.trim()) {
+        candidates.push(item.trim());
+      } else if (item?.url && typeof item.url === "string") {
+        candidates.push(item.url.trim());
+      }
+    }
+  }
+
+  return Array.from(new Set(candidates.filter(Boolean)));
+}
 
 export async function runAuditPipeline(row: any) {
-  const pages = Array.isArray(row.pages) && row.pages.length > 0
-  ? row.pages
-  : [row.product_url].filter(Boolean);
+  const pageUrls = buildAuditPages(row);
+  const processedPages = [];
 
-const processedPages = [];
-
-for (const rawPage of pages) {
-  const url =
-    typeof rawPage === "string"
-      ? rawPage
-      : rawPage?.url || "";
-
-  if (!url) continue;
+  for (const url of pageUrls) {
+    if (!url) continue;
 
   try {
     // 1. Fetch HTML
@@ -284,8 +367,8 @@ for (const rawPage of pages) {
 
     // 4. Generate markdown (PER PAGE)
     const auditMarkdown = await generateAuditMarkdown({
-      product_url: url,
-      focus_page_url: "",
+      product_url: row.product_url || url,
+      focus_page_url: row.focus_page_url || "",
       notes: row.notes,
       signals,
       focus_signals: null,
@@ -312,8 +395,25 @@ for (const rawPage of pages) {
       sections,
     });
 
-  } catch (err) {
+    } catch (err) {
     console.error("PAGE AUDIT FAILED:", url, err);
+
+    processedPages.push({
+      url,
+      screenshot_url: null,
+      marked_screenshot_url: null,
+      sections: [
+        {
+          title: "Executive Summary",
+          content:
+            "This page could not be processed automatically. Review manually before release.",
+        },
+        {
+          title: "Questions / Assumptions",
+          content: `- Automatic audit failed for ${url}\n- Check page accessibility, redirects, or bot blocking`,
+        },
+      ],
+    });
   }
 }
 
