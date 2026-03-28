@@ -440,15 +440,14 @@ const evidenceScreenshot =
   data.marked_screenshot_url ||
   data.screenshot_url;
 
-const isPreviewOnly =
-  data.status === "preview_ready" ||
+const isPreviewOnly = data.status === "preview_ready";
+
+const isInReview =
   data.status === "paid_in_review" ||
   data.status === "ready_for_review";
 
 const isUnlocked =
-  data.status === "approved" ||
-  data.status === "delivered" ||
-  searchUnlock;
+  data.status === "delivered" || searchUnlock;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -479,31 +478,34 @@ const isUnlocked =
             ? "Preview Ready"
             : data.status === "paid_in_review" || data.status === "ready_for_review"
             ? "In Review"
-            : data.status === "approved"
-            ? "Approved"
             : data.status === "delivered"
             ? "Delivered"
             : data.status}
         </div>
 
         {isPreviewOnly && (
-          <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm leading-6 text-black/75">
-            <div className="font-semibold text-black">
-              Your Elessen Audit Engine™ report is being prepared.
-          </div>
-          <div className="mt-2">
-            This preview highlights key findings from your product using the Elessen Audit Engine™.
-            Your full report is finalized and reviewed by Elessen before release.
-          </div>
-        <div className="mt-2">
-          Once ready, your final report will be delivered within 24 hours as:
-        </div>
-        <ul className="mt-2 list-disc pl-5">
-          <li>A downloadable PDF</li>
-          <li>A secure online report link</li>
-        </ul>
-      </div>
-        )}
+  <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm leading-6 text-black/75">
+    <div className="font-semibold text-black">
+      This is your preview report.
+    </div>
+    <div className="mt-2">
+      You are viewing the preview version of your Elessen Audit Engine™ audit.
+      Full access is unlocked after payment.
+    </div>
+  </div>
+)}
+
+{isInReview && (
+  <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm leading-6 text-black/75">
+    <div className="font-semibold text-black">
+      Your full audit is currently in review.
+    </div>
+    <div className="mt-2">
+      Payment has been received and your audit is now being finalized by Elessen.
+      The delivered version will replace this page once review is complete.
+    </div>
+  </div>
+)}
 
 
 

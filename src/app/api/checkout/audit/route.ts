@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+import { sendAdminNotification } from "../../../../lib/email/sendEmail";
 
 export const runtime = "nodejs";
 
@@ -78,6 +79,15 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    try {
+      await sendAdminNotification({
+      name: fullName,
+      productUrl: normalizedProductUrl,
+  });
+} catch (err) {
+  console.error("ADMIN EMAIL SEND FAILED:", err);
+} 
 
     const auditRequestId = created.id as string;
 

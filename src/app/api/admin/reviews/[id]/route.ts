@@ -48,10 +48,46 @@ export async function POST(
   const body = await req.json();
   const action = body?.action;
 
+  if (!action || (action !== "approve" && action !== "reject")) {
+    return NextResponse.json(
+      { error: "Invalid action." },
+      { status: 400 }
+    );
+  }
+
+  const { data: existing, error: fetchError } = await supabaseAdmin
+    .from("audit_requests")
+    .select("id, status, pages, audit_content, edited_audit_content")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchError) {
+    return NextResponse.json(
+      { error: fetchError.message || "Failed to load audit." },
+      { status: 500 }
+    );
+  }
+
+  if (!existing) {
+    return NextResponse.json(
+      { error: "Audit not found." },
+      { status: 404 }
+    );
+  }
+
   if (action === "approve") {
+    const finalAuditContent =
+      typeof existing.edited_audit_content === "string" &&
+      existing.edited_audit_content.trim().length > 0
+        ? existing.edited_audit_content
+        : typeof existing.audit_content === "string"
+        ? existing.audit_content
+        : buildMarkdownFromPages(Array.isArray(existing.pages) ? existing.pages : []);
+
     const { error } = await supabaseAdmin
       .from("audit_requests")
       .update({
+        audit_content: finalAuditContent,
         status: "delivered",
         delivered_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -65,30 +101,31 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      id,
+      status: "delivered",
+    });
   }
 
-  if (action === "reject") {
-    const { error } = await supabaseAdmin
-      .from("audit_requests")
-      .update({
-        status: "paid_in_review",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+  const { error } = await supabaseAdmin
+    .from("audit_requests")
+    .update({
+      status: "paid_in_review",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || "Failed to reject audit." },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ ok: true });
+  if (error) {
+    return NextResponse.json(
+      { error: error.message || "Failed to reject audit." },
+      { status: 500 }
+    );
   }
 
-  return NextResponse.json(
-    { error: "Invalid action." },
-    { status: 400 }
-  );
+  return NextResponse.json({
+    ok: true,
+    id,
+    status: "paid_in_review",
+  });
 }

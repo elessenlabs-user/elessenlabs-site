@@ -311,16 +311,16 @@ export default function AuditPage() {
         </div>
       </motion.section>
 
-      {/* FORM */}
+            {/* FORM */}
       <motion.section
         id="audit-form"
         variants={fadeUp}
-                className="relative overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-8 shadow-sm md:p-10"
+        className="relative overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-8 shadow-sm md:p-10"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white to-gray-50" />
 
         <div className="relative">
-            <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3">
             <div>
               <div className="inline-flex items-center rounded-full border border-orange-200 bg-white px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-[#FF7A00] shadow-sm">
                 ELLESSEN AUDIT ENGINE
@@ -332,7 +332,6 @@ export default function AuditPage() {
                 Share your product link and we’ll return a focused, conversion-driven audit shaped by AI-supported analysis and real product design experience — not generic output.
               </p>
             </div>
-
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -353,40 +352,40 @@ export default function AuditPage() {
                 type="email"
                 className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:ring-4 ${
                   email.trim().length > 0 && !isValidEmail(email)
-                  ? "border-red-300 focus:ring-red-100"
-                  : "border-black/10 focus:ring-black/10"
+                    ? "border-red-300 focus:ring-red-100"
+                    : "border-black/10 focus:ring-black/10"
                 } focus:border-orange-300`}
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    placeholder="name@company.com"
-    autoComplete="email"
-    inputMode="email"
-  />
-  {email.trim().length > 0 && !isValidEmail(email) && (
-    <p className="mt-2 text-xs text-red-600">
-      Please enter a valid email address.
-    </p>
-  )}
-</div>
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                autoComplete="email"
+                inputMode="email"
+              />
+              {email.trim().length > 0 && !isValidEmail(email) && (
+                <p className="mt-2 text-xs text-red-600">
+                  Please enter a valid email address.
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="mt-4">
             <label className="text-sm font-medium">Website / Product link</label>
             <input
-            type="text"
-            className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
-            value={productUrl}
-            onChange={(e) => setProductUrl(e.target.value)}
-            placeholder="airbnb.com, www.airbnb.com, or https://airbnb.com"
-          />
-          {productUrl.trim().length > 0 && !isValidUrl(productUrl) && (
-            <p className="mt-2 text-xs text-red-600">
-            Please enter a valid website URL, such as airbnb.com.
-          </p>
-          )}
-        </div> 
+              type="text"
+              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
+              value={productUrl}
+              onChange={(e) => setProductUrl(e.target.value)}
+              placeholder="yoursite.com, www.yourstite.com, or https://yoursite.com"
+            />
+            {productUrl.trim().length > 0 && !isValidUrl(productUrl) && (
+              <p className="mt-2 text-xs text-red-600">
+                Please enter a valid website URL, such as airbnb.com.
+              </p>
+            )}
+          </div>
 
-                    <div className="mt-4">
+          <div className="mt-4">
             <label className="text-sm font-medium">
               Included additional page, screen, or flow
             </label>
@@ -402,7 +401,7 @@ export default function AuditPage() {
             </p>
           </div>
 
-                    <div className="mt-4 rounded-2xl border border-orange-200 bg-[#FFF4E8] p-5 shadow-[0_8px_24px_rgba(255,122,0,0.08)]">
+          <div className="mt-4 rounded-2xl border border-orange-200 bg-[#FFF4E8] p-5 shadow-[0_8px_24px_rgba(255,122,0,0.08)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold text-black">Add more pages</div>
@@ -421,7 +420,10 @@ export default function AuditPage() {
 
             <div className="mt-4 space-y-3">
               {extraPageUrls.map((url, index) => (
-                <div key={index} className="rounded-2xl border border-black/10 bg-white p-3">
+                <div
+                  key={index}
+                  className="rounded-2xl border border-black/10 bg-white p-3"
+                >
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-xs font-medium text-black/60">
                       Extra page {index + 3}
@@ -430,7 +432,9 @@ export default function AuditPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setExtraPageUrls((prev) => prev.filter((_, i) => i !== index))
+                        setExtraPageUrls((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        )
                       }
                       className="text-xs font-medium text-red-600 hover:text-red-700"
                     >
@@ -463,7 +467,7 @@ export default function AuditPage() {
               )}
             </div>
           </div>
-        
+
           <div className="mt-4">
             <label className="text-sm font-medium">Notes (optional)</label>
             <textarea
@@ -488,32 +492,51 @@ export default function AuditPage() {
             )}
           </AnimatePresence>
 
-                    <div className="mt-8 flex flex-col gap-3 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <Link
-              className="text-sm underline underline-offset-4 text-black/60 hover:text-black"
-              href="/start"
-            >
-              Prefer the free clarity call instead?
-            </Link>
+          <div className="mt-8 border-t border-black/10 pt-6">
+  <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
 
-            <motion.button
-              onClick={onPay}
-              disabled={!canSubmit}
-              whileHover={canSubmit ? { y: -1 } : undefined}
-              whileTap={canSubmit ? { scale: 0.98 } : undefined}
-              className={`rounded-2xl px-6 py-3 font-semibold text-white shadow-lg transition ${
-                canSubmit
-                  ? "bg-[#FF7A00] hover:brightness-95 shadow-[0_10px_30px_rgba(255,122,0,0.28)]"
-                  : "cursor-not-allowed bg-gray-400"
-              }`}
-            >
-                {loading ? "Redirecting…" : `Pay $${totalPrice} + Start`}
-            </motion.button>
-          </div>
+    {/* LEFT */}
+    <div className="text-sm text-black/70">
+      <Link
+        className="underline underline-offset-4 hover:text-black"
+        href="/start"
+      >
+        Prefer the free clarity call instead?
+      </Link>
+    </div>
 
-          <div className="mt-4 text-xs text-black/55">
-            Secure checkout by Stripe. We don’t store payment details.
-          </div>
+    {/* RIGHT */}
+    <div className="flex flex-col items-end gap-3 text-right">
+
+      <div className="text-sm font-medium text-black/80">
+        Full audit unlock: ${totalPrice}
+      </div>
+
+      <p className="text-sm text-black/60 leading-6">
+        Preview first. Pay only if you want the full audit.
+      </p>
+
+      <motion.button
+        onClick={onPay}
+        disabled={!canSubmit}
+        whileHover={canSubmit ? { y: -1 } : undefined}
+        whileTap={canSubmit ? { scale: 0.98 } : undefined}
+        className={`rounded-2xl px-8 py-3 font-semibold text-white shadow-lg transition ${
+          canSubmit
+            ? "bg-[#FF7A00] hover:brightness-95 shadow-[0_10px_30px_rgba(255,122,0,0.28)]"
+            : "cursor-not-allowed bg-gray-400"
+        }`}
+      >
+        {loading ? "Generating Preview…" : "Generate Preview"}
+      </motion.button>
+    </div>
+
+  </div>
+
+  <div className="mt-4 text-xs text-black/55">
+    Secure checkout by Stripe. We don’t store payment details.
+  </div>
+</div>
         </div>
       </motion.section>
     </motion.div>
