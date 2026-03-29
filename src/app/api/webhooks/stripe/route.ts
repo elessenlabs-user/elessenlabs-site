@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+import { sendAdminNotification } from "../../../../lib/email/sendEmail";
 
 export const runtime = "nodejs";
 
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
         .update({
           stripe_session_id: session.id,
           email,
-          status: "paid_pending_audit",
+          status: "paid_pending_review",
       })
         .eq("id", auditRequestId);
 
@@ -58,6 +59,35 @@ export async function POST(req: Request) {
           { status: 500 }
         );
       }
+
+      const { data: auditRow } = await supabaseAdmin
+        .from("audit_requests")
+        .select("full_name, product_url")
+        .eq("id", auditRequestId)
+        .maybeSingle();
+
+      if (auditRow) {
+        await sendAdminNotification({
+        name: auditRow.full_name || "Unknown",
+        productUrl: auditRow.product_url || "",
+      });
+    }
+
+    const secret = process.env.AUDIT_ENGINE_SECRET;
+
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL}/api/audit/generate?id=${auditRequestId}`,
+          {
+            method: "POST",
+            headers: {
+            "x-audit-secret": secret || "",
+          },
+        }
+      );
+    } catch (e) {
+      console.error("PAID GENERATE ERROR:", e);
+    }
 
       console.log("Audit request marked paid:", {
         auditRequestId,

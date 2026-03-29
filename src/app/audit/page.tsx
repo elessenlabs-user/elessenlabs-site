@@ -326,10 +326,10 @@ export default function AuditPage() {
                 ELLESSEN AUDIT ENGINE
               </div>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
-                Get your customized Elessen Audit Engine review
+                Run Your Elessen Audit Engine™
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-black/65">
-                Share your product link and we’ll return a focused, conversion-driven audit shaped by AI-supported analysis and real product design experience — not generic output.
+                Share your product link and we’ll return a focused, conversion-driven audit shaped by AI-supported analysis and real product design experience.
               </p>
             </div>
           </div>

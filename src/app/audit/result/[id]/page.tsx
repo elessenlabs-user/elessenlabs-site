@@ -507,8 +507,6 @@ const isUnlocked =
   </div>
 )}
 
-
-
         {data.completed_at && (
           <div>
             <strong className="text-black/75">Generated:</strong> {data.completed_at}

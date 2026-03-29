@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const TEST_URL = "https://www.airbnb.com/host";
+
 
 export default function TestScreenshotPage() {
   const [rawImage, setRawImage] = useState<string | null>(null);
@@ -10,6 +10,9 @@ export default function TestScreenshotPage() {
   const [loadingRaw, setLoadingRaw] = useState(false);
   const [loadingMarked, setLoadingMarked] = useState(false);
   const [error, setError] = useState("");
+  const [testUrl, setTestUrl] = useState("");
+
+  
 
   async function generateRawScreenshot() {
     setLoadingRaw(true);
@@ -23,7 +26,7 @@ export default function TestScreenshotPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          url: TEST_URL,
+          url: normalizeUrl(testUrl),
           marked: false,
         }),
       });
@@ -44,6 +47,20 @@ export default function TestScreenshotPage() {
     setLoadingRaw(false);
   }
 
+
+  function normalizeUrl(input: string) {
+  let url = input.trim();
+
+  if (!url) return "";
+
+  // If no protocol → add https
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+
+  return url;
+}
+
   async function generateMarkedScreenshot() {
     setLoadingMarked(true);
     setError("");
@@ -56,7 +73,7 @@ export default function TestScreenshotPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          url: TEST_URL,
+          url: normalizeUrl(testUrl),
           marked: true,
         }),
       });
@@ -88,18 +105,26 @@ export default function TestScreenshotPage() {
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-black/60">
           This page tests the screenshot output from the same Playwright capture
-          flow used by the audit engine.
+          flow used by Elessen Audit Engine™.
         </p>
 
-        <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-black/75">
-          <strong>Test URL:</strong> {TEST_URL}
-        </div>
+        <div className="mt-6 space-y-3">
+  <div className="text-sm font-semibold">Test URL</div>
+
+  <input
+    type="text"
+    value={testUrl}
+    onChange={(e) => setTestUrl(e.target.value)}
+    className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none"
+    placeholder="Enter URL (e.g. site.com, www.site.com, https://site.com)"
+  />
+</div>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={generateRawScreenshot}
-            disabled={loadingRaw || loadingMarked}
+            disabled={!testUrl.trim() || loadingRaw || loadingMarked}
             className={`inline-flex min-h-[48px] items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-white transition ${
               loadingRaw || loadingMarked
                 ? "cursor-not-allowed bg-gray-400"

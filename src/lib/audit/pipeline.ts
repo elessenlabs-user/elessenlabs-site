@@ -1,5 +1,20 @@
 import { chromium } from "playwright";
 import sharp from "sharp";
+import { uploadToR2 } from "../../lib/r2/upload";
+
+type UiEvidence = {
+  marker: number;
+  issue: string;
+  evidence: string;
+  fix: string;
+  crop_url?: string | null;
+  position?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+};
 
 function uniq(arr: string[]) {
   return Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
@@ -8,14 +23,15 @@ function uniq(arr: string[]) {
 function extractSignals(html: string, url: string) {
   const text = html || "";
 
-  const title =
-    (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "")
-      .replace(/\s+/g, " ")
-      .trim();
+  const title = (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  const metaDescription =
-    (text.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)?.[1] || "")
-      .trim();
+  const metaDescription = (
+    text.match(
+      /<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i
+    )?.[1] || ""
+  ).trim();
 
   const h1 = uniq(
     Array.from(text.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)).map((m) =>
@@ -38,16 +54,25 @@ function extractSignals(html: string, url: string) {
     .slice(0, 20);
 
   const links = uniq(
-    Array.from(text.matchAll(/<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)).map((m) => {
+    Array.from(
+      text.matchAll(
+        /<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi
+      )
+    ).map((m) => {
       const href = (m[1] || "").trim();
-      const label = (m[2] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const label = (m[2] || "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
       return `${label} -> ${href}`;
     })
   )
     .filter((x) => !x.includes("-> #"))
     .slice(0, 30);
 
-  const hasPricing = /pricing|price|plan|plans|billing|subscription/i.test(text);
+  const hasPricing = /pricing|price|plan|plans|billing|subscription/i.test(
+    text
+  );
   const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
   const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
 
@@ -71,7 +96,10 @@ async function captureScreenshot(url: string) {
   let browser: any = null;
 
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
 
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1600 },
@@ -80,10 +108,10 @@ async function captureScreenshot(url: string) {
 
     await page.goto(url, {
       waitUntil: "domcontentloaded",
-      timeout: 45000,
+      timeout: 30000,
     });
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(4000);
 
     const raw = await page.screenshot({
       fullPage: true,
@@ -95,7 +123,13 @@ async function captureScreenshot(url: string) {
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
 
-    return `data:image/jpeg;base64,${compressed.toString("base64")}`;
+    const key = `screenshots/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.jpg`;
+
+    const uploadedUrl = await uploadToR2(compressed, key);
+
+    return uploadedUrl;
   } catch (err) {
     console.error("PLAYWRIGHT SCREENSHOT ERROR:", url, err);
     return null;
@@ -106,31 +140,30 @@ async function captureScreenshot(url: string) {
   }
 }
 
-const MARKERS = [
-  { x: 200, y: 150, label: 1 },
-  { x: 700, y: 150, label: 2 },
-  { x: 1100, y: 150, label: 3 },
-  { x: 650, y: 450, label: 4 },
-  { x: 300, y: 720, label: 5 },
-  { x: 1080, y: 720, label: 6 },
-];
-
 async function addScreenshotMarkers(imageUrl: string) {
   try {
-    const base64 = imageUrl.replace(/^data:image\/[a-zA-Z]+;base64,/, "");
-    const buffer = Buffer.from(base64, "base64");
+    const response = await fetch(imageUrl);
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch screenshot for markers: ${response.status}`
+      );
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     const meta = await sharp(buffer).metadata();
     const width = meta.width || 1440;
     const height = meta.height || 900;
 
     const markers = [
-      { x: width * 0.14, y: height * 0.12, label: 1 },
-      { x: width * 0.50, y: height * 0.12, label: 2 },
-      { x: width * 0.84, y: height * 0.12, label: 3 },
-      { x: width * 0.50, y: height * 0.42, label: 4 },
-      { x: width * 0.22, y: height * 0.78, label: 5 },
-      { x: width * 0.80, y: height * 0.78, label: 6 },
+      { x: width * 0.12, y: height * 0.1, label: 1 },
+      { x: width * 0.5, y: height * 0.1, label: 2 },
+      { x: width * 0.86, y: height * 0.1, label: 3 },
+      { x: width * 0.5, y: height * 0.4, label: 4 },
+      { x: width * 0.2, y: height * 0.74, label: 5 },
+      { x: width * 0.8, y: height * 0.74, label: 6 },
     ];
 
     const svg = `
@@ -138,14 +171,14 @@ async function addScreenshotMarkers(imageUrl: string) {
         ${markers
           .map(
             (m) => `
-          <circle cx="${m.x}" cy="${m.y}" r="26" fill="#FF4D4F"/>
-          <circle cx="${m.x}" cy="${m.y}" r="30" fill="none" stroke="white" stroke-width="4"/>
+          <circle cx="${m.x}" cy="${m.y}" r="34" fill="#FF5A1F"/>
+          <circle cx="${m.x}" cy="${m.y}" r="40" fill="none" stroke="white" stroke-width="6"/>
           <text
             x="${m.x}"
-            y="${m.y + 8}"
+            y="${m.y + 11}"
             text-anchor="middle"
-            font-size="22"
-            font-weight="700"
+            font-size="28"
+            font-weight="800"
             fill="white"
             font-family="Arial, sans-serif"
           >${m.label}</text>
@@ -157,10 +190,16 @@ async function addScreenshotMarkers(imageUrl: string) {
 
     const out = await sharp(buffer)
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .jpeg({ quality: 78, mozjpeg: true })
+      .jpeg({ quality: 82, mozjpeg: true })
       .toBuffer();
 
-    return `data:image/jpeg;base64,${out.toString("base64")}`;
+    const key = `screenshots/marked/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.jpg`;
+
+    const markedUrl = await uploadToR2(out, key);
+
+    return markedUrl;
   } catch (err) {
     console.error("MARKER OVERLAY ERROR:", err);
     return imageUrl;
@@ -193,21 +232,25 @@ Rules:
 - If something is unclear, say it is visually unclear instead of guessing
 - Write like an experienced product designer and conversion strategist reviewing a real interface, not a template`;
 
+  const screenshotState = payload.screenshot_url
+    ? "Screenshot captured successfully and is available for visual review."
+    : "Screenshot not available.";
+
   const user = `AUDIT REQUEST
 
 URL: ${payload.product_url}
 FOCUS PAGE: ${payload.focus_page_url || "Not provided"}
 Notes: ${payload.notes || "—"}
 
-SCREENSHOT
-${payload.screenshot_url || "Not available"}
+SCREENSHOT STATUS
+${screenshotState}
 
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
 
 Use ONLY:
 - extracted signals
-- visible UI from screenshot
+- the fact that a screenshot exists when screenshot status says it is available
 
 DO NOT:
 - assume traffic, users, or analytics
@@ -227,7 +270,7 @@ For each issue use this exact format:
 
 - Severity: Critical / High / Medium / Low
   Issue: short issue title
-  Evidence: what proves this problem from the extracted signals or screenshot
+  Evidence: what proves this problem from the extracted signals
   Why it matters: why this hurts UX or conversion
   Recommended fix: specific action
 
@@ -244,25 +287,51 @@ For each improvement use this exact format:
 
 You MUST generate EXACTLY 6 UI improvements.
 
-Each improvement MUST:
-- Use Marker numbers 1 to 6
-- Use each marker exactly once
-- Refer to a distinct visible area of the screenshot
-- Be grounded only in what is clearly visible
+Use this exact marker sequence once each and in order:
+1, 2, 3, 4, 5, 6
 
-STRICT FORMAT:
+Every item MUST begin with:
+- Marker: X
+
+STRICT FORMAT FOR ALL 6 ITEMS:
 
 - Marker: 1
   Issue: specific UI problem
-  Evidence: describe exactly what is visible at that marker location in the screenshot
+  Evidence: specific visible or structurally inferred evidence
+  Fix: one precise UI change
+
+- Marker: 2
+  Issue: specific UI problem
+  Evidence: specific visible or structurally inferred evidence
+  Fix: one precise UI change
+
+- Marker: 3
+  Issue: specific UI problem
+  Evidence: specific visible or structurally inferred evidence
+  Fix: one precise UI change
+
+- Marker: 4
+  Issue: specific UI problem
+  Evidence: specific visible or structurally inferred evidence
+  Fix: one precise UI change
+
+- Marker: 5
+  Issue: specific UI problem
+  Evidence: specific visible or structurally inferred evidence
+  Fix: one precise UI change
+
+- Marker: 6
+  Issue: specific UI problem
+  Evidence: specific visible or structurally inferred evidence
   Fix: one precise UI change
 
 Rules:
-- No generic phrases like "improve hierarchy" or "make it clearer"
-- Every issue must be tied to something visible in the screenshot
-- Do not guess hidden functionality
-- If something is unclear, say what is visually unclear
-- Keep each field short and specific
+- Use each marker exactly once
+- Do not skip any marker
+- Do not repeat any marker
+- Do not use generic phrases like "improve hierarchy"
+- If the screenshot is unavailable or visual evidence is uncertain, explicitly say it is visually unclear
+- Keep each field short, specific, and actionable
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -311,6 +380,80 @@ Rules:
   const content = json?.choices?.[0]?.message?.content || "";
   return content.trim();
 }
+
+function ensureUiImprovementMarkers(markdown: string) {
+  if (!markdown || !markdown.includes("## UI Improvements")) {
+    return markdown;
+  }
+
+  const parts = markdown.split("## UI Improvements");
+  if (parts.length < 2) return markdown;
+
+  const before = parts[0];
+  const after = parts[1];
+
+  const nextHeadingMatch = after.match(/\n##\s+/);
+  const uiBody = nextHeadingMatch
+    ? after.slice(0, nextHeadingMatch.index)
+    : after;
+
+  const rest = nextHeadingMatch ? after.slice(nextHeadingMatch.index) : "";
+
+  let normalized = uiBody;
+
+  for (let i = 1; i <= 6; i++) {
+    const hasMarker = new RegExp(`Marker:\\s*${i}\\b`, "i").test(normalized);
+
+    if (!hasMarker) {
+      normalized += `
+
+- Marker: ${i}
+  Issue: Visual review required for this marker area
+  Evidence: The current output did not generate a specific marker entry for this location
+  Fix: Review this section manually and add a precise UI recommendation`;
+    }
+  }
+
+  return `${before}## UI Improvements${normalized}${rest}`;
+}
+
+function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
+  if (!markdown.includes("## UI Improvements")) return [];
+
+  const section = markdown.split("## UI Improvements")[1];
+  if (!section) return [];
+
+  const nextHeading = section.split(/\n## /)[0];
+
+  const blocks = nextHeading
+    .split(/\n(?=- Marker:)/g)
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+  const results: UiEvidence[] = [];
+
+  for (const block of blocks) {
+    const markerMatch = block.match(/Marker:\s*(\d+)/i);
+    const issueMatch = block.match(/Issue:\s*([\s\S]*?)(?=\n|Evidence:|$)/i);
+    const evidenceMatch = block.match(/Evidence:\s*([\s\S]*?)(?=\n|Fix:|$)/i);
+    const fixMatch = block.match(/Fix:\s*([\s\S]*?)$/i);
+
+    const marker = markerMatch ? parseInt(markerMatch[1], 10) : undefined;
+
+    if (!marker) continue;
+
+    results.push({
+      marker,
+      issue: issueMatch?.[1]?.trim() || "",
+      evidence: evidenceMatch?.[1]?.trim() || "",
+      fix: fixMatch?.[1]?.trim() || "",
+      crop_url: null,
+    });
+  }
+
+  return results.slice(0, 6);
+}
+
 function buildAuditPages(row: any): string[] {
   const candidates: string[] = [];
 
@@ -337,87 +480,138 @@ export async function runAuditPipeline(row: any) {
   for (const url of pageUrls) {
     if (!url) continue;
 
-  try {
-    // 1. Fetch HTML
-    const htmlRes = await fetch(url, {
-      redirect: "follow",
-      headers: {
-        "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
-        Accept: "text/html,*/*",
-      },
-    });
+    try {
+      console.log("AUDIT PAGE START", { url });
 
-    const html = await htmlRes.text();
+      let html = "";
+      let signals: any = null;
 
-    // 2. Extract signals
-    const signals = extractSignals(html, url);
+      try {
+        const htmlRes = await fetch(url, {
+          redirect: "follow",
+          headers: {
+            "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
+            Accept: "text/html,*/*",
+          },
+        });
 
-    // 3. Screenshot
-    const screenshotUrl = await captureScreenshot(url);
+        console.log("AUDIT HTML FETCH", {
+          url,
+          ok: htmlRes.ok,
+          status: htmlRes.status,
+          contentType: htmlRes.headers.get("content-type"),
+        });
 
-    const markedScreenshotUrl = screenshotUrl
-      ? await addScreenshotMarkers(screenshotUrl)
-      : null;
+        html = await htmlRes.text();
+        signals = extractSignals(html, url);
+      } catch (err) {
+        console.error("AUDIT HTML FETCH FAILED:", url, err);
+        throw new Error(`HTML_FETCH_FAILED for ${url}`);
+      }
 
-      console.log("AUDIT SCREENSHOT RESULT", {
+      let screenshotUrl: string | null = null;
+      try {
+        screenshotUrl = await captureScreenshot(url);
+        console.log("AUDIT SCREENSHOT CAPTURE", {
+          url,
+          success: !!screenshotUrl,
+        });
+
+        if (!screenshotUrl) {
+          throw new Error(`SCREENSHOT_FAILED for ${url}`);
+        }
+      } catch (err) {
+        console.error("AUDIT SCREENSHOT FAILED:", url, err);
+        throw err;
+      }
+
+      let markedScreenshotUrl: string | null = null;
+      try {
+        markedScreenshotUrl = await addScreenshotMarkers(screenshotUrl);
+        console.log("AUDIT MARKER OVERLAY", {
+          url,
+          success: !!markedScreenshotUrl,
+        });
+      } catch (err) {
+        console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
+        markedScreenshotUrl = screenshotUrl;
+      }
+
+      let auditMarkdown = "";
+      let uiEvidence: UiEvidence[] = [];
+
+      try {
+        auditMarkdown = await generateAuditMarkdown({
+          product_url: row.product_url || url,
+          focus_page_url: row.focus_page_url || "",
+          notes: row.notes,
+          signals,
+          focus_signals: null,
+          screenshot_url: screenshotUrl,
+          focus_screenshot_url: null,
+        });
+
+        auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
+        uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
+
+        console.log("AUDIT MARKDOWN GENERATED", {
+          url,
+          hasContent: !!auditMarkdown,
+          length: auditMarkdown?.length || 0,
+          uiEvidenceCount: uiEvidence.length,
+        });
+      } catch (err) {
+        console.error("AUDIT MARKDOWN FAILED:", url, err);
+        throw err;
+      }
+
+      const sections = auditMarkdown
+        .split(/(?=## )/g)
+        .map((section) => {
+          const match = section.match(/^##\s+(.*)/);
+          return {
+            title: match ? match[1].trim() : "Section",
+            content: section.replace(/^##\s+.*\n?/, "").trim(),
+          };
+        })
+        .filter((s) => s.content);
+
+      console.log("AUDIT PAGE SUCCESS", {
         url,
-        screenshotUrl,
-        markedScreenshotUrl,
+        sectionCount: sections.length,
       });
 
-    // 4. Generate markdown (PER PAGE)
-    const auditMarkdown = await generateAuditMarkdown({
-      product_url: row.product_url || url,
-      focus_page_url: row.focus_page_url || "",
-      notes: row.notes,
-      signals,
-      focus_signals: null,
-      screenshot_url: screenshotUrl,
-      focus_screenshot_url: null,
-    });
-
-    // 5. Split into sections
-    const sections = auditMarkdown
-      .split(/(?=## )/g)
-      .map((section) => {
-        const match = section.match(/^##\s+(.*)/);
-        return {
-          title: match ? match[1].trim() : "Section",
-          content: section.replace(/^##\s+.*\n?/, "").trim(),
-        };
-      })
-      .filter((s) => s.content);
-
-    processedPages.push({
-      url,
-      screenshot_url: screenshotUrl,
-      marked_screenshot_url: markedScreenshotUrl,
-      sections,
-    });
-
+      processedPages.push({
+        url,
+        screenshot_url: screenshotUrl,
+        marked_screenshot_url: markedScreenshotUrl,
+        sections,
+        evidence: uiEvidence,
+      });
     } catch (err) {
-    console.error("PAGE AUDIT FAILED:", url, err);
+      console.error("PAGE AUDIT FAILED:", url, err);
 
-    processedPages.push({
-      url,
-      screenshot_url: null,
-      marked_screenshot_url: null,
-      sections: [
-        {
-          title: "Executive Summary",
-          content:
-            "This page could not be processed automatically. Review manually before release.",
-        },
-        {
-          title: "Questions / Assumptions",
-          content: `- Automatic audit failed for ${url}\n- Check page accessibility, redirects, or bot blocking`,
-        },
-      ],
-    });
+      processedPages.push({
+        url,
+        screenshot_url: null,
+        marked_screenshot_url: null,
+        sections: [
+          {
+            title: "Executive Summary",
+            content:
+              "This page could not be processed automatically. Review manually before release.",
+          },
+          {
+            title: "Questions / Assumptions",
+            content: `- Automatic audit failed for ${url}\n- Check page accessibility, redirects, or bot blocking`,
+          },
+        ],
+        evidence: [],
+      });
+    }
   }
-}
 
-return {
-  processedPages,
-};
+  return {
+    processedPages,
+  };
 }

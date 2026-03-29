@@ -29,10 +29,10 @@ function clip(s: string, max = 4000) {
 
 function getNextStatus(currentStatus: string | null | undefined) {
   if (
-    currentStatus === "paid_pending_audit" ||
-    currentStatus === "paid_in_review"
+    currentStatus === "paid_pending_review" ||
+    currentStatus === "in_review"
   ) {
-    return "ready_for_review";
+    return "paid_pending_review";
   }
 
   return "preview_ready";
@@ -98,10 +98,10 @@ export async function POST(req: Request) {
 
     row = data;
   } else {
-    const { data, error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
       .from("audit_requests")
       .select("*")
-      .eq("status", "paid_pending_audit")
+      .eq("status", "paid_pending_review")
       .order("created_at", { ascending: true })
       .limit(1);
 
@@ -124,8 +124,8 @@ export async function POST(req: Request) {
     })
     .eq("id", row.id);
 
-  if (!id) {
-    lockQuery.eq("status", "paid_pending_audit");
+    if (!id) {
+     lockQuery.eq("status", "paid_pending_review");
   }
 
   const { data: lockedRows, error: lockErr } = await lockQuery.select("id");

@@ -14,7 +14,7 @@ export default async function AdminReviewsPage() {
     .select(
       "id, full_name, email, product_url, focus_page_url, status, created_at, completed_at, audit_content, edited_audit_content, pages, screenshot_url, marked_screenshot_url"
     )
-    .in("status", ["ready_for_review", "paid_in_review", "preview_ready"])
+    .in("status", ["paid_pending_review", "in_review"])
     .order("created_at", { ascending: false });
 
   if (error) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+
 type SectionItem = {
   title: string;
   content: string;
@@ -74,7 +75,7 @@ function normalizePages(audit: AuditItem): PageItem[] {
     }));
   }
 
-  const fallbackSections = splitSections(
+   const fallbackSections = splitSections(
     audit.edited_audit_content || audit.audit_content
   );
 
@@ -103,6 +104,7 @@ export default function ReviewDashboardClient({
     audits[0]?.id || null
   );
   const [activePageIndex, setActivePageIndex] = useState(0);
+  const [activeMarker, setActiveMarker] = useState(1);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -125,13 +127,15 @@ export default function ReviewDashboardClient({
   const activeSection = activeSections[activeSectionIndex] || null;
 
   useEffect(() => {
-    setActivePageIndex(0);
-    setActiveSectionIndex(0);
-  }, [activeAuditId]);
+  setActivePageIndex(0);
+  setActiveSectionIndex(0);
+  setActiveMarker(1);
+}, [activeAuditId]);
 
   useEffect(() => {
-    setActiveSectionIndex(0);
-  }, [activePageIndex]);
+  setActiveSectionIndex(0);
+  setActiveMarker(1);
+}, [activePageIndex]);
 
   useEffect(() => {
     setEditorHtml(activeSection?.content || "");
@@ -469,17 +473,89 @@ export default function ReviewDashboardClient({
                         </button>
                       </div>
 
-                      <img
-                        src={
-                          activePage.marked_screenshot_url ||
-                          activePage.screenshot_url ||
-                          activeAudit.marked_screenshot_url ||
-                          activeAudit.screenshot_url ||
-                          ""
-                        }
-                        alt="Audit screenshot"
-                        className="max-h-[620px] w-full rounded-2xl object-contain bg-white"
-                      />
+                     {(() => {
+  const imageSrc =
+    activePage.marked_screenshot_url ||
+    activePage.screenshot_url ||
+    activeAudit.marked_screenshot_url ||
+    activeAudit.screenshot_url ||
+    "";
+
+  const markers = [
+    { id: 1, label: "Top-left area" },
+    { id: 2, label: "Top-center" },
+    { id: 3, label: "Top-right" },
+    { id: 4, label: "Mid-section" },
+    { id: 5, label: "Bottom-left" },
+    { id: 6, label: "Bottom-right" },
+  ];
+
+
+  return (
+    <div className="flex gap-6">
+      {/* LEFT — MARKER LIST */}
+      <div className="w-[180px] space-y-2">
+        {markers.map((m) => (
+          <button
+            key={m.id}
+            onClick={() => setActiveMarker(m.id)}
+            className={`w-full text-left rounded-xl px-3 py-2 text-sm border ${
+              activeMarker === m.id
+                ? "bg-black text-white"
+                : "bg-white border-black/10"
+            }`}
+          >
+            Marker {m.id}
+          </button>
+        ))}
+      </div>
+
+      {/* RIGHT — IMAGE VIEW */}
+      <div className="flex-1">
+        <div className="relative rounded-2xl overflow-hidden border bg-white">
+          <img
+            src={imageSrc}
+            alt="Audit screenshot"
+            className="w-full object-contain"
+          />
+
+          {/* MARKER DOT */}
+          <div
+            className="absolute w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold shadow-lg"
+            style={{
+              top:
+                activeMarker === 1
+                  ? "10%"
+                  : activeMarker === 2
+                  ? "10%"
+                  : activeMarker === 3
+                  ? "10%"
+                  : activeMarker === 4
+                  ? "40%"
+                  : activeMarker === 5
+                  ? "75%"
+                  : "75%",
+              left:
+                activeMarker === 1
+                  ? "10%"
+                  : activeMarker === 2
+                  ? "50%"
+                  : activeMarker === 3
+                  ? "85%"
+                  : activeMarker === 4
+                  ? "50%"
+                  : activeMarker === 5
+                  ? "20%"
+                  : "80%",
+            }}
+          >
+            {activeMarker}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+})()} 
                     </div>
                   )}
                 </>
