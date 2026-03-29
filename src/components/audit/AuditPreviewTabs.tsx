@@ -12,6 +12,7 @@ type AuditPreviewTabsProps = {
   sections: AuditSection[];
   previewLimit?: number;
   mainScreenshot?: string | null;
+  pageCount?: number;
 };
 
 function getPreviewSectionTitle(title: string) {
