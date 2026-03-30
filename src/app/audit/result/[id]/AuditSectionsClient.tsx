@@ -9,6 +9,9 @@ type UiEvidenceItem = {
   evidence?: string;
   fix?: string;
   screenshot_url?: string | null;
+  crop_url?: string | null;
+  region_label?: string;
+  region_confidence?: "low" | "medium";
 };
 
 type SectionItem = {
@@ -257,97 +260,113 @@ function SectionContent({
         )}
         <span>{title}</span>
       </div>
-
-            {isUiSection && uiReferenceScreenshot && (
-  <button
-    type="button"
-    onClick={() => onOpenImage?.(uiReferenceScreenshot)}
-    className="relative mb-6 block w-full overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02] p-2 text-left transition hover:shadow-md"
-  >
-    <div className="relative">
-      <img
-        src={uiReferenceScreenshot}
-        alt="UI improvements reference screenshot"
-        className="h-auto max-w-full rounded-xl"
-  />
-
-</div>
-
-    {(uiEvidence || []).slice(0, 6).map((item, index) => {
-      const positions = [
-        { top: "18%", left: "22%" },
-        { top: "18%", left: "52%" },
-        { top: "18%", left: "82%" },
-        { top: "48%", left: "36%" },
-        { top: "74%", left: "26%" },
-        { top: "74%", left: "78%" },
-      ];
-
-      const pos = positions[index] || positions[0];
-      const markerNumber = item.marker || index + 1;
-
-      return (
-        <div
-          key={`marker-${index}`}
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-          style={{ top: pos.top, left: pos.left }}
-        >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-            {markerNumber}
-          </div>
-        </div>
-      );
-    })}
-
-    <div className="mt-2 text-xs text-black/55">
-      Click to enlarge screenshot
-    </div>
-  </button>
-)}
-
-      {isUiSection && uiEvidence?.length ? (
-        <div className="grid gap-4">
+             {isUiSection && uiEvidence?.length ? (
+        <div className="grid gap-6">
           {uiEvidence.map((item, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-black/10 bg-white p-5"
+              className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
-              <div className="min-w-0 text-sm leading-6 text-black/75">
-                <div className="mb-3 flex items-center gap-2">
-                  {item.marker ? (
-                    <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-sm ring-2 ring-white">
-                      {item.marker}
-                    </span>
-            ) : (
-            <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-sm ring-2 ring-white">
-              {index + 1}
-            </span>
-            )}
+                          {item.crop_url ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenImage?.(item.crop_url!)}
+                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
+                >
+                  <div className="relative flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
+                    <img
+                      src={item.crop_url}
+                      alt={`UI issue ${item.marker || index + 1}`}
+                      className="max-h-full w-full object-contain"
+                    />
 
-            <span className="text-xs font-semibold uppercase tracking-wide text-black/45">
-              UI Issue #{item.marker || index + 1}
-            </span>
-          </div>
-
-                <div className="space-y-2">
-                  {item.issue && (
-                    <div>
-                      <strong>Issue:</strong> {item.issue}
+                    <div className="absolute left-3 top-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+                      {item.marker || index + 1}
                     </div>
-                  )}
+                  </div>
 
-                  {item.evidence && (
-                    <div>
-                      <strong>Evidence:</strong> {item.evidence}
-                    </div>
-                  )}
+                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
+                    Click to enlarge evidence
+                  </div>
+                </button>
+              ) : uiReferenceScreenshot ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenImage?.(uiReferenceScreenshot)}
+                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
+                >
+                  <div className="relative flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
+                    <img
+                      src={uiReferenceScreenshot}
+                      alt={`Fallback UI reference ${item.marker || index + 1}`}
+                      className="max-h-full w-full object-contain opacity-90"
+                    />
 
-                  {item.fix && (
-                    <div className="rounded-xl bg-black/[0.04] px-3 py-3">
-                      <strong>Fix:</strong> {item.fix}
+                    <div className="absolute left-3 top-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+                      {item.marker || index + 1}
                     </div>
-                  )}
-                </div>
+                  </div>
+
+                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
+                    Fallback screenshot reference
+                  </div>
+                </button>
+              ) : null}
+              
+                <button
+                  type="button"
+                  onClick={() => onOpenImage?.(uiReferenceScreenshot)}
+                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
+                >
+                  <div className="flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
+                    <img
+                      src={uiReferenceScreenshot}
+                      alt={`Fallback UI reference ${item.marker || index + 1}`}
+                      className="max-h-full w-full object-contain opacity-90"
+                    />
+                  </div>
+
+                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
+                    Fallback screenshot reference
+                  </div>
+                </button>
+              ) : null}
+
+
+              <div className="mb-3 flex items-center gap-2">
+                <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">
+                  {item.marker || index + 1}
+                </span>
+
+                <span className="text-xs font-semibold uppercase tracking-wide text-black/45">
+                  UI Issue #{item.marker || index + 1}
+                </span>
+
+                {item.region_label ? (
+                  <span className="rounded-full bg-black/[0.04] px-2 py-1 text-[11px] text-black/60">
+                    {item.region_label}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="space-y-2 text-sm leading-6 text-black/75">
+                {item.issue && (
+                  <div>
+                    <strong>Issue:</strong> {item.issue}
+                  </div>
+                )}
+
+                {item.evidence && (
+                  <div>
+                    <strong>Evidence:</strong> {item.evidence}
+                  </div>
+                )}
+
+                {item.fix && (
+                  <div className="rounded-xl bg-black/[0.04] px-3 py-3">
+                    <strong>Fix:</strong> {item.fix}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -460,7 +479,7 @@ function SectionContent({
             {content}
           </ReactMarkdown>
         </div>
-      )}
+      )} 
     </section>
   );
 }
@@ -600,31 +619,6 @@ export default function AuditSectionsClient({
     className="h-auto max-w-full rounded-xl"
   />
 
-  {(uiEvidence || []).slice(0, 6).map((item, index) => {
-    const positions = [
-      { top: "18%", left: "22%" },
-      { top: "18%", left: "52%" },
-      { top: "18%", left: "82%" },
-      { top: "48%", left: "36%" },
-      { top: "74%", left: "26%" },
-      { top: "74%", left: "78%" },
-    ];
-
-    const pos = positions[index] || positions[0];
-    const markerNumber = item.marker || index + 1;
-
-    return (
-      <div
-        key={`lightbox-marker-${index}`}
-        className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-        style={{ top: pos.top, left: pos.left }}
-      >
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-base font-bold text-white shadow-lg ring-2 ring-white">
-          {markerNumber}
-        </div>
-      </div>
-    );
-  })}
 </div>
           </div>
         </div>

@@ -13,6 +13,19 @@ type UiEvidenceItem = {
   screenshot_url?: string | null;
 };
 
+type PageGroup = {
+  id: string;
+  title: string;
+  url: string;
+  screenshot_url: string | null;
+  marked_screenshot_url: string | null;
+  sections: any[];
+  evidence: any[];
+  processing_failed: boolean;
+  failure_reason: string | null;
+  failure_detail: string | null;
+};
+
 function splitSections(markdown: string | null | undefined) {
   if (!markdown || !markdown.trim()) {
     return [];
@@ -405,7 +418,7 @@ export default async function AuditResultPage({
     </main>
   );
 }
-    const pageGroups =
+    const pageGroups: PageGroup[] =
   Array.isArray(data.pages) && data.pages.length > 0
     ? data.pages.map((page: any, pageIndex: number) => ({
         id: `page-${pageIndex + 1}`,
@@ -419,8 +432,12 @@ export default async function AuditResultPage({
         screenshot_url: page.screenshot_url || null,
         marked_screenshot_url: page.marked_screenshot_url || null,
         sections: Array.isArray(page.sections) ? page.sections : [],
+        evidence: Array.isArray(page.evidence) ? page.evidence : [],
+        processing_failed: !!page.processing_failed,
+        failure_reason: page.failure_reason || null,
+        failure_detail: page.failure_detail || null,
       }))
-    : [
+        : [
         {
           id: "page-1",
           title: "Main Page",
@@ -428,17 +445,14 @@ export default async function AuditResultPage({
           screenshot_url: data.screenshot_url || null,
           marked_screenshot_url: data.marked_screenshot_url || null,
           sections: splitSections(finalAuditContent),
+          evidence: [],
+          processing_failed: false,
+          failure_reason: null,
+          failure_detail: null,
         },
       ];
 
 const auditScore = computeAuditScore(finalAuditContent || "");
-const firstPage = pageGroups[0] || null;
-
-const evidenceScreenshot =
-  firstPage?.marked_screenshot_url ||
-  firstPage?.screenshot_url ||
-  data.marked_screenshot_url ||
-  data.screenshot_url;
 
 const isPreviewOnly = data.status === "preview_ready";
 
@@ -541,36 +555,65 @@ const isUnlocked =
         </div>
 
 
-        {pageGroups.map((page, pageIndex) => (
+       {pageGroups.map((page) => (
   <div key={page.id} className="mb-12">
-
-    {/* PAGE HEADER */}
     <div className="mb-6">
       <div className="text-xs uppercase tracking-wide text-black/45">
         {page.title}
       </div>
 
       {page.url && (
-        <div className="mt-1 text-sm text-black/60 break-all">
+        <div className="mt-1 break-all text-sm text-black/60">
           {page.url}
         </div>
       )}
     </div>
 
-    <AuditSectionsClient
-      sections={(page.sections || []).map((section: any, index: number) => ({
-        id: `${page.id}-section-${index}`,
-        title: section.title,
-        content: section.content,
-      }))}
-      uiEvidence={data.ui_evidence || []}
-      uiReferenceScreenshot={
-        page.marked_screenshot_url || page.screenshot_url || null
-      }
-      previewMode={isPreviewOnly && !searchUnlock}
-      currentStatus={data.status}
-/>
+    {page.processing_failed ? (
+      <div className="rounded-3xl border border-red-200 bg-red-50 p-6">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-red-700">
+          Page processing failed
+        </div>
 
+        <h3 className="mt-3 text-xl font-semibold text-black">
+          This page could not be processed automatically
+        </h3>
+
+        <div className="mt-4 space-y-2 text-sm leading-7 text-black/70">
+          <div>
+            <strong className="text-black/80">Reason:</strong>{" "}
+            {page.failure_reason || "Unknown processing failure"}
+          </div>
+
+          {page.failure_detail ? (
+            <div className="break-all">
+              <strong className="text-black/80">Detail:</strong>{" "}
+              {page.failure_detail}
+            </div>
+          ) : null}
+
+          <div>
+            <strong className="text-black/80">What this means:</strong> This
+            page was not fully analyzable during the automated audit run, so no
+            reliable UI evidence should be inferred from this result.
+          </div>
+        </div>
+      </div>
+    ) : (
+      <AuditSectionsClient
+        sections={(page.sections || []).map((section: any, index: number) => ({
+          id: `${page.id}-section-${index}`,
+          title: section.title,
+          content: section.content,
+        }))}
+        uiEvidence={page.evidence || []}
+        uiReferenceScreenshot={
+          page.marked_screenshot_url || page.screenshot_url || null
+        }
+        previewMode={isPreviewOnly && !searchUnlock}
+        currentStatus={data.status}
+      />
+    )}
   </div>
 ))}
 

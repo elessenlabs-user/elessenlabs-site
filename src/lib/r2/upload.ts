@@ -20,16 +20,7 @@ export async function uploadToR2(buffer: Buffer, key: string) {
     Body: buffer,
     ContentType: "image/jpeg",
   });
-  console.log("R2 DEBUG", {
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  accountId: process.env.R2_ACCOUNT_ID,
-  bucket: process.env.R2_BUCKET_NAME,
-  publicBaseUrl: process.env.R2_PUBLIC_BASE_URL,
-  accessKeyPresent: !!process.env.R2_ACCESS_KEY_ID,
-  secretPresent: !!process.env.R2_SECRET_ACCESS_KEY,
-  accessKeyPrefix: process.env.R2_ACCESS_KEY_ID?.slice(0, 6),
-});
-
+  
   await s3.send(command);
 
   return `${publicBaseUrl}/${key}`;

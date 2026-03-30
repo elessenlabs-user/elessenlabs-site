@@ -8,6 +8,8 @@ type UiEvidence = {
   evidence: string;
   fix: string;
   crop_url?: string | null;
+  region_label?: string;
+  region_confidence?: "low" | "medium";
   position?: {
     x: number;
     y: number;
@@ -204,6 +206,17 @@ async function addScreenshotMarkers(imageUrl: string) {
     console.error("MARKER OVERLAY ERROR:", err);
     return imageUrl;
   }
+}
+
+async function fetchImageBuffer(imageUrl: string) {
+  const response = await fetch(imageUrl);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image buffer: ${response.status}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 async function generateAuditMarkdown(payload: any) {
@@ -442,16 +455,328 @@ function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
 
     if (!marker) continue;
 
-    results.push({
-      marker,
-      issue: issueMatch?.[1]?.trim() || "",
-      evidence: evidenceMatch?.[1]?.trim() || "",
-      fix: fixMatch?.[1]?.trim() || "",
-      crop_url: null,
-    });
-  }
+    const issueText = issueMatch?.[1]?.trim() || "";
+const evidenceText = evidenceMatch?.[1]?.trim() || "";
+const region = getEvidenceRegion(issueText, evidenceText);
+
+results.push({
+  marker,
+  issue: issueText,
+  evidence: evidenceText,
+  fix: fixMatch?.[1]?.trim() || "",
+  crop_url: null,
+  region_label: region.region_label,
+  region_confidence: region.region_confidence,
+  position: getEvidencePosition(marker, issueText, evidenceText),
+  });
+}
 
   return results.slice(0, 6);
+}
+function getEvidenceRegion(issue: string, evidence: string) {
+  const text = `${issue} ${evidence}`.toLowerCase();
+
+  const mentionsHero =
+    /hero|headline|subheadline|first impression|above the fold|top section|top message|main cta|primary cta|navigation|nav|header/.test(
+      text
+    );
+
+  const mentionsTrust =
+    /trust|social proof|testimonial|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand/.test(
+      text
+    );
+
+  const mentionsPricing =
+    /pricing|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
+      text
+    );
+
+  const mentionsForm =
+    /form|input|field|signup|sign up|join|subscribe|email capture|lead capture|contact|demo request|request demo/.test(
+      text
+    );
+
+  const mentionsFooter =
+    /footer|bottom|legal|language selector|secondary nav|secondary navigation|site links|site map/.test(
+      text
+    );
+
+  const mentionsCardOrGrid =
+    /card|cards|grid|module|section|content block|resource|resources|feature block|feature grid/.test(
+      text
+    );
+
+  if (mentionsHero) {
+    return {
+      region_label: "Hero / top section",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsPricing) {
+    return {
+      region_label: "Pricing / comparison area",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsForm) {
+    return {
+      region_label: "Form / CTA area",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsTrust) {
+    return {
+      region_label: "Trust / proof area",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsCardOrGrid) {
+    return {
+      region_label: "Feature / content grid",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsFooter) {
+    return {
+      region_label: "Footer / lower page area",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  return {
+    region_label: "General page region",
+    region_confidence: "low" as const,
+  };
+}
+
+function getEvidencePosition(
+  marker: number,
+  issue: string,
+  evidence: string
+): UiEvidence["position"] {
+  const text = `${issue} ${evidence}`.toLowerCase();
+
+  const mentionsHero =
+    /hero|headline|subheadline|first impression|above the fold|top section|top message|header|masthead/.test(
+      text
+    );
+
+  const mentionsNav =
+    /navigation|nav|menu|header links|top nav|primary nav/.test(text);
+
+  const mentionsPrimaryCta =
+    /main cta|primary cta|cta|call to action|button|submit|start|book|claim|request demo|demo/.test(
+      text
+    );
+
+  const mentionsTrust =
+    /trust|social proof|testimonial|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner/.test(
+      text
+    );
+
+  const mentionsPricing =
+    /pricing|price|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
+      text
+    );
+
+  const mentionsForm =
+    /form|input|field|signup|sign up|join|subscribe|email capture|lead capture|contact/.test(
+      text
+    );
+
+  const mentionsFooter =
+    /footer|bottom|legal|language selector|secondary nav|secondary navigation|site links|site map/.test(
+      text
+    );
+
+  const mentionsCardOrGrid =
+    /card|cards|grid|module|section|content block|resource|resources|feature block|feature grid|feature section/.test(
+      text
+    );
+
+  // HERO / HEADER
+  if (mentionsHero) {
+    const heroMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.05, y: 0.03, width: 0.36, height: 0.18 },
+      2: { x: 0.28, y: 0.04, width: 0.36, height: 0.18 },
+      3: { x: 0.56, y: 0.04, width: 0.30, height: 0.18 },
+      4: { x: 0.16, y: 0.08, width: 0.56, height: 0.20 },
+      5: { x: 0.08, y: 0.12, width: 0.34, height: 0.18 },
+      6: { x: 0.52, y: 0.12, width: 0.34, height: 0.18 },
+    };
+
+    return heroMap[marker] || { x: 0.16, y: 0.06, width: 0.56, height: 0.20 };
+  }
+
+  // NAV
+  if (mentionsNav) {
+    const navMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.02, y: 0.0, width: 0.28, height: 0.10 },
+      2: { x: 0.28, y: 0.0, width: 0.24, height: 0.10 },
+      3: { x: 0.52, y: 0.0, width: 0.24, height: 0.10 },
+      4: { x: 0.16, y: 0.0, width: 0.52, height: 0.11 },
+      5: { x: 0.0, y: 0.0, width: 0.22, height: 0.10 },
+      6: { x: 0.72, y: 0.0, width: 0.22, height: 0.10 },
+    };
+
+    return navMap[marker] || { x: 0.14, y: 0.0, width: 0.58, height: 0.11 };
+  }
+
+  // PRIMARY CTA / FORM
+  if (mentionsPrimaryCta || mentionsForm) {
+    const ctaMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.16, y: 0.10, width: 0.34, height: 0.18 },
+      2: { x: 0.38, y: 0.10, width: 0.30, height: 0.18 },
+      3: { x: 0.56, y: 0.10, width: 0.28, height: 0.18 },
+      4: { x: 0.24, y: 0.20, width: 0.44, height: 0.20 },
+      5: { x: 0.12, y: 0.28, width: 0.34, height: 0.20 },
+      6: { x: 0.52, y: 0.28, width: 0.34, height: 0.20 },
+    };
+
+    return ctaMap[marker] || { x: 0.24, y: 0.16, width: 0.44, height: 0.20 };
+  }
+
+  // PRICING
+  if (mentionsPricing) {
+    const pricingMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.08, y: 0.22, width: 0.34, height: 0.22 },
+      2: { x: 0.34, y: 0.22, width: 0.32, height: 0.22 },
+      3: { x: 0.58, y: 0.22, width: 0.30, height: 0.22 },
+      4: { x: 0.14, y: 0.26, width: 0.70, height: 0.24 },
+      5: { x: 0.08, y: 0.34, width: 0.34, height: 0.22 },
+      6: { x: 0.52, y: 0.34, width: 0.34, height: 0.22 },
+    };
+
+    return pricingMap[marker] || { x: 0.14, y: 0.26, width: 0.70, height: 0.24 };
+  }
+
+  // TRUST / PROOF
+  if (mentionsTrust) {
+    const trustMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.08, y: 0.18, width: 0.36, height: 0.18 },
+      2: { x: 0.30, y: 0.18, width: 0.40, height: 0.18 },
+      3: { x: 0.54, y: 0.18, width: 0.32, height: 0.18 },
+      4: { x: 0.12, y: 0.40, width: 0.68, height: 0.20 },
+      5: { x: 0.08, y: 0.52, width: 0.36, height: 0.20 },
+      6: { x: 0.50, y: 0.52, width: 0.36, height: 0.20 },
+    };
+
+    return trustMap[marker] || { x: 0.12, y: 0.40, width: 0.68, height: 0.20 };
+  }
+
+  // FEATURE / CONTENT GRID
+  if (mentionsCardOrGrid) {
+    const gridMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.08, y: 0.26, width: 0.34, height: 0.20 },
+      2: { x: 0.34, y: 0.26, width: 0.30, height: 0.20 },
+      3: { x: 0.58, y: 0.26, width: 0.28, height: 0.20 },
+      4: { x: 0.16, y: 0.38, width: 0.58, height: 0.22 },
+      5: { x: 0.08, y: 0.54, width: 0.36, height: 0.22 },
+      6: { x: 0.50, y: 0.54, width: 0.36, height: 0.22 },
+    };
+
+    return gridMap[marker] || { x: 0.16, y: 0.38, width: 0.58, height: 0.22 };
+  }
+
+  // FOOTER
+  if (mentionsFooter) {
+    const footerMap: Record<number, UiEvidence["position"]> = {
+      1: { x: 0.08, y: 0.72, width: 0.34, height: 0.18 },
+      2: { x: 0.34, y: 0.72, width: 0.30, height: 0.18 },
+      3: { x: 0.58, y: 0.72, width: 0.28, height: 0.18 },
+      4: { x: 0.14, y: 0.70, width: 0.70, height: 0.20 },
+      5: { x: 0.08, y: 0.78, width: 0.34, height: 0.16 },
+      6: { x: 0.52, y: 0.78, width: 0.34, height: 0.16 },
+    };
+
+    return footerMap[marker] || { x: 0.14, y: 0.70, width: 0.70, height: 0.20 };
+  }
+
+  // GENERAL FALLBACK
+  const fallbackMap: Record<number, UiEvidence["position"]> = {
+    1: { x: 0.08, y: 0.06, width: 0.34, height: 0.18 },
+    2: { x: 0.36, y: 0.08, width: 0.28, height: 0.18 },
+    3: { x: 0.60, y: 0.08, width: 0.28, height: 0.18 },
+    4: { x: 0.16, y: 0.34, width: 0.58, height: 0.22 },
+    5: { x: 0.10, y: 0.58, width: 0.34, height: 0.20 },
+    6: { x: 0.54, y: 0.58, width: 0.34, height: 0.20 },
+  };
+
+  return fallbackMap[marker] || { x: 0.16, y: 0.34, width: 0.58, height: 0.22 };
+}
+async function generateEvidenceCrops(
+  screenshotUrl: string,
+  evidenceItems: UiEvidence[]
+): Promise<UiEvidence[]> {
+  if (!screenshotUrl || !evidenceItems.length) {
+    return evidenceItems;
+  }
+
+  const buffer = await fetchImageBuffer(screenshotUrl);
+  const meta = await sharp(buffer).metadata();
+
+  const imageWidth = meta.width || 1440;
+  const imageHeight = meta.height || 2200;
+
+  const nextEvidence: UiEvidence[] = [];
+
+  for (const item of evidenceItems) {
+    if (!item.position) {
+      nextEvidence.push(item);
+      continue;
+    }
+
+    try {
+      const left = Math.max(0, Math.round(item.position.x * imageWidth));
+      const top = Math.max(0, Math.round(item.position.y * imageHeight));
+      const width = Math.min(
+        imageWidth - left,
+        Math.max(260, Math.round(item.position.width * imageWidth))
+      );
+      const height = Math.min(
+        imageHeight - top,
+        Math.max(220, Math.round(item.position.height * imageHeight))
+      );
+
+      const cropBuffer = await sharp(buffer)
+        .extract({
+          left,
+          top,
+          width,
+          height,
+        })
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer();
+
+      const key = `screenshots/crops/${Date.now()}-${item.marker}-${Math.random()
+        .toString(36)
+        .substring(7)}.jpg`;
+
+      const cropUrl = await uploadToR2(cropBuffer, key);
+
+      nextEvidence.push({
+        ...item,
+        crop_url: cropUrl,
+      });
+    } catch (err) {
+      console.error("EVIDENCE CROP FAILED:", {
+        marker: item.marker,
+        err,
+      });
+
+      nextEvidence.push({
+        ...item,
+        crop_url: null,
+      });
+    }
+  }
+
+  return nextEvidence;
 }
 
 function buildAuditPages(row: any): string[] {
@@ -554,11 +879,16 @@ export async function runAuditPipeline(row: any) {
         auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
         uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
+      if (screenshotUrl && uiEvidence.length) {
+        uiEvidence = await generateEvidenceCrops(screenshotUrl, uiEvidence);
+      }
+
         console.log("AUDIT MARKDOWN GENERATED", {
           url,
           hasContent: !!auditMarkdown,
           length: auditMarkdown?.length || 0,
           uiEvidenceCount: uiEvidence.length,
+          cropCount: uiEvidence.filter((item) => !!item.crop_url).length,
         });
       } catch (err) {
         console.error("AUDIT MARKDOWN FAILED:", url, err);
@@ -576,7 +906,7 @@ export async function runAuditPipeline(row: any) {
         })
         .filter((s) => s.content);
 
-      console.log("AUDIT PAGE SUCCESS", {
+            console.log("AUDIT PAGE SUCCESS", {
         url,
         sectionCount: sections.length,
       });
@@ -591,22 +921,38 @@ export async function runAuditPipeline(row: any) {
     } catch (err) {
       console.error("PAGE AUDIT FAILED:", url, err);
 
+      const failureMessage =
+        err instanceof Error
+          ? err.message
+          : String(err || "Unknown processing error");
+
+      let failureReason = "Processing failed";
+      if (failureMessage.includes("HTML_FETCH_FAILED")) {
+        failureReason = "HTML fetch failed";
+      } else if (failureMessage.includes("SCREENSHOT_FAILED")) {
+        failureReason = "Screenshot capture failed";
+      }
+
       processedPages.push({
         url,
         screenshot_url: null,
         marked_screenshot_url: null,
         sections: [
           {
-            title: "Executive Summary",
-            content:
-              "This page could not be processed automatically. Review manually before release.",
+            title: "Processing Status",
+            content: "This page could not be processed automatically.",
           },
           {
-            title: "Questions / Assumptions",
-            content: `- Automatic audit failed for ${url}\n- Check page accessibility, redirects, or bot blocking`,
+            title: "Failure Details",
+            content: `- Failure reason: ${failureReason}
+          - Technical detail: ${failureMessage}
+          - Suggested next step: Check whether the page blocks automated access, redirects unusually, or is temporarily unavailable.`,
           },
         ],
         evidence: [],
+        processing_failed: true,
+        failure_reason: failureReason,
+        failure_detail: failureMessage,
       });
     }
   }
