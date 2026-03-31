@@ -477,34 +477,49 @@ function getEvidenceRegion(issue: string, evidence: string) {
   const text = `${issue} ${evidence}`.toLowerCase();
 
   const mentionsHero =
-    /hero|headline|subheadline|first impression|above the fold|top section|top message|main cta|primary cta|navigation|nav|header/.test(
+    /hero|headline|subheadline|first impression|above the fold|top section|top message|value proposition|main message|positioning|header copy/.test(
+      text
+    );
+
+  const mentionsNav =
+    /navigation|nav|menu|header|top nav|top navigation/.test(text);
+
+  const mentionsCta =
+    /cta|call to action|button|primary button|secondary button|download|apply|start|book|sign up|signup|join|request demo|demo|contact sales/.test(
       text
     );
 
   const mentionsTrust =
-    /trust|social proof|testimonial|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand/.test(
+    /trust|social proof|testimonial|testimonials|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner|partners/.test(
       text
     );
 
   const mentionsPricing =
-    /pricing|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
+    /pricing|price|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
       text
     );
 
   const mentionsForm =
-    /form|input|field|signup|sign up|join|subscribe|email capture|lead capture|contact|demo request|request demo/.test(
+    /form|input|field|email capture|lead capture|contact form|newsletter|subscribe/.test(
       text
     );
 
   const mentionsFooter =
-    /footer|bottom|legal|language selector|secondary nav|secondary navigation|site links|site map/.test(
+    /footer|bottom|legal|privacy|terms|language selector|secondary nav|secondary navigation|site links|site map|social links/.test(
       text
     );
 
   const mentionsCardOrGrid =
-    /card|cards|grid|module|section|content block|resource|resources|feature block|feature grid/.test(
+    /card|cards|grid|module|content block|resource|resources|feature block|feature grid|product block|product card|feature card|listing/.test(
       text
     );
+
+  if (mentionsHero && mentionsCta) {
+    return {
+      region_label: "Hero / CTA area",
+      region_confidence: "medium" as const,
+    };
+  }
 
   if (mentionsHero) {
     return {
@@ -513,16 +528,23 @@ function getEvidenceRegion(issue: string, evidence: string) {
     };
   }
 
-  if (mentionsPricing) {
+  if (mentionsNav) {
     return {
-      region_label: "Pricing / comparison area",
+      region_label: "Navigation / header area",
       region_confidence: "medium" as const,
     };
   }
 
-  if (mentionsForm) {
+  if (mentionsCta || mentionsForm) {
     return {
-      region_label: "Form / CTA area",
+      region_label: "CTA / conversion area",
+      region_confidence: "medium" as const,
+    };
+  }
+
+  if (mentionsPricing) {
+    return {
+      region_label: "Pricing / comparison area",
       region_confidence: "medium" as const,
     };
   }
@@ -562,20 +584,20 @@ function getEvidencePosition(
   const text = `${issue} ${evidence}`.toLowerCase();
 
   const mentionsHero =
-    /hero|headline|subheadline|first impression|above the fold|top section|top message|header|masthead/.test(
+    /hero|headline|subheadline|first impression|above the fold|top section|top message|value proposition|main message|positioning/.test(
       text
     );
 
   const mentionsNav =
-    /navigation|nav|menu|header links|top nav|primary nav/.test(text);
+    /navigation|nav|menu|header|top nav|top navigation/.test(text);
 
-  const mentionsPrimaryCta =
-    /main cta|primary cta|cta|call to action|button|submit|start|book|claim|request demo|demo/.test(
+  const mentionsCta =
+    /cta|call to action|button|primary button|secondary button|download|apply|start|book|sign up|signup|join|request demo|demo|contact sales/.test(
       text
     );
 
   const mentionsTrust =
-    /trust|social proof|testimonial|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner/.test(
+    /trust|social proof|testimonial|testimonials|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner|partners/.test(
       text
     );
 
@@ -585,129 +607,74 @@ function getEvidencePosition(
     );
 
   const mentionsForm =
-    /form|input|field|signup|sign up|join|subscribe|email capture|lead capture|contact/.test(
+    /form|input|field|email capture|lead capture|contact form|newsletter|subscribe/.test(
       text
     );
 
   const mentionsFooter =
-    /footer|bottom|legal|language selector|secondary nav|secondary navigation|site links|site map/.test(
+    /footer|bottom|legal|privacy|terms|language selector|secondary nav|secondary navigation|site links|site map|social links/.test(
       text
     );
 
   const mentionsCardOrGrid =
-    /card|cards|grid|module|section|content block|resource|resources|feature block|feature grid|feature section/.test(
+    /card|cards|grid|module|content block|resource|resources|feature block|feature grid|product block|product card|feature card|listing/.test(
       text
     );
 
-  // HERO / HEADER
-  if (mentionsHero) {
-    const heroMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.05, y: 0.03, width: 0.36, height: 0.18 },
-      2: { x: 0.28, y: 0.04, width: 0.36, height: 0.18 },
-      3: { x: 0.56, y: 0.04, width: 0.30, height: 0.18 },
-      4: { x: 0.16, y: 0.08, width: 0.56, height: 0.20 },
-      5: { x: 0.08, y: 0.12, width: 0.34, height: 0.18 },
-      6: { x: 0.52, y: 0.12, width: 0.34, height: 0.18 },
-    };
-
-    return heroMap[marker] || { x: 0.16, y: 0.06, width: 0.56, height: 0.20 };
-  }
-
-  // NAV
   if (mentionsNav) {
-    const navMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.02, y: 0.0, width: 0.28, height: 0.10 },
-      2: { x: 0.28, y: 0.0, width: 0.24, height: 0.10 },
-      3: { x: 0.52, y: 0.0, width: 0.24, height: 0.10 },
-      4: { x: 0.16, y: 0.0, width: 0.52, height: 0.11 },
-      5: { x: 0.0, y: 0.0, width: 0.22, height: 0.10 },
-      6: { x: 0.72, y: 0.0, width: 0.22, height: 0.10 },
-    };
-
-    return navMap[marker] || { x: 0.14, y: 0.0, width: 0.58, height: 0.11 };
+    return { x: 0.08, y: 0.02, width: 0.42, height: 0.1 };
   }
 
-  // PRIMARY CTA / FORM
-  if (mentionsPrimaryCta || mentionsForm) {
-    const ctaMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.16, y: 0.10, width: 0.34, height: 0.18 },
-      2: { x: 0.38, y: 0.10, width: 0.30, height: 0.18 },
-      3: { x: 0.56, y: 0.10, width: 0.28, height: 0.18 },
-      4: { x: 0.24, y: 0.20, width: 0.44, height: 0.20 },
-      5: { x: 0.12, y: 0.28, width: 0.34, height: 0.20 },
-      6: { x: 0.52, y: 0.28, width: 0.34, height: 0.20 },
-    };
-
-    return ctaMap[marker] || { x: 0.24, y: 0.16, width: 0.44, height: 0.20 };
+  if (mentionsHero && mentionsCta) {
+    if (marker === 1) return { x: 0.1, y: 0.08, width: 0.32, height: 0.16 };
+    if (marker === 2) return { x: 0.34, y: 0.1, width: 0.3, height: 0.16 };
+    return { x: 0.18, y: 0.08, width: 0.42, height: 0.18 };
   }
 
-  // PRICING
+  if (mentionsHero) {
+    if (marker === 1) return { x: 0.08, y: 0.08, width: 0.28, height: 0.16 };
+    if (marker === 2) return { x: 0.34, y: 0.08, width: 0.24, height: 0.16 };
+    if (marker === 3) return { x: 0.56, y: 0.08, width: 0.24, height: 0.16 };
+    return { x: 0.2, y: 0.1, width: 0.36, height: 0.18 };
+  }
+
+  if (mentionsCta || mentionsForm) {
+    if (/download|apply|start|book|sign up|signup|join|request demo|demo/.test(text)) {
+      return { x: 0.26, y: 0.58, width: 0.26, height: 0.12 };
+    }
+    return { x: 0.3, y: 0.42, width: 0.28, height: 0.14 };
+  }
+
   if (mentionsPricing) {
-    const pricingMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.08, y: 0.22, width: 0.34, height: 0.22 },
-      2: { x: 0.34, y: 0.22, width: 0.32, height: 0.22 },
-      3: { x: 0.58, y: 0.22, width: 0.30, height: 0.22 },
-      4: { x: 0.14, y: 0.26, width: 0.70, height: 0.24 },
-      5: { x: 0.08, y: 0.34, width: 0.34, height: 0.22 },
-      6: { x: 0.52, y: 0.34, width: 0.34, height: 0.22 },
-    };
-
-    return pricingMap[marker] || { x: 0.14, y: 0.26, width: 0.70, height: 0.24 };
+    return { x: 0.2, y: 0.34, width: 0.42, height: 0.18 };
   }
 
-  // TRUST / PROOF
   if (mentionsTrust) {
-    const trustMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.08, y: 0.18, width: 0.36, height: 0.18 },
-      2: { x: 0.30, y: 0.18, width: 0.40, height: 0.18 },
-      3: { x: 0.54, y: 0.18, width: 0.32, height: 0.18 },
-      4: { x: 0.12, y: 0.40, width: 0.68, height: 0.20 },
-      5: { x: 0.08, y: 0.52, width: 0.36, height: 0.20 },
-      6: { x: 0.50, y: 0.52, width: 0.36, height: 0.20 },
-    };
-
-    return trustMap[marker] || { x: 0.12, y: 0.40, width: 0.68, height: 0.20 };
+    if (marker <= 3) return { x: 0.16, y: 0.18, width: 0.34, height: 0.14 };
+    return { x: 0.18, y: 0.46, width: 0.34, height: 0.14 };
   }
 
-  // FEATURE / CONTENT GRID
   if (mentionsCardOrGrid) {
-    const gridMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.08, y: 0.26, width: 0.34, height: 0.20 },
-      2: { x: 0.34, y: 0.26, width: 0.30, height: 0.20 },
-      3: { x: 0.58, y: 0.26, width: 0.28, height: 0.20 },
-      4: { x: 0.16, y: 0.38, width: 0.58, height: 0.22 },
-      5: { x: 0.08, y: 0.54, width: 0.36, height: 0.22 },
-      6: { x: 0.50, y: 0.54, width: 0.36, height: 0.22 },
-    };
-
-    return gridMap[marker] || { x: 0.16, y: 0.38, width: 0.58, height: 0.22 };
+    if (marker === 4) return { x: 0.2, y: 0.36, width: 0.28, height: 0.16 };
+    if (marker === 5) return { x: 0.1, y: 0.52, width: 0.24, height: 0.16 };
+    if (marker === 6) return { x: 0.42, y: 0.52, width: 0.24, height: 0.16 };
+    return { x: 0.22, y: 0.34, width: 0.28, height: 0.16 };
   }
 
-  // FOOTER
   if (mentionsFooter) {
-    const footerMap: Record<number, UiEvidence["position"]> = {
-      1: { x: 0.08, y: 0.72, width: 0.34, height: 0.18 },
-      2: { x: 0.34, y: 0.72, width: 0.30, height: 0.18 },
-      3: { x: 0.58, y: 0.72, width: 0.28, height: 0.18 },
-      4: { x: 0.14, y: 0.70, width: 0.70, height: 0.20 },
-      5: { x: 0.08, y: 0.78, width: 0.34, height: 0.16 },
-      6: { x: 0.52, y: 0.78, width: 0.34, height: 0.16 },
-    };
-
-    return footerMap[marker] || { x: 0.14, y: 0.70, width: 0.70, height: 0.20 };
+    return { x: 0.18, y: 0.76, width: 0.3, height: 0.12 };
   }
 
-  // GENERAL FALLBACK
   const fallbackMap: Record<number, UiEvidence["position"]> = {
-    1: { x: 0.08, y: 0.06, width: 0.34, height: 0.18 },
-    2: { x: 0.36, y: 0.08, width: 0.28, height: 0.18 },
-    3: { x: 0.60, y: 0.08, width: 0.28, height: 0.18 },
-    4: { x: 0.16, y: 0.34, width: 0.58, height: 0.22 },
-    5: { x: 0.10, y: 0.58, width: 0.34, height: 0.20 },
-    6: { x: 0.54, y: 0.58, width: 0.34, height: 0.20 },
+    1: { x: 0.12, y: 0.08, width: 0.24, height: 0.14 },
+    2: { x: 0.38, y: 0.12, width: 0.22, height: 0.14 },
+    3: { x: 0.58, y: 0.18, width: 0.22, height: 0.14 },
+    4: { x: 0.22, y: 0.36, width: 0.26, height: 0.16 },
+    5: { x: 0.12, y: 0.54, width: 0.24, height: 0.16 },
+    6: { x: 0.42, y: 0.58, width: 0.24, height: 0.16 },
   };
 
-  return fallbackMap[marker] || { x: 0.16, y: 0.34, width: 0.58, height: 0.22 };
+  return fallbackMap[marker] || { x: 0.18, y: 0.18, width: 0.24, height: 0.14 };
 }
 async function generateEvidenceCrops(
   screenshotUrl: string,
@@ -736,11 +703,11 @@ async function generateEvidenceCrops(
       const top = Math.max(0, Math.round(item.position.y * imageHeight));
       const width = Math.min(
         imageWidth - left,
-        Math.max(260, Math.round(item.position.width * imageWidth))
+        Math.max(180, Math.round(item.position.width * imageWidth))
       );
       const height = Math.min(
         imageHeight - top,
-        Math.max(220, Math.round(item.position.height * imageHeight))
+        Math.max(140, Math.round(item.position.height * imageHeight))
       );
 
       const cropBuffer = await sharp(buffer)

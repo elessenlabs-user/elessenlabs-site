@@ -108,17 +108,17 @@ export async function POST(
     });
   }
 
-  const { error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
     .from("audit_requests")
     .update({
-      status: "paid_in_review",
+      status: "paid_pending_review",
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
 
   if (error) {
     return NextResponse.json(
-      { error: error.message || "Failed to reject audit." },
+      { error: error.message || "Failed to return audit to review queue." },
       { status: 500 }
     );
   }
@@ -126,6 +126,6 @@ export async function POST(
   return NextResponse.json({
     ok: true,
     id,
-    status: "paid_in_review",
+    status: "paid_pending_review",
   });
 }

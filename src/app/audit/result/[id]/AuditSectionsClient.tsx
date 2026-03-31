@@ -267,7 +267,7 @@ function SectionContent({
               key={index}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
-                          {item.crop_url ? (
+              {item.crop_url ? (
                 <button
                   type="button"
                   onClick={() => onOpenImage?.(item.crop_url!)}
@@ -312,26 +312,6 @@ function SectionContent({
                   </div>
                 </button>
               ) : null}
-              
-                <button
-                  type="button"
-                  onClick={() => onOpenImage?.(uiReferenceScreenshot)}
-                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
-                >
-                  <div className="flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
-                    <img
-                      src={uiReferenceScreenshot}
-                      alt={`Fallback UI reference ${item.marker || index + 1}`}
-                      className="max-h-full w-full object-contain opacity-90"
-                    />
-                  </div>
-
-                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
-                    Fallback screenshot reference
-                  </div>
-                </button>
-              ) : null}
-
 
               <div className="mb-3 flex items-center gap-2">
                 <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">
@@ -597,7 +577,7 @@ export default function AuditSectionsClient({
           >
             <div className="mb-3 flex items-center justify-between gap-4">
               <div className="text-sm font-semibold text-black">
-                UI Improvements Screenshot
+                Evidence Image
               </div>
               {/* THIS IS WHERE YOUR BUTTON GOES */}
               <button
@@ -614,10 +594,10 @@ export default function AuditSectionsClient({
 
             <div className="relative">
   <img
-    src={lightboxSrc}
-    alt="Enlarged UI improvements screenshot"
-    className="h-auto max-w-full rounded-xl"
-  />
+  src={lightboxSrc}
+  alt="Enlarged evidence image"
+  className="h-auto max-w-full rounded-xl"
+/>
 
 </div>
           </div>

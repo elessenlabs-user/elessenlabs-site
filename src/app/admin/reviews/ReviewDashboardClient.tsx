@@ -8,11 +8,22 @@ type SectionItem = {
   content: string;
 };
 
+type EvidenceItem = {
+  marker?: number;
+  issue?: string;
+  evidence?: string;
+  fix?: string;
+  crop_url?: string | null;
+  region_label?: string;
+  region_confidence?: "low" | "medium";
+};
+
 type PageItem = {
   url?: string;
   screenshot_url?: string | null;
   marked_screenshot_url?: string | null;
   sections?: SectionItem[];
+  evidence?: EvidenceItem[];
 };
 
 type AuditItem = {
@@ -60,7 +71,7 @@ function buildMarkdownFromPages(pages: PageItem[]) {
 
 function normalizePages(audit: AuditItem): PageItem[] {
   if (Array.isArray(audit.pages) && audit.pages.length > 0) {
-    return audit.pages.map((page, index) => ({
+        return audit.pages.map((page, index) => ({
       url:
         page?.url ||
         (index === 0 ? audit.product_url || "" : `Additional Page ${index}`),
@@ -72,6 +83,17 @@ function normalizePages(audit: AuditItem): PageItem[] {
             content: section.content || "",
           }))
         : [],
+      evidence: Array.isArray((page as any)?.evidence)
+        ? (page as any).evidence.map((item: any) => ({
+            marker: item?.marker,
+            issue: item?.issue || "",
+            evidence: item?.evidence || "",
+            fix: item?.fix || "",
+            crop_url: item?.crop_url || null,
+            region_label: item?.region_label || "",
+            region_confidence: item?.region_confidence,
+          }))
+        : [],
     }));
   }
 
@@ -79,12 +101,13 @@ function normalizePages(audit: AuditItem): PageItem[] {
     audit.edited_audit_content || audit.audit_content
   );
 
-  return [
+    return [
     {
       url: audit.product_url || "",
       screenshot_url: audit.screenshot_url || null,
       marked_screenshot_url: audit.marked_screenshot_url || null,
       sections: fallbackSections,
+      evidence: [],
     },
   ];
 }
@@ -99,12 +122,13 @@ export default function ReviewDashboardClient({
 }: {
   audits: AuditItem[];
 }) {
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [savedKey, setSavedKey] = useState<string | null>(null);
   const [auditList, setAuditList] = useState<AuditItem[]>(audits);
   const [activeAuditId, setActiveAuditId] = useState<string | null>(
     audits[0]?.id || null
   );
   const [activePageIndex, setActivePageIndex] = useState(0);
-  const [activeMarker, setActiveMarker] = useState(1);
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -125,17 +149,16 @@ export default function ReviewDashboardClient({
   const activePage = normalizedPages[activePageIndex] || null;
   const activeSections = activePage?.sections || [];
   const activeSection = activeSections[activeSectionIndex] || null;
+  const isDelivered = activeAudit?.status === "delivered";
+
+    useEffect(() => {
+    setActivePageIndex(0);
+    setActiveSectionIndex(0);
+  }, [activeAuditId]);
 
   useEffect(() => {
-  setActivePageIndex(0);
-  setActiveSectionIndex(0);
-  setActiveMarker(1);
-}, [activeAuditId]);
-
-  useEffect(() => {
-  setActiveSectionIndex(0);
-  setActiveMarker(1);
-}, [activePageIndex]);
+    setActiveSectionIndex(0);
+  }, [activePageIndex]);
 
   useEffect(() => {
     setEditorHtml(activeSection?.content || "");
@@ -177,6 +200,39 @@ export default function ReviewDashboardClient({
     setEditorHtml(html);
     updateCurrentSectionContent(html);
   }
+
+  function updateEvidenceField(
+  pageIndex: number,
+  evidenceIndex: number,
+  field: "issue" | "evidence" | "fix" | "crop_url",
+  value: string
+) {
+  if (!activeAudit) return;
+
+  const nextPages = normalizePages(activeAudit).map((page, pIndex) => {
+    if (pIndex !== pageIndex) return page;
+
+    return {
+      ...page,
+      evidence: (page.evidence || []).map((item, eIndex) => {
+        if (eIndex !== evidenceIndex) return item;
+
+        return {
+          ...item,
+          [field]: value,
+        };
+      }),
+    };
+  });
+
+  setAuditList((prev) =>
+    prev.map((audit) =>
+      audit.id === activeAudit.id
+        ? { ...audit, pages: nextPages }
+        : audit
+    )
+  );
+}
 
   async function saveEdits() {
     if (!activeAudit) return;
@@ -234,12 +290,12 @@ export default function ReviewDashboardClient({
         return;
       }
 
-      setAuditList((prev) =>
+            setAuditList((prev) =>
         prev.map((audit) =>
           audit.id === activeAudit.id
             ? {
                 ...audit,
-                status: action === "approve" ? "delivered" : "paid_in_review",
+                status: action === "approve" ? "delivered" : "paid_pending_review",
               }
             : audit
         )
@@ -248,7 +304,7 @@ export default function ReviewDashboardClient({
       setStatusMessage(
         action === "approve"
           ? "Audit approved and delivered."
-          : "Audit moved back to in review."
+          : "Audit returned to the review queue."
       );
     } catch {
       setStatusMessage(`Failed to ${action}.`);
@@ -321,7 +377,15 @@ export default function ReviewDashboardClient({
               {audit.product_url}
             </div>
             <div className="mt-2 text-xs text-black/55">
-              {audit.status}
+              {audit.status === "preview_ready"
+                ? "Preview Ready"
+                : audit.status === "paid_pending_review"
+                ? "Pending Review"
+                : audit.status === "in_review"
+                ? "In Review"
+                : audit.status === "delivered"
+                ? "Delivered"
+                : audit.status}
             </div>
             <div className="mt-1 text-xs text-black/45">{audit.id}</div>
           </button>
@@ -415,9 +479,22 @@ export default function ReviewDashboardClient({
                 </h2>
 
                 <div className="mt-4 grid gap-2 text-sm text-black/60">
+                {isDelivered ? (
+                  <div className="mt-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                  This audit has been delivered. Editing is locked in admin view.
+  </div>
+) : null}
                   <div>
                     <strong className="text-black/75">Status:</strong>{" "}
-                    {activeAudit.status}
+                    {activeAudit.status === "preview_ready"
+                      ? "Preview Ready"
+                      : activeAudit.status === "paid_pending_review"
+                      ? "Pending Review"
+                      : activeAudit.status === "in_review"
+                      ? "In Review"
+                      : activeAudit.status === "delivered"
+                      ? "Delivered"
+                      : activeAudit.status}
                   </div>
                   {activeAudit.focus_page_url ? (
                     <div>
@@ -446,118 +523,238 @@ export default function ReviewDashboardClient({
                       {activePage.url}
                     </div>
                   </div>
-
-                  {(activePage.marked_screenshot_url ||
-                    activePage.screenshot_url ||
-                    activeAudit.marked_screenshot_url ||
-                    activeAudit.screenshot_url) && (
+                                  {Array.isArray(activePage.evidence) && activePage.evidence.length > 0 ? (
                     <div className="mb-6 rounded-2xl border border-black/10 bg-[#FAFAFA] p-5 shadow-sm">
-                      <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="text-sm font-semibold text-black">
-                          Screenshot Review
+                          Evidence Review
                         </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setLightboxSrc(
-                              activePage.marked_screenshot_url ||
-                                activePage.screenshot_url ||
-                                activeAudit.marked_screenshot_url ||
-                                activeAudit.screenshot_url ||
-                                null
-                            )
-                          }
-                          className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
-                        >
-                          Enlarge
-                        </button>
+
+                        {(activePage.marked_screenshot_url ||
+                          activePage.screenshot_url ||
+                          activeAudit.marked_screenshot_url ||
+                          activeAudit.screenshot_url) && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setLightboxSrc(
+                                activePage.marked_screenshot_url ||
+                                  activePage.screenshot_url ||
+                                  activeAudit.marked_screenshot_url ||
+                                  activeAudit.screenshot_url ||
+                                  null
+                              )
+                            }
+                            className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                          >
+                            View Full Screenshot
+                          </button>
+                        )}
                       </div>
 
-                     {(() => {
-  const imageSrc =
-    activePage.marked_screenshot_url ||
-    activePage.screenshot_url ||
-    activeAudit.marked_screenshot_url ||
-    activeAudit.screenshot_url ||
-    "";
+                      <div className="grid gap-4">
+                        {activePage.evidence.map((item, index) => {
+                          const key = `${activePageIndex}-${index}`;
+                          return (
+                          <div
+                            key={`${item.marker || index}-${index}`}
+                            className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
+                          >
+                            {item.crop_url ? (
+                              <button
+                                type="button"
+                                onClick={() => setLightboxSrc(item.crop_url || null)}
+                                className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
+                              >
+                    <div className="flex justify-center bg-white">
+                      <div className="relative inline-block">
+                        <img
+                          src={item.crop_url}
+                          alt={`Evidence ${item.marker || index + 1}`}
+                          className="max-w-full h-auto block"
+                  />
 
-  const markers = [
-    { id: 1, label: "Top-left area" },
-    { id: 2, label: "Top-center" },
-    { id: 3, label: "Top-right" },
-    { id: 4, label: "Mid-section" },
-    { id: 5, label: "Bottom-left" },
-    { id: 6, label: "Bottom-right" },
-  ];
+                    {/* MARKER — NOW CORRECTLY ON IMAGE */}
+                  <div
+                    className="absolute inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white"
+                    style={{
+                      top: "10%",
+                      left: "10%",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  >
+                    {item.marker || index + 1}
+                  </div>
+              </div>
+            </div>
+                                <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
+                                  Click to enlarge evidence
+                                </div>
+                              </button>
+                            ) : null}
 
+                            <div className="mb-3 flex items-center gap-2">
+                              <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">
+                                {item.marker || index + 1}
+                              </span>
 
-  return (
-    <div className="flex gap-6">
-      {/* LEFT — MARKER LIST */}
-      <div className="w-[180px] space-y-2">
-        {markers.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => setActiveMarker(m.id)}
-            className={`w-full text-left rounded-xl px-3 py-2 text-sm border ${
-              activeMarker === m.id
-                ? "bg-black text-white"
-                : "bg-white border-black/10"
-            }`}
-          >
-            Marker {m.id}
-          </button>
-        ))}
-      </div>
+                              <span className="text-xs font-semibold uppercase tracking-wide text-black/45">
+                                UI Issue #{item.marker || index + 1}
+                              </span>
 
-      {/* RIGHT — IMAGE VIEW */}
-      <div className="flex-1">
-        <div className="relative rounded-2xl overflow-hidden border bg-white">
-          <img
-            src={imageSrc}
-            alt="Audit screenshot"
-            className="w-full object-contain"
-          />
+                              {item.region_label ? (
+                                <span className="rounded-full bg-black/[0.04] px-2 py-1 text-[11px] text-black/60">
+                                  {item.region_label}
+                                </span>
+                              ) : null}
+                            </div>
 
-          {/* MARKER DOT */}
-          <div
-            className="absolute w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold shadow-lg"
-            style={{
-              top:
-                activeMarker === 1
-                  ? "10%"
-                  : activeMarker === 2
-                  ? "10%"
-                  : activeMarker === 3
-                  ? "10%"
-                  : activeMarker === 4
-                  ? "40%"
-                  : activeMarker === 5
-                  ? "75%"
-                  : "75%",
-              left:
-                activeMarker === 1
-                  ? "10%"
-                  : activeMarker === 2
-                  ? "50%"
-                  : activeMarker === 3
-                  ? "85%"
-                  : activeMarker === 4
-                  ? "50%"
-                  : activeMarker === 5
-                  ? "20%"
-                  : "80%",
-            }}
-          >
-            {activeMarker}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-3 text-sm leading-6 text-black/75">
+
+      {/* ISSUE */}
+      <div>
+        <div className="text-xs font-semibold text-black/60 mb-1">Issue</div>
+        <textarea
+          value={item.issue || ""}
+          disabled={isDelivered}
+          onChange={(e) =>
+            updateEvidenceField(activePageIndex, index, "issue", e.target.value)
+          }
+          className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+      />
     </div>
-  );
-})()} 
+
+      {/* EVIDENCE */}
+      <div>
+        <div className="text-xs font-semibold text-black/60 mb-1">Evidence</div>
+        <textarea
+          value={item.evidence || ""}
+          disabled={isDelivered}
+          onChange={(e) =>
+            updateEvidenceField(activePageIndex, index, "evidence", e.target.value)
+          }
+          className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+      />
+    </div>
+
+      {/* FIX */}
+    <div>
+      <div className="text-xs font-semibold text-black/60 mb-1">Fix</div>
+      <textarea
+        value={item.fix || ""}
+        disabled={isDelivered}
+        onChange={(e) =>
+          updateEvidenceField(activePageIndex, index, "fix", e.target.value)
+        }
+        className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm bg-black/[0.02]"
+      />
+
+  </div>
+
+  <input
+    type="file"
+    accept="image/*"
+    disabled={isDelivered}
+    className="mt-2 text-xs"
+    onChange={async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeAudit) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setStatusMessage("Uploading image...");
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        setStatusMessage("Upload failed.");
+        return;
+      }
+
+      updateEvidenceField(
+        activePageIndex,
+        index,
+        "crop_url",
+        data.url
+      );
+
+      setStatusMessage("Image uploaded.");
+    } catch {
+      setStatusMessage("Upload error.");
+    }
+  }}
+/>
+
+
+<button
+  type="button"
+  disabled={savingKey === key || isDelivered}
+  onClick={async () => {
+    if (!activeAudit) return;
+
+    setSavingKey(key);
+    setSavedKey(null);
+
+    try {
+      const pages = normalizePages(activeAudit);
+      const editedAuditContent = buildMarkdownFromPages(pages);
+
+      const res = await fetch(`/api/admin/reviews/${activeAudit.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pages,
+          editedAuditContent,
+        }),
+      });
+
+      if (!res.ok) {
+        setStatusMessage("Failed to save issue.");
+        setSavingKey(null);
+        return;
+      }
+
+      setSavedKey(key);
+
+      setTimeout(() => {
+        setSavedKey(null);
+      }, 2000);
+
+    } catch {
+      setStatusMessage("Error saving issue.");
+    } finally {
+      setSavingKey(null);
+    }
+  }}
+  className={`mt-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition ${
+    savingKey === key
+      ? "bg-gray-400"
+      : savedKey === key
+      ? "bg-green-600"
+      : "bg-black hover:bg-black/80"
+  }`}
+>
+  {savingKey === key
+    ? "Saving..."
+    : savedKey === key
+    ? "Saved ✓"
+    : "Save Issue"}
+</button>
+
+  </div>
+                          </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  )}
+                  ) : null}
                 </>
               ) : null}
 
@@ -648,32 +845,35 @@ export default function ReviewDashboardClient({
                 >
                   Insert Image
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const audioUrl = window.prompt("Paste audio URL");
-                    if (!audioUrl || !editorRef.current) return;
-                    editorRef.current.focus();
-                    document.execCommand(
-                      "insertHTML",
-                      false,
-                      `<audio controls src="${audioUrl}" style="width:100%; margin:12px 0;"></audio>`
-                    );
-                    const html = editorRef.current.innerHTML;
-                    setEditorHtml(html);
-                    updateCurrentSectionContent(html);
-                  }}
-                  className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
-                >
-                  Insert Audio
-                </button>
+                
+              <button
+                type="button"
+                onClick={() => {
+                  const audioUrl = window.prompt("Paste audio URL");
+                  if (!audioUrl || !editorRef.current) return;
+                  editorRef.current.focus();
+                  document.execCommand(
+                    "insertHTML",
+                    false,
+                    `<audio controls src="${audioUrl}" style="width:100%; margin:12px 0;"></audio>`
+                  );
+                  const html = editorRef.current.innerHTML;
+                  setEditorHtml(html);
+                  updateCurrentSectionContent(html);
+              }}
+              className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+              >
+                Insert Audio
+              </button>
               </div>
 
               <div
                 ref={editorRef}
-                contentEditable
+                contentEditable={!isDelivered}
                 suppressContentEditableWarning
-                className="min-h-[720px] w-full rounded-2xl border border-black/10 bg-white p-10 text-[16px] leading-8 text-black outline-none"
+                className={`min-h-[720px] w-full rounded-2xl border border-black/10 p-10 text-[16px] leading-8 text-black outline-none ${
+                  isDelivered ? "bg-neutral-50 opacity-90" : "bg-white"
+                  }`}                
                 dangerouslySetInnerHTML={{ __html: editorHtml }}
                 onInput={(e) => {
                   const html = (e.currentTarget as HTMLDivElement).innerHTML;
@@ -685,16 +885,16 @@ export default function ReviewDashboardClient({
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  disabled={isSaving}
+                  disabled={isSaving || isDelivered}
                   onClick={saveEdits}
                   className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
-                >
+              >
                   Save Edits
-                </button>
+              </button>
 
                 <button
                   type="button"
-                  disabled={isSaving}
+                  disabled={isSaving || isDelivered}
                   onClick={() => runAction("approve")}
                   className="rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
                 >
@@ -703,7 +903,7 @@ export default function ReviewDashboardClient({
 
                 <button
                   type="button"
-                  disabled={isSaving}
+                  disabled={isSaving || isDelivered}
                   onClick={() => runAction("reject")}
                   className="rounded-xl border border-black/10 bg-white px-5 py-3 text-sm font-medium text-black disabled:opacity-50"
                 >

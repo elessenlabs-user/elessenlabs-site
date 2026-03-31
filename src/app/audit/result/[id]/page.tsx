@@ -457,8 +457,8 @@ const auditScore = computeAuditScore(finalAuditContent || "");
 const isPreviewOnly = data.status === "preview_ready";
 
 const isInReview =
-  data.status === "paid_in_review" ||
-  data.status === "ready_for_review";
+  data.status === "paid_pending_review" ||
+  data.status === "in_review";
 
 const isUnlocked =
   data.status === "delivered" || searchUnlock;
@@ -490,7 +490,9 @@ const isUnlocked =
           <strong className="text-black/75">Status:</strong>{" "}
           {data.status === "preview_ready"
             ? "Preview Ready"
-            : data.status === "paid_in_review" || data.status === "ready_for_review"
+            : data.status === "paid_pending_review"
+            ? "Pending Review"
+            : data.status === "in_review"
             ? "In Review"
             : data.status === "delivered"
             ? "Delivered"
@@ -545,7 +547,17 @@ const isUnlocked =
 
           <div className="rounded-2xl border border-black/10 p-5">
             <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-            <div className="mt-2 text-lg font-semibold">{data.status}</div>
+            <div className="mt-2 text-lg font-semibold">
+              {data.status === "preview_ready"
+              ? "Preview Ready"
+              : data.status === "paid_pending_review"
+              ? "Pending Review"
+              : data.status === "in_review"
+              ? "In Review"
+              : data.status === "delivered"
+              ? "Delivered"
+              : data.status}
+          </div>
           </div>
 
           <div className="rounded-2xl border border-black/10 p-5">
