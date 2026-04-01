@@ -150,6 +150,9 @@ export default function ReviewDashboardClient({
   const activeSections = activePage?.sections || [];
   const activeSection = activeSections[activeSectionIndex] || null;
   const isDelivered = activeAudit?.status === "delivered";
+  const isUiSection = 
+    activeSection?.title?.toLowerCase() === "ui improvements" ||
+    activeSection?.title?.toLowerCase().includes("ui improvements");
 
     useEffect(() => {
     setActivePageIndex(0);
@@ -523,7 +526,7 @@ export default function ReviewDashboardClient({
                       {activePage.url}
                     </div>
                   </div>
-                                  {Array.isArray(activePage.evidence) && activePage.evidence.length > 0 ? (
+                {isUiSection && Array.isArray(activePage.evidence) && activePage.evidence.length > 0 ? (
                     <div className="mb-6 rounded-2xl border border-black/10 bg-[#FAFAFA] p-5 shadow-sm">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="text-sm font-semibold text-black">

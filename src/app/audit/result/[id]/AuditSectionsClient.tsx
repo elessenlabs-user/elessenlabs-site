@@ -174,15 +174,18 @@ function LockedSection({
             </h3>
 
             <p className="mt-3 text-sm leading-6 text-black/60">
-              {isPreviewReady
-                ? "Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report, including UI fixes, conversion improvements, copy recommendations, SEO, and sprint plan."
-                : "Your full Elessen Audit Engine™ report is now in review. It is being finalized and reviewed by Elessen before release within 24 hours."}
+              Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report.
+            </p>
+
+            <p className="mt-2 text-xs leading-5 text-black/50">
+              Once unlocked, your audit is reviewed by Elessen before delivery to ensure quality and accuracy. Delivery can take up to 24 hours, though it is often much faster.
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               {isPreviewReady ? (
                 <a
-                  href={process.env.NEXT_PUBLIC_STRIPE_AUDIT_LINK}
+                  //href={process.env.NEXT_PUBLIC_STRIPE_AUDIT_LINK}
+                  href="https://buy.stripe.com/test_eVq14p4LEclN60cewU1Nu00"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
@@ -260,58 +263,63 @@ function SectionContent({
         )}
         <span>{title}</span>
       </div>
-             {isUiSection && uiEvidence?.length ? (
-        <div className="grid gap-6">
+    {isUiSection && uiEvidence?.length ? (
+      <div className="grid gap-6">
+
+        {/* ⚠️ Screenshot disclaimer */}
+        <div className="rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs leading-5 text-black/60">
+          Screenshots are automatically captured during analysis. In some cases, elements may appear slightly misaligned or differ due to dynamic content, cookies, or environment variations.
+        </div>
           {uiEvidence.map((item, index) => (
             <div
               key={index}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
               {item.crop_url ? (
-                <button
-                  type="button"
-                  onClick={() => onOpenImage?.(item.crop_url!)}
-                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
-                >
-                  <div className="relative flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
-                    <img
-                      src={item.crop_url}
-                      alt={`UI issue ${item.marker || index + 1}`}
-                      className="max-h-full w-full object-contain"
-                    />
+  <button
+    type="button"
+    onClick={() => onOpenImage?.(item.crop_url!)}
+    className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
+  >
+    <div className="relative bg-white p-3">
+      <img
+        src={item.crop_url}
+        alt={`UI issue ${item.marker || index + 1}`}
+        className="block h-[180px] w-full rounded-xl object-cover object-top"
+    />
 
-                    <div className="absolute left-3 top-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-                      {item.marker || index + 1}
-                    </div>
-                  </div>
+      <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+        {item.marker || index + 1}
+      </div>
+    </div>
 
-                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
-                    Click to enlarge evidence
-                  </div>
-                </button>
-              ) : uiReferenceScreenshot ? (
-                <button
-                  type="button"
-                  onClick={() => onOpenImage?.(uiReferenceScreenshot)}
-                  className="mb-4 block w-full overflow-hidden rounded-xl border border-black/10 bg-black/[0.02] text-left transition hover:shadow-sm"
-                >
-                  <div className="relative flex h-[220px] w-full items-center justify-center overflow-hidden bg-white">
-                    <img
-                      src={uiReferenceScreenshot}
-                      alt={`Fallback UI reference ${item.marker || index + 1}`}
-                      className="max-h-full w-full object-contain opacity-90"
-                    />
+    <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
+      Click to enlarge evidence
+    </div>
+  </button>
+) : uiReferenceScreenshot ? (
+  <button
+    type="button"
+    onClick={() => onOpenImage?.(uiReferenceScreenshot)}
+    className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
+  >
+    <div className="relative bg-white p-3">
+      <img
+        src={uiReferenceScreenshot}
+        alt={`Fallback UI reference ${item.marker || index + 1}`}
+        className="block h-[180px] w-full rounded-xl object-cover object-top"
+      />
 
-                    <div className="absolute left-3 top-3 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-                      {item.marker || index + 1}
-                    </div>
-                  </div>
+      <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+        {item.marker || index + 1}
+      </div>
+    </div>
 
-                  <div className="border-t border-black/10 bg-white px-3 py-2 text-[11px] text-black/50">
-                    Fallback screenshot reference
-                  </div>
-                </button>
-              ) : null}
+    <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
+      Fallback screenshot reference
+    </div>
+  </button>
+) : null}
 
               <div className="mb-3 flex items-center gap-2">
                 <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">
@@ -497,7 +505,7 @@ export default function AuditSectionsClient({
     setActiveId(defaultSectionId);
   }, [defaultSectionId]);
 
-  return (
+    return (
     <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8">
       <div className="self-start">
         <div className="sticky top-28 space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
@@ -512,9 +520,7 @@ export default function AuditSectionsClient({
               <button
                 key={section.id}
                 type="button"
-                onClick={() =>
-                  setActiveId((prev) => (prev === section.id ? null : section.id))
-                }
+                onClick={() => setActiveId(section.id)}
                 className={`block w-full rounded-xl border px-4 py-3 text-left text-sm font-medium text-black transition ${
                   isActive ? tone : `border-black/10 bg-white ${hoverTone}`
                 } ${isCriticalTab ? "relative" : ""}`}
@@ -555,31 +561,29 @@ export default function AuditSectionsClient({
                 setLightboxSrc(src);
                 setLightboxOpen(true);
               }}
-        />
+            />
           ))}
       </div>
-            {lightboxOpen && lightboxSrc && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6"
-          >
-           {/* overlay click */}
+
+      {lightboxOpen && lightboxSrc && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6">
           <div
             className="absolute inset-0"
             onClick={() => {
               setLightboxOpen(false);
               setLightboxSrc(null);
             }}
-    />
-          {/* modal */}
+          />
+
           <div
-            className="max-h-[90vh] max-w-[95vw] overflow-auto rounded-2xl bg-white p-3 shadow-2xl"
+            className="relative max-h-[90vh] max-w-[95vw] overflow-auto rounded-2xl bg-white p-3 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between gap-4">
               <div className="text-sm font-semibold text-black">
                 Evidence Image
               </div>
-              {/* THIS IS WHERE YOUR BUTTON GOES */}
+
               <button
                 type="button"
                 onClick={() => {
@@ -593,13 +597,12 @@ export default function AuditSectionsClient({
             </div>
 
             <div className="relative">
-  <img
-  src={lightboxSrc}
-  alt="Enlarged evidence image"
-  className="h-auto max-w-full rounded-xl"
-/>
-
-</div>
+              <img
+                src={lightboxSrc}
+                alt="Enlarged evidence image"
+                className="h-auto max-w-full rounded-xl"
+              />
+            </div>
           </div>
         </div>
       )}

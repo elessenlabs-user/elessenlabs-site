@@ -393,31 +393,22 @@ export default async function AuditResultPage({
   
   data.edited_audit_content || data.audit_content;
 
-  if (!finalAuditContent) {
-  return (
-    <main className="mx-auto max-w-5xl px-10 py-24">
-      <div className="rounded-3xl border border-black/10 bg-white p-14 shadow-sm">
-        <div className="text-xs font-semibold tracking-[0.18em] text-black/45">
-          AUDIT STATUS
+    if (!finalAuditContent) {
+    return (
+      <main className="mx-auto max-w-5xl px-10 py-24">
+        <div className="rounded-3xl border border-black/10 bg-white p-14 shadow-sm">
+          <h1 className="text-2xl font-semibold">Audit not ready yet</h1>
+          <p className="mt-3 text-black/60">
+            This audit exists, but no report content is available yet.
+          </p>
+          <p className="mt-2 text-sm text-black/45">
+            Status: {data.status || "pending"}
+          </p>
+          <p className="mt-2 break-all text-sm text-black/40">ID: {id}</p>
         </div>
-
-        <h1 className="mt-3 text-2xl font-semibold">
-          Your audit request has been created
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">
-          This result page exists, but the audit content has not been generated yet.
-          In localhost test mode, checkout is bypassed, so payment succeeds for testing,
-          but the actual audit pipeline still has not run.
-        </p>
-
-        <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-black/75">
-          <strong>Status:</strong> {data.status || "pending"}
-        </div>
-      </div>
-    </main>
-  );
-}
+      </main>
+    );
+  }
     const pageGroups: PageGroup[] =
   Array.isArray(data.pages) && data.pages.length > 0
     ? data.pages.map((page: any, pageIndex: number) => ({

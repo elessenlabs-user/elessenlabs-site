@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+//import Stripe from "stripe";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
 
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+//const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function withHttps(url: string) {
   const s = (url || "").trim();
@@ -40,12 +40,12 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!process.env.STRIPE_AUDIT_PRICE_ID) {
-      return NextResponse.json(
-        { error: "Server misconfigured: STRIPE_AUDIT_PRICE_ID is missing." },
-        { status: 500 }
-      );
-    }
+    //if (!process.env.STRIPE_AUDIT_PRICE_ID) {
+    //  return NextResponse.json(
+      //  { error: "Server misconfigured: STRIPE_AUDIT_PRICE_ID is missing." },
+      //  { status: 500 }
+     // );
+   // }
 
     const { data: created, error: createErr } = await supabaseAdmin
       .from("audit_requests")
@@ -82,50 +82,69 @@ export async function POST(req: Request) {
 
     const auditRequestId = created.id as string;
 
-      const isLocal =
-        process.env.NODE_ENV === "development" &&
-        req.headers.get("host")?.includes("localhost");
+    const secret = process.env.AUDIT_ENGINE_SECRET;
 
-    if (isLocal) {
-  const secret = process.env.AUDIT_ENGINE_SECRET;
+  //  const isLocal =
+      //  process.env.NODE_ENV === "development" &&
+      //  req.headers.get("host")?.includes("localhost");
 
-  try {
-    await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/audit/generate?id=${auditRequestId}`,
-      {
+    // if (isLocal) {
+  // const secret = process.env.AUDIT_ENGINE_SECRET;
+
+  // try {
+    // await fetch(
+     // `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/audit/generate?id=${auditRequestId}`,
+     // {
+      //  method: "POST",
+      //  headers: {
+       //   "x-audit-secret": secret || "",
+      //  },
+     // }
+   // );
+  // } catch (e) {
+  //  console.error("LOCAL GENERATE ERROR:", e);
+ // }
+
+  // return NextResponse.json({
+  //  url: `/audit/result/${auditRequestId}?test_checkout=1`,
+  // });
+// }
+
+  // const session = await stripe.checkout.sessions.create({
+    // mode: "payment",
+    // customer_email: email,
+    // line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID, quantity: 1 }],
+    //  success_url: `${siteUrl}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
+    //  cancel_url: `${siteUrl}/audit?canceled=1`,
+    //  metadata: {
+    //  auditRequestId,
+    //    intent: "audit",
+    //  },
+    // });
+
+   // await supabaseAdmin
+   //   .from("audit_requests")
+   //   .update({ stripe_session_id: session.id })
+   //   .eq("id", auditRequestId);
+
+    // return NextResponse.json({ url: session.url });
+
+   try {
+      await fetch(`${siteUrl}/api/audit/generate?id=${auditRequestId}`, {
         method: "POST",
         headers: {
           "x-audit-secret": secret || "",
         },
-      }
-    );
-  } catch (e) {
-    console.error("LOCAL GENERATE ERROR:", e);
-  }
+      });
+    } catch (e) {
+      console.error("PREVIEW GENERATE ERROR:", e);
+    }
 
-  return NextResponse.json({
-    url: `/audit/result/${auditRequestId}?test_checkout=1`,
-  });
-}
+    return NextResponse.json({ id: auditRequestId })
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      customer_email: email,
-      line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID, quantity: 1 }],
-      success_url: `${siteUrl}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/audit?canceled=1`,
-      metadata: {
-        auditRequestId,
-        intent: "audit",
-      },
-    });
+   
 
-    await supabaseAdmin
-      .from("audit_requests")
-      .update({ stripe_session_id: session.id })
-      .eq("id", auditRequestId);
 
-    return NextResponse.json({ url: session.url });
   } catch (err: any) {
     console.error("checkout/audit error:", err);
     return NextResponse.json(

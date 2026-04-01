@@ -127,7 +127,10 @@ export default function AuditPage() {
       }).catch(() => {});
 
       // 2) Create Stripe Checkout Session on the server (so webhook has your form data)
-            const res = await fetch("/api/checkout/audit", {
+        // ✅ TEMP: switched from checkout → preview generation
+       // const res = await fetch("/api/checkout/generate", {
+
+    const res = await fetch("/api/checkout/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,19 +146,36 @@ export default function AuditPage() {
 
       const data = await res.json();
 
+      //if (!res.ok) {
+       // setStatus(data?.error || "Could not start checkout. Try again.");
+        //setLoading(false);
+        //return;
+      //}
+
+
+
+      //if (!data?.url) {
+        //setStatus("Checkout link missing. Try again.");
+        //setLoading(false);
+        //return;
+      //}
+
+      //window.location.href = data.url;
+
       if (!res.ok) {
-        setStatus(data?.error || "Could not start checkout. Try again.");
+        setStatus(data?.error || "Failed to generate preview.");
         setLoading(false);
         return;
       }
 
-      if (!data?.url) {
-        setStatus("Checkout link missing. Try again.");
+      if (!data?.id) {
+        setStatus("Preview generation did not return an audit ID.");
         setLoading(false);
         return;
       }
 
-      window.location.href = data.url;
+window.location.href = `/audit/result/${data.id}`;
+
     } catch (e) {
       setStatus("Something went wrong. Please try again.");
       setLoading(false);
@@ -527,7 +547,7 @@ export default function AuditPage() {
             : "cursor-not-allowed bg-gray-400"
         }`}
       >
-        {loading ? "Generating Preview…" : "Generate Preview"}
+        {loading ? "Preparing your audit..." : "Generate Preview"}
       </motion.button>
     </div>
 
@@ -538,7 +558,37 @@ export default function AuditPage() {
   </div>
 </div>
         </div>
-      </motion.section>
-    </motion.div>
+   </motion.section>
+
+{/* ✅ FULLSCREEN LOADING OVERLAY */}
+{loading && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+      
+      <div className="text-sm font-semibold tracking-[0.18em] text-black/45">
+        ELLESSEN AUDIT ENGINE
+      </div>
+
+      <h2 className="mt-3 text-xl font-semibold">
+        Preparing your free audit preview
+      </h2>
+
+      <p className="mt-3 text-sm text-black/60 leading-6">
+        We’re analyzing your product and setting up your audit.  
+        You’ll be redirected to a preview & secure checkout in a moment.
+      </p>
+
+      <div className="mt-6 overflow-hidden rounded-full border border-black/10 bg-black/[0.06]">
+        <div className="h-2 w-2/3 animate-pulse rounded-full bg-[#FF7A00]" />
+      </div>
+
+      <div className="mt-5 text-xs text-black/50">
+        This usually takes a couple of minutes. Do not close this window or hit the back button.
+      </div>
+    </div>
+  </div>
+)}
+
+</motion.div>
   );
 }

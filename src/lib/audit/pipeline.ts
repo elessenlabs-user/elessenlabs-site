@@ -583,99 +583,92 @@ function getEvidencePosition(
 ): UiEvidence["position"] {
   const text = `${issue} ${evidence}`.toLowerCase();
 
-  const mentionsHero =
-    /hero|headline|subheadline|first impression|above the fold|top section|top message|value proposition|main message|positioning/.test(
+  const isNav =
+    /nav|navigation|menu|header|top nav|top navigation/.test(text);
+
+  const isHero =
+    /hero|headline|subheadline|above the fold|first impression|value proposition|top section|main message|positioning/.test(
       text
     );
 
-  const mentionsNav =
-    /navigation|nav|menu|header|top nav|top navigation/.test(text);
-
-  const mentionsCta =
+  const isCta =
     /cta|call to action|button|primary button|secondary button|download|apply|start|book|sign up|signup|join|request demo|demo|contact sales/.test(
       text
     );
 
-  const mentionsTrust =
-    /trust|social proof|testimonial|testimonials|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner|partners/.test(
-      text
-    );
-
-  const mentionsPricing =
+  const isPricing =
     /pricing|price|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
       text
     );
 
-  const mentionsForm =
+  const isTrust =
+    /trust|social proof|testimonial|testimonials|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner|partners/.test(
+      text
+    );
+
+  const isForm =
     /form|input|field|email capture|lead capture|contact form|newsletter|subscribe/.test(
       text
     );
 
-  const mentionsFooter =
-    /footer|bottom|legal|privacy|terms|language selector|secondary nav|secondary navigation|site links|site map|social links/.test(
+  const isGrid =
+    /card|cards|grid|module|content block|resource|resources|feature block|feature grid|product block|product card|feature card|listing|section/.test(
       text
     );
 
-  const mentionsCardOrGrid =
-    /card|cards|grid|module|content block|resource|resources|feature block|feature grid|product block|product card|feature card|listing/.test(
+  const isFooter =
+    /footer|bottom|legal|privacy|terms|site links|site map|social links/.test(
       text
     );
 
-  if (mentionsNav) {
-    return { x: 0.08, y: 0.02, width: 0.42, height: 0.1 };
+  if (isNav) {
+    return { x: 0.5, y: 0.08, width: 0.92, height: 0.14 };
   }
 
-  if (mentionsHero && mentionsCta) {
-    if (marker === 1) return { x: 0.1, y: 0.08, width: 0.32, height: 0.16 };
-    if (marker === 2) return { x: 0.34, y: 0.1, width: 0.3, height: 0.16 };
-    return { x: 0.18, y: 0.08, width: 0.42, height: 0.18 };
+  if (isHero && isCta) {
+    return { x: 0.5, y: 0.22, width: 0.9, height: 0.3 };
   }
 
-  if (mentionsHero) {
-    if (marker === 1) return { x: 0.08, y: 0.08, width: 0.28, height: 0.16 };
-    if (marker === 2) return { x: 0.34, y: 0.08, width: 0.24, height: 0.16 };
-    if (marker === 3) return { x: 0.56, y: 0.08, width: 0.24, height: 0.16 };
-    return { x: 0.2, y: 0.1, width: 0.36, height: 0.18 };
+  if (isHero) {
+    return { x: 0.5, y: 0.2, width: 0.9, height: 0.28 };
   }
 
-  if (mentionsCta || mentionsForm) {
-    if (/download|apply|start|book|sign up|signup|join|request demo|demo/.test(text)) {
-      return { x: 0.26, y: 0.58, width: 0.26, height: 0.12 };
-    }
-    return { x: 0.3, y: 0.42, width: 0.28, height: 0.14 };
+  if (isPricing) {
+    return { x: 0.5, y: 0.48, width: 0.9, height: 0.28 };
   }
 
-  if (mentionsPricing) {
-    return { x: 0.2, y: 0.34, width: 0.42, height: 0.18 };
+  if (isCta || isForm) {
+    return { x: 0.5, y: 0.52, width: 0.8, height: 0.24 };
   }
 
-  if (mentionsTrust) {
-    if (marker <= 3) return { x: 0.16, y: 0.18, width: 0.34, height: 0.14 };
-    return { x: 0.18, y: 0.46, width: 0.34, height: 0.14 };
+  if (isTrust) {
+    return { x: 0.5, y: 0.42, width: 0.86, height: 0.22 };
   }
 
-  if (mentionsCardOrGrid) {
-    if (marker === 4) return { x: 0.2, y: 0.36, width: 0.28, height: 0.16 };
-    if (marker === 5) return { x: 0.1, y: 0.52, width: 0.24, height: 0.16 };
-    if (marker === 6) return { x: 0.42, y: 0.52, width: 0.24, height: 0.16 };
-    return { x: 0.22, y: 0.34, width: 0.28, height: 0.16 };
+  if (isGrid) {
+    if (marker === 4) return { x: 0.5, y: 0.45, width: 0.9, height: 0.24 };
+    if (marker === 5) return { x: 0.35, y: 0.62, width: 0.6, height: 0.24 };
+    if (marker === 6) return { x: 0.65, y: 0.62, width: 0.6, height: 0.24 };
+    return { x: 0.5, y: 0.5, width: 0.9, height: 0.24 };
   }
 
-  if (mentionsFooter) {
-    return { x: 0.18, y: 0.76, width: 0.3, height: 0.12 };
+  if (isFooter) {
+    return { x: 0.5, y: 0.86, width: 0.92, height: 0.18 };
   }
 
   const fallbackMap: Record<number, UiEvidence["position"]> = {
-    1: { x: 0.12, y: 0.08, width: 0.24, height: 0.14 },
-    2: { x: 0.38, y: 0.12, width: 0.22, height: 0.14 },
-    3: { x: 0.58, y: 0.18, width: 0.22, height: 0.14 },
-    4: { x: 0.22, y: 0.36, width: 0.26, height: 0.16 },
-    5: { x: 0.12, y: 0.54, width: 0.24, height: 0.16 },
-    6: { x: 0.42, y: 0.58, width: 0.24, height: 0.16 },
+    1: { x: 0.5, y: 0.2, width: 0.9, height: 0.28 },
+    2: { x: 0.5, y: 0.32, width: 0.9, height: 0.24 },
+    3: { x: 0.5, y: 0.42, width: 0.9, height: 0.24 },
+    4: { x: 0.5, y: 0.52, width: 0.9, height: 0.24 },
+    5: { x: 0.35, y: 0.66, width: 0.6, height: 0.24 },
+    6: { x: 0.65, y: 0.66, width: 0.6, height: 0.24 },
   };
 
-  return fallbackMap[marker] || { x: 0.18, y: 0.18, width: 0.24, height: 0.14 };
+  return fallbackMap[marker] || { x: 0.5, y: 0.5, width: 0.85, height: 0.24 };
 }
+
+
 async function generateEvidenceCrops(
   screenshotUrl: string,
   evidenceItems: UiEvidence[]
@@ -699,16 +692,37 @@ async function generateEvidenceCrops(
     }
 
     try {
-      const left = Math.max(0, Math.round(item.position.x * imageWidth));
-      const top = Math.max(0, Math.round(item.position.y * imageHeight));
-      const width = Math.min(
-        imageWidth - left,
-        Math.max(180, Math.round(item.position.width * imageWidth))
+      const desiredWidth = Math.max(
+        700,
+        Math.round(item.position.width * imageWidth * 1.35)
       );
-      const height = Math.min(
-        imageHeight - top,
-        Math.max(140, Math.round(item.position.height * imageHeight))
+
+      const desiredHeight = Math.max(
+        420,
+        Math.round(item.position.height * imageHeight * 1.35)
       );
+
+      const centerX = Math.round(item.position.x * imageWidth);
+      const centerY = Math.round(item.position.y * imageHeight);
+
+      const left = Math.max(
+        0,
+        Math.min(
+          imageWidth - desiredWidth,
+          Math.round(centerX - desiredWidth / 2)
+        )
+      );
+
+      const top = Math.max(
+        0,
+        Math.min(
+          imageHeight - desiredHeight,
+          Math.round(centerY - desiredHeight / 2)
+        )
+      );
+
+      const width = Math.min(desiredWidth, imageWidth - left);
+      const height = Math.min(desiredHeight, imageHeight - top);
 
       const cropBuffer = await sharp(buffer)
         .extract({
@@ -716,6 +730,10 @@ async function generateEvidenceCrops(
           top,
           width,
           height,
+        })
+        .resize({
+          width: Math.min(width, 1100),
+          withoutEnlargement: true,
         })
         .jpeg({ quality: 82, mozjpeg: true })
         .toBuffer();
