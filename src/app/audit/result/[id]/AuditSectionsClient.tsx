@@ -323,51 +323,29 @@ function SectionContent({
               key={index}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
-              {item.crop_url ? (
-  <button
-    type="button"
-    onClick={() => onOpenImage?.(item.crop_url!)}
-    className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
-  >
-    <div className="relative bg-white p-3">
-      <img
-        src={item.crop_url}
-        alt={`UI issue ${item.marker || index + 1}`}
-        className="block h-[180px] w-full rounded-xl object-cover object-top"
-    />
+        {(item.crop_url || uiReferenceScreenshot) ? (
+          <button
+            type="button"
+            onClick={() => onOpenImage?.(item.crop_url || uiReferenceScreenshot || "")}
+            className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
+          >
+          <div className="relative bg-white p-3">
+            <img
+              src={item.crop_url || uiReferenceScreenshot || ""}
+              alt={`UI issue ${item.marker || index + 1}`}
+              className="block h-[180px] w-full rounded-xl object-cover object-top"
+            />
 
-      <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-        {item.marker || index + 1}
-      </div>
-    </div>
+          <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+            {item.marker || index + 1}
+          </div>
+        </div>
 
-    <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
-      Click to enlarge evidence
-    </div>
-  </button>
-) : uiReferenceScreenshot ? (
-  <button
-    type="button"
-    onClick={() => onOpenImage?.(uiReferenceScreenshot)}
-    className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
-  >
-    <div className="relative bg-white p-3">
-      <img
-        src={uiReferenceScreenshot}
-        alt={`Fallback UI reference ${item.marker || index + 1}`}
-        className="block h-[180px] w-full rounded-xl object-cover object-top"
-      />
-
-      <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-        {item.marker || index + 1}
-      </div>
-    </div>
-
-    <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
-      Fallback screenshot reference
-    </div>
-  </button>
-) : null}
+        <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
+          Click to enlarge evidence
+        </div>
+      </button>
+    ) : null}
 
               <div className="mb-3 flex items-center gap-2">
                 <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">

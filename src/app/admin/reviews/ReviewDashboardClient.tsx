@@ -563,7 +563,7 @@ export default function ReviewDashboardClient({
                             key={`${item.marker || index}-${index}`}
                             className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
                           >
-                            {item.crop_url ? (
+                            {(item.crop_url || activePage?.marked_screenshot_url || activePage?.screenshot_url) ? (
                               <button
                                 type="button"
                                 onClick={() => setLightboxSrc(item.crop_url || null)}
@@ -571,8 +571,13 @@ export default function ReviewDashboardClient({
                               >
                     <div className="flex justify-center bg-white">
                       <div className="relative inline-block">
-                        <img
-                          src={item.crop_url}
+                  <img
+                    src={
+                      item.crop_url ||
+                      activePage?.marked_screenshot_url ||
+                      activePage?.screenshot_url ||
+                      ""
+                    }
                           alt={`Evidence ${item.marker || index + 1}`}
                           className="max-w-full h-auto block"
                   />
@@ -929,7 +934,7 @@ export default function ReviewDashboardClient({
           <div
             className="absolute inset-0"
             onClick={() => setLightboxSrc(null)}
-          />
+        />
           <div className="relative mx-auto flex h-full max-w-6xl items-center justify-center">
             <div className="max-h-[92vh] w-full overflow-auto rounded-3xl bg-white p-4 shadow-2xl">
               <div className="mb-4 flex items-center justify-between gap-3">
