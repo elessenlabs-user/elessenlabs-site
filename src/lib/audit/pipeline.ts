@@ -819,7 +819,7 @@ export async function runAuditPipeline(row: any) {
         throw new Error(`HTML_FETCH_FAILED for ${url}`);
       }
 
-      let screenshotUrl: string | null = null;
+    let screenshotUrl: string | null = null;
       try {
         screenshotUrl = await captureScreenshot(url);
         console.log("AUDIT SCREENSHOT CAPTURE", {
@@ -828,23 +828,25 @@ export async function runAuditPipeline(row: any) {
         });
 
         if (!screenshotUrl) {
-          throw new Error(`SCREENSHOT_FAILED for ${url}`);
+          console.error("AUDIT STEP FAILED, continuing:", `SCREENSHOT_FAILED for ${url}`);
         }
       } catch (err) {
-        console.error("AUDIT SCREENSHOT FAILED:", url, err);
-        throw err;
+        console.error("AUDIT STEP FAILED, continuing:", err);
+        screenshotUrl = null;
       }
 
-      let markedScreenshotUrl: string | null = null;
-      try {
-        markedScreenshotUrl = await addScreenshotMarkers(screenshotUrl);
-        console.log("AUDIT MARKER OVERLAY", {
-          url,
-          success: !!markedScreenshotUrl,
-        });
-      } catch (err) {
-        console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-        markedScreenshotUrl = screenshotUrl;
+    let markedScreenshotUrl: string | null = null;
+      if (screenshotUrl) {
+        try {
+          markedScreenshotUrl = await addScreenshotMarkers(screenshotUrl);
+          console.log("AUDIT MARKER OVERLAY", {
+            url,
+            success: !!markedScreenshotUrl,
+          });
+        } catch (err) {
+          console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
+          markedScreenshotUrl = screenshotUrl;
+        }
       }
 
       let auditMarkdown = "";
