@@ -98,26 +98,39 @@ async function captureScreenshot(url: string) {
   let browser: any = null;
 
   try {
+    console.log("SCREENSHOT START", { url });
+
     browser = await chromium.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+
+    console.log("SCREENSHOT BROWSER LAUNCHED", { url });
 
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1600 },
       deviceScaleFactor: 1,
     });
 
+    console.log("SCREENSHOT PAGE CREATED", { url });
+
     await page.goto(url, {
       waitUntil: "domcontentloaded",
       timeout: 30000,
     });
+
+    console.log("SCREENSHOT PAGE GOTO OK", { url });
 
     await page.waitForTimeout(4000);
 
     const raw = await page.screenshot({
       fullPage: true,
       type: "png",
+    });
+
+    console.log("SCREENSHOT RAW CAPTURED", {
+      url,
+      bytes: raw.length,
     });
 
     const compressed = await sharp(raw)
@@ -131,9 +144,15 @@ async function captureScreenshot(url: string) {
 
     const uploadedUrl = await uploadToR2(compressed, key);
 
+    console.log("SCREENSHOT UPLOADED", { url, uploadedUrl });
+
     return uploadedUrl;
   } catch (err) {
-    console.error("PLAYWRIGHT SCREENSHOT ERROR:", url, err);
+    console.error("PLAYWRIGHT SCREENSHOT ERROR:", {
+      url,
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : null,
+    });
     return null;
   } finally {
     if (browser) {
