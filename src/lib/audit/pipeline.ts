@@ -146,11 +146,12 @@ async function addScreenshotMarkers(imageUrl: string) {
   try {
     const response = await fetch(imageUrl);
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch screenshot for markers: ${response.status}`
-      );
-    }
+  if (!response.ok) {
+    console.error(
+      `Failed to fetch screenshot for markers: ${response.status}`
+  );
+    return null;
+  }
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -816,16 +817,23 @@ export async function runAuditPipeline(row: any) {
         signals = extractSignals(html, url);
       } catch (err) {
         console.error("AUDIT HTML FETCH FAILED:", url, err);
-        throw new Error(`HTML_FETCH_FAILED for ${url}`);
+        console.error(`HTML_FETCH_FAILED for ${url}`);
+        return null;
       }
 
     let screenshotUrl: string | null = null;
-      try {
-        screenshotUrl = await captureScreenshot(url);
-        console.log("AUDIT SCREENSHOT CAPTURE", {
-          url,
-          success: !!screenshotUrl,
-        });
+
+    try {
+      screenshotUrl = await captureScreenshot(url);
+
+      console.log("AUDIT SCREENSHOT CAPTURE", {
+        url,
+        success: !!screenshotUrl,
+  });
+
+  } catch (err) {
+    console.error("SCREENSHOT FAILED:", err);
+  }
 
         if (!screenshotUrl) {
           console.error("AUDIT STEP FAILED, continuing:", `SCREENSHOT_FAILED for ${url}`);
