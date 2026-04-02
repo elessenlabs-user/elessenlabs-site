@@ -142,13 +142,49 @@ function isUnlockedSection(title: string) {
 function LockedSection({
   title,
   currentStatus,
+  auditRequestId,
 }: {
   title: string;
   currentStatus?: string;
+  auditRequestId?: string;
 }) {
     const isPreviewReady = currentStatus === "preview_ready";
-    const isInReview =
-      currentStatus === "paid_in_review" || currentStatus === "ready_for_review";
+    const isReviewState =
+      currentStatus === "paid_pending_review" ||
+      currentStatus === "in_review" ||
+      currentStatus === "paid_in_review" ||
+      currentStatus === "ready_for_review";
+    const [isStartingCheckout, setIsStartingCheckout] = useState(false);
+   
+    
+  async function handleFullAuditCheckout() {
+  if (!auditRequestId) return;
+
+  try {
+    setIsStartingCheckout(true);
+
+    const res = await fetch("/api/checkout/full-audit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ auditRequestId }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.url) {
+      console.error("FULL AUDIT CHECKOUT ERROR:", data);
+      setIsStartingCheckout(false);
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (err) {
+    console.error("FULL AUDIT CHECKOUT ERROR:", err);
+    setIsStartingCheckout(false);
+  }
+}    
   
       return (
     <section className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
@@ -182,16 +218,15 @@ function LockedSection({
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              {isPreviewReady ? (
-                <a
-                  //href={process.env.NEXT_PUBLIC_STRIPE_AUDIT_LINK}
-                  href="https://buy.stripe.com/test_eVq14p4LEclN60cewU1Nu00"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+             {isPreviewReady ? (
+                <button
+                  type="button"
+                  onClick={handleFullAuditCheckout}
+                  disabled={isStartingCheckout || !auditRequestId}
+                  className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Pay for Full Report
-              </a>
+                  {isStartingCheckout ? "Redirecting…" : "Pay for Full Report"}
+                </button>
       ) : (
             <div className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white">
               In Review
@@ -220,9 +255,11 @@ function SectionContent({
   locked,
   onOpenImage,
   currentStatus,
+  auditRequestId,
 }: {
   title: string;
   content: string;
+  auditRequestId?: string;
   uiEvidence?: UiEvidenceItem[] | null;
   uiReferenceScreenshot?: string | null;
   locked?: boolean;
@@ -242,7 +279,13 @@ function SectionContent({
   const executiveBullets = parseExecutiveBullets(content);
 
   if (locked) {
-   return <LockedSection title={title} currentStatus={currentStatus} />;
+    return (
+     <LockedSection
+       title={title}
+       currentStatus={currentStatus}
+       auditRequestId={auditRequestId}
+     />
+   );
 }
 
   return (
@@ -473,6 +516,7 @@ function SectionContent({
 }
 
 export default function AuditSectionsClient({
+  auditRequestId,
   sections,
   uiEvidence,
   uiReferenceScreenshot,
@@ -480,6 +524,7 @@ export default function AuditSectionsClient({
   currentStatus,
 }: {
   sections: SectionItem[];
+  auditRequestId?: string;
   uiEvidence?: UiEvidenceItem[] | null;
   uiReferenceScreenshot?: string | null;
   previewMode?: boolean;
@@ -557,6 +602,7 @@ export default function AuditSectionsClient({
               uiReferenceScreenshot={uiReferenceScreenshot}
               locked={previewMode && !isUnlockedSection(section.title)}
               currentStatus={currentStatus}
+              auditRequestId={auditRequestId}
               onOpenImage={(src) => {
                 setLightboxSrc(src);
                 setLightboxOpen(true);

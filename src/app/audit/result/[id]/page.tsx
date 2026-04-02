@@ -604,6 +604,7 @@ const isUnlocked =
       </div>
     ) : (
       <AuditSectionsClient
+        auditRequestId={data.id}
         sections={(page.sections || []).map((section: any, index: number) => ({
           id: `${page.id}-section-${index}`,
           title: section.title,
