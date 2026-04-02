@@ -168,8 +168,8 @@ async function addScreenshotMarkers(imageUrl: string) {
   if (!response.ok) {
     console.error(
       `Failed to fetch screenshot for markers: ${response.status}`
-  );
-    return null;
+    );
+    return imageUrl; 
   }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -862,17 +862,24 @@ try {
 
     let markedScreenshotUrl: string | null = null;
       if (screenshotUrl) {
-        try {
-          markedScreenshotUrl = await addScreenshotMarkers(screenshotUrl);
-          console.log("AUDIT MARKER OVERLAY", {
-            url,
-            success: !!markedScreenshotUrl,
-          });
-        } catch (err) {
-          console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-          markedScreenshotUrl = screenshotUrl;
-        }
-      }
+  try {
+    const markerResult = await addScreenshotMarkers(screenshotUrl);
+
+    markedScreenshotUrl = markerResult || screenshotUrl;
+
+    console.log("AUDIT MARKER OVERLAY", {
+      url,
+      success: !!markerResult,
+      fallbackUsed: !markerResult,
+    });
+
+  } catch (err) {
+    console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
+
+    // HARD fallback — NEVER leave this null
+    markedScreenshotUrl = screenshotUrl;
+  }
+}
 
       let auditMarkdown = "";
       let uiEvidence: UiEvidence[] = [];
@@ -891,8 +898,14 @@ try {
         auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
         uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
-      if (screenshotUrl && uiEvidence.length) {
-        uiEvidence = await generateEvidenceCrops(screenshotUrl, uiEvidence);
+      const baseImageForCrops =
+       markedScreenshotUrl || screenshotUrl;
+
+        if (baseImageForCrops && uiEvidence.length) {
+          uiEvidence = await generateEvidenceCrops(
+          baseImageForCrops,
+          uiEvidence
+        );
       }
 
         console.log("AUDIT MARKDOWN GENERATED", {
