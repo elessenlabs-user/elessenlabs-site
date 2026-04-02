@@ -30,7 +30,9 @@ function clip(s: string, max = 4000) {
 function getNextStatus(currentStatus: string | null | undefined) {
   if (
     currentStatus === "paid_pending_review" ||
-    currentStatus === "in_review"
+    currentStatus === "paid_in_review" ||
+    currentStatus === "in_review" ||
+    currentStatus === "ready_for_review"
   ) {
     return "paid_pending_review";
   }
@@ -78,14 +80,19 @@ export async function POST(req: Request) {
       });
     }
 
-    if (data.status === "ready_for_review") {
-      return NextResponse.json({
-        ok: true,
-        id: data.id,
-        status: data.status,
-        message: "Audit is already ready for review.",
-      });
-    }
+    if (
+      data.status === "paid_pending_review" ||
+      data.status === "in_review" ||
+      data.status === "paid_in_review" ||
+      data.status === "ready_for_review"
+) {
+    return NextResponse.json({
+      ok: true,
+      id: data.id,
+      status: data.status,
+      message: "Audit is already in review.",
+    });
+}
 
     if (data.status === "delivered") {
       return NextResponse.json({
