@@ -817,31 +817,29 @@ export async function runAuditPipeline(row: any) {
         signals = extractSignals(html, url);
       } catch (err) {
         console.error("AUDIT HTML FETCH FAILED:", url, err);
-        console.error(`HTML_FETCH_FAILED for ${url}`);
-        return null;
+        throw new Error(`HTML_FETCH_FAILED for ${url}`);
       }
 
     let screenshotUrl: string | null = null;
 
-    try {
-      screenshotUrl = await captureScreenshot(url);
+try {
+  screenshotUrl = await captureScreenshot(url);
 
-      console.log("AUDIT SCREENSHOT CAPTURE", {
-        url,
-        success: !!screenshotUrl,
+  console.log("AUDIT SCREENSHOT CAPTURE", {
+    url,
+    success: !!screenshotUrl,
   });
 
-  } catch (err) {
-    console.error("SCREENSHOT FAILED:", err);
+  if (!screenshotUrl) {
+    console.error(
+      "AUDIT STEP FAILED, continuing:",
+      `SCREENSHOT_FAILED for ${url}`
+    );
   }
-
-        if (!screenshotUrl) {
-          console.error("AUDIT STEP FAILED, continuing:", `SCREENSHOT_FAILED for ${url}`);
-        }
-      } catch (err) {
-        console.error("AUDIT STEP FAILED, continuing:", err);
-        screenshotUrl = null;
-      }
+} catch (err) {
+  console.error("AUDIT STEP FAILED, continuing:", err);
+  screenshotUrl = null;
+}
 
     let markedScreenshotUrl: string | null = null;
       if (screenshotUrl) {
