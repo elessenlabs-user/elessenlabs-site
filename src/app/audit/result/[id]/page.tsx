@@ -449,10 +449,15 @@ const isPreviewOnly = data.status === "preview_ready";
 
 const isInReview =
   data.status === "paid_pending_review" ||
-  data.status === "in_review";
+  data.status === "paid_in_review" ||
+  data.status === "in_review" ||
+  data.status === "ready_for_review" ||
+  data.status === "review_ready";
 
 const isUnlocked =
   data.status === "delivered" || searchUnlock;
+
+const previewMode = !isUnlocked;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -539,12 +544,15 @@ const isUnlocked =
           <div className="rounded-2xl border border-black/10 p-5">
             <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
             <div className="mt-2 text-lg font-semibold">
-              {data.status === "preview_ready"
+            
+            {data.status === "preview_ready"
               ? "Preview Ready"
-              : data.status === "paid_pending_review"
+              : data.status === "paid_pending_review" ||
+              data.status === "paid_in_review" ||
+              data.status === "ready_for_review" ||
+              data.status === "review_ready" ||
+              data.status === "in_review"
               ? "Pending Review"
-              : data.status === "in_review"
-              ? "In Review"
               : data.status === "delivered"
               ? "Delivered"
               : data.status}
@@ -614,7 +622,7 @@ const isUnlocked =
         uiReferenceScreenshot={
           page.marked_screenshot_url || page.screenshot_url || null
         }
-        previewMode={isPreviewOnly && !searchUnlock}
+        previewMode={previewMode}
         currentStatus={data.status}
       />
     )}

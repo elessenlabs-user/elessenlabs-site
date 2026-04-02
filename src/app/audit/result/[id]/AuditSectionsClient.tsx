@@ -151,9 +151,10 @@ function LockedSection({
     const isPreviewReady = currentStatus === "preview_ready";
     const isReviewState =
       currentStatus === "paid_pending_review" ||
-      currentStatus === "in_review" ||
       currentStatus === "paid_in_review" ||
-      currentStatus === "ready_for_review";
+      currentStatus === "in_review" ||
+      currentStatus === "ready_for_review" ||
+      currentStatus === "review_ready";
     const [isStartingCheckout, setIsStartingCheckout] = useState(false);
    
     
@@ -206,32 +207,36 @@ function LockedSection({
             </div>
 
             <h3 className="text-xl font-semibold text-black">
-              Unlock the full audit
+              {isReviewState ? "Your audit is being prepared" : "Unlock the full audit"}
             </h3>
 
             <p className="mt-3 text-sm leading-6 text-black/60">
-              Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report.
-            </p>
+              {isReviewState
+                ? "Your payment has been received. Executive Summary and Critical Issues remain visible while the rest of the report is finalized for delivery."
+                : "Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report."}
+          </p>
 
             <p className="mt-2 text-xs leading-5 text-black/50">
-              Once unlocked, your audit is reviewed by Elessen before delivery to ensure quality and accuracy. Delivery can take up to 24 hours, though it is often much faster.
+              {isReviewState
+                ? "We are now reviewing and preparing your completed audit for delivery. This can take up to 24 hours, although it is often much faster."
+                : "Once unlocked, your audit is reviewed by Elessen before delivery to ensure quality and accuracy. Delivery can take up to 24 hours, though it is often much faster."}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-             {isPreviewReady ? (
-                <button
-                  type="button"
-                  onClick={handleFullAuditCheckout}
-                  disabled={isStartingCheckout || !auditRequestId}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isStartingCheckout ? "Redirecting…" : "Pay for Full Report"}
-                </button>
-      ) : (
-            <div className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white">
-              In Review
-            </div>
-        )}
+        {isPreviewReady ? (
+          <button
+            type="button"
+            onClick={handleFullAuditCheckout}
+            disabled={isStartingCheckout || !auditRequestId}
+            className="inline-flex items-center justify-center rounded-xl bg-[#FF7A00] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+          {isStartingCheckout ? "Redirecting…" : "Pay for Full Report"}
+        </button>
+      ) : isReviewState ? (
+        <div className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white">
+          In Review
+        </div>
+      ) : null}
 
               <a
                 href="mailto:hello@elessenlabs.com?subject=Question%20about%20unlocking%20audit"
