@@ -14,6 +14,9 @@ export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
   const rawBody = await req.text();
 
+  console.log("WEBHOOK HIT");
+  console.log("WEBHOOK SIGNATURE EXISTS:", !!sig);
+
   let event: Stripe.Event;
 
   try {
@@ -22,6 +25,9 @@ export async function POST(req: Request) {
       sig!,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
+
+    console.log("WEBHOOK EVENT TYPE:", event.type);
+
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err?.message);
     return NextResponse.json(
@@ -50,7 +56,7 @@ export async function POST(req: Request) {
     .update({
       stripe_session_id: session.id,
       email,
-      status: "paid",
+      status: "paid_in_review",
     })
     .eq("id", auditRequestId);
 
@@ -61,6 +67,11 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+    console.log("WEBHOOK DB UPDATED:", {
+      auditRequestId,
+      status: "paid_in_review",
+      email,
+    });
 
   const { data: auditRow } = await supabaseAdmin
     .from("audit_requests")
