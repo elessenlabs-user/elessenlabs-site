@@ -153,6 +153,8 @@ export async function POST(req: Request) {
 
   try {
     const { processedPages } = await runAuditPipeline(row);
+    
+    console.log("GENERATE ROUTE processedPages:", JSON.stringify(processedPages, null, 2));
 
     if (!processedPages?.length) {
       throw new Error("Pipeline returned no processed pages.");
