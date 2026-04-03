@@ -115,16 +115,18 @@ async function captureScreenshot(url: string) {
 
     console.log("BROWSER LAUNCHED SUCCESSFULLY");
     console.log("SCREENSHOT BROWSER LAUNCHED", { url }
-      
+
     );
     
 
-    const page = await browser.newPage({
-      viewport: { width: 1440, height: 1600 },
-      deviceScaleFactor: 1,
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    });
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 1600 },
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    ignoreHTTPSErrors: true,
+  });
+
+  const page = await context.newPage();
 
     console.log("SCREENSHOT PAGE CREATED", { url });
 
@@ -139,13 +141,29 @@ for (let attempt = 1; attempt <= 2; attempt++) {
       timeout: 45000,
     });
 
-    // critical: controlled render wait
-   
+    await page.waitForTimeout(2500);
 
     success = true;
     break;
   } catch (err) {
-    console.error("NAV FAILED", { url, attempt });
+    console.error("NAV FAILED", { url, attempt, err });
+  }
+}
+
+if (!success) {
+  try {
+    console.log("FALLBACK NAV", { url });
+
+    await page.goto(`http://${new URL(url).hostname}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 45000,
+    });
+
+    await page.waitForTimeout(2500);
+
+    success = true;
+  } catch (err) {
+    console.error("FALLBACK FAILED", err);
   }
 }
 
