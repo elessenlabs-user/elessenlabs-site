@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["@sparticuz/chromium"],
+  serverExternalPackages: ["@sparticuz/chromium", "playwright-core"],
+  outputFileTracingIncludes: {
+    "/api/audit/generate": ["node_modules/@sparticuz/chromium/bin/**"],
+    "/api/audit/generate/route": ["node_modules/@sparticuz/chromium/bin/**"],
   },
 };
 

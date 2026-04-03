@@ -100,15 +100,24 @@ async function captureScreenshot(url: string) {
 
   try {
     console.log("SCREENSHOT START", { url });
+    console.log("CHROMIUM PATH CHECK", {
+      isVercel: !!process.env.VERCEL,
+    });
 
   browser = await playwright.launch({
   args: chromium.args,
-  executablePath: await chromium.executablePath(),
+  executablePath:
+    process.env.VERCEL
+      ? await chromium.executablePath()
+      : undefined,
   headless: true,
 });
 
     console.log("BROWSER LAUNCHED SUCCESSFULLY");
-    console.log("SCREENSHOT BROWSER LAUNCHED", { url });
+    console.log("SCREENSHOT BROWSER LAUNCHED", { url }
+      
+    );
+    
 
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1600 },
