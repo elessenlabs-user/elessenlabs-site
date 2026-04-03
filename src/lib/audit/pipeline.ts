@@ -121,19 +121,40 @@ async function captureScreenshot(url: string) {
 
     console.log("SCREENSHOT PAGE CREATED", { url });
 
+   let success = false;
+
+for (let attempt = 1; attempt <= 2; attempt++) {
+  try {
+    console.log("SCREENSHOT NAV ATTEMPT", { url, attempt });
+
     await page.goto(url, {
-      waitUntil: "networkidle",
+      waitUntil: "domcontentloaded",
       timeout: 45000,
     });
 
-    console.log("SCREENSHOT PAGE GOTO OK", { url });
+    // critical: controlled render wait
+   
 
-    await page.waitForTimeout(5000);
+    success = true;
+    break;
+  } catch (err) {
+    console.error("NAV FAILED", { url, attempt });
+  }
+}
 
-    const raw = await page.screenshot({
-      fullPage: true,
-      type: "png",
-    });
+if (!success) {
+  throw new Error("NAVIGATION_FAILED");
+}
+
+// fallback wait — do NOT rely on networkidle in serverless
+await page.waitForTimeout(2000);
+
+console.log("SCREENSHOT PAGE GOTO OK", { url });
+
+const raw = await page.screenshot({
+  fullPage: true,
+  type: "png",
+});
 
     console.log("SCREENSHOT RAW CAPTURED", {
       url,
