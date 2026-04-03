@@ -186,10 +186,17 @@ const raw = await page.screenshot({
       bytes: raw.length,
     });
 
+    console.log("SCREENSHOT COMPRESS START", { url });
+
     const compressed = await sharp(raw)
       .resize({ width: 1440, withoutEnlargement: true })
       .jpeg({ quality: 72, mozjpeg: true })
       .toBuffer();
+
+    console.log("SCREENSHOT COMPRESS DONE", {
+      url,
+      bytes: compressed.length,
+     });
 
     const key = `screenshots/${Date.now()}-${Math.random()
       .toString(36)
