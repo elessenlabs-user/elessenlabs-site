@@ -104,7 +104,7 @@ async function captureScreenshot(url: string) {
   browser = await chromium.launch({
     args: chromiumExecutable.args,
     executablePath: await chromiumExecutable.executablePath(),
-    headless: chromiumExecutable.headless,
+    headless: true,
   });
 
     console.log("SCREENSHOT BROWSER LAUNCHED", { url });
