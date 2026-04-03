@@ -7,30 +7,40 @@ const httpsAgent = new https.Agent({
   minVersion: "TLSv1.2",
 });
 
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  forcePathStyle: true,
-  requestHandler: new NodeHttpHandler({
-    httpsAgent,
-    connectionTimeout: 30000,
-    socketTimeout: 30000,
-  }),
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
 export async function uploadToR2(buffer: Buffer, key: string) {
+  console.log("R2 ENV CHECK", {
+    hasAccountId: !!process.env.R2_ACCOUNT_ID,
+    hasAccessKeyId: !!process.env.R2_ACCESS_KEY_ID,
+    hasSecretAccessKey: !!process.env.R2_SECRET_ACCESS_KEY,
+    hasBucketName: !!process.env.R2_BUCKET_NAME,
+    hasPublicBaseUrl: !!process.env.R2_PUBLIC_BASE_URL,
+    accountIdPreview: process.env.R2_ACCOUNT_ID?.slice(0, 6) || null,
+  });
+
   const bucket = process.env.R2_BUCKET_NAME!;
   const publicBaseUrl = process.env.R2_PUBLIC_BASE_URL!;
+  const endpoint = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
+
+  const s3 = new S3Client({
+    region: "auto",
+    endpoint,
+    forcePathStyle: true,
+    requestHandler: new NodeHttpHandler({
+      httpsAgent,
+      connectionTimeout: 30000,
+      socketTimeout: 30000,
+    }),
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
 
   console.log("R2 UPLOAD START", {
     bucket,
     key,
     bytes: buffer.length,
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint,
   });
 
   const command = new PutObjectCommand({
@@ -56,6 +66,7 @@ export async function uploadToR2(buffer: Buffer, key: string) {
       key,
       message: err instanceof Error ? err.message : String(err),
       stack: err instanceof Error ? err.stack : null,
+      endpoint,
     });
     throw err;
   }
