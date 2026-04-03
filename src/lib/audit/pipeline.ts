@@ -1,6 +1,5 @@
 import chromium from "@sparticuz/chromium";
 import { chromium as playwright } from "playwright-core";
-import chromiumExecutable from "@sparticuz/chromium";
 import sharp from "sharp";
 import { uploadToR2 } from "../../lib/r2/upload";
 
@@ -109,7 +108,6 @@ async function captureScreenshot(url: string) {
 });
 
     console.log("BROWSER LAUNCHED SUCCESSFULLY");
-
     console.log("SCREENSHOT BROWSER LAUNCHED", { url });
 
     const page = await browser.newPage({
