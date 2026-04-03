@@ -102,7 +102,12 @@ async function captureScreenshot(url: string) {
 
     browser = await chromium.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
     });
 
     console.log("SCREENSHOT BROWSER LAUNCHED", { url });
@@ -110,18 +115,20 @@ async function captureScreenshot(url: string) {
     const page = await browser.newPage({
       viewport: { width: 1440, height: 1600 },
       deviceScaleFactor: 1,
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     });
 
     console.log("SCREENSHOT PAGE CREATED", { url });
 
     await page.goto(url, {
-      waitUntil: "domcontentloaded",
-      timeout: 30000,
+      waitUntil: "networkidle",
+      timeout: 45000,
     });
 
     console.log("SCREENSHOT PAGE GOTO OK", { url });
 
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(5000);
 
     const raw = await page.screenshot({
       fullPage: true,
@@ -144,7 +151,11 @@ async function captureScreenshot(url: string) {
 
     const uploadedUrl = await uploadToR2(compressed, key);
 
-    console.log("SCREENSHOT UPLOADED", { url, uploadedUrl });
+    console.log("SCREENSHOT UPLOADED", {
+      url,
+      key,
+      uploadedUrl,
+    });
 
     return uploadedUrl;
   } catch (err) {
