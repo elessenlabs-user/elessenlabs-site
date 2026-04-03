@@ -205,13 +205,61 @@ const raw = await page.screenshot({
 
     return uploadedUrl;
   } catch (err) {
-    console.error("PLAYWRIGHT SCREENSHOT ERROR:", {
+  console.error("PLAYWRIGHT SCREENSHOT ERROR:", {
+    url,
+    message: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : null,
+  });
+
+  try {
+    console.log("SCREENSHOT FALLBACK START", { url });
+
+    const fallbackEndpoint = `https://image.thum.io/get/fullpage/noanimate/${encodeURIComponent(
+      url
+    )}`;
+
+    const response = await fetch(fallbackEndpoint);
+
+    if (!response.ok) {
+      console.error("SCREENSHOT FALLBACK FAILED", {
+        url,
+        status: response.status,
+      });
+      return null;
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    const compressed = await sharp(buffer)
+      .resize({ width: 1440, withoutEnlargement: true })
+      .jpeg({ quality: 72, mozjpeg: true })
+      .toBuffer();
+
+    const key = `screenshots/${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.jpg`;
+
+    const uploadedUrl = await uploadToR2(compressed, key);
+
+    console.log("SCREENSHOT FALLBACK UPLOADED", {
       url,
-      message: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : null,
+      key,
+      uploadedUrl,
+    });
+
+    return uploadedUrl;
+  } catch (fallbackErr) {
+    console.error("SCREENSHOT FALLBACK ERROR:", {
+      url,
+      message:
+        fallbackErr instanceof Error
+          ? fallbackErr.message
+          : String(fallbackErr),
     });
     return null;
-  } finally {
+  }
+} finally {
+
     if (browser) {
       await browser.close();
     }
