@@ -1,4 +1,5 @@
-import { chromium } from "playwright-core";
+import chromium from "@sparticuz/chromium";
+import { chromium as playwright } from "playwright-core";
 import chromiumExecutable from "@sparticuz/chromium";
 import sharp from "sharp";
 import { uploadToR2 } from "../../lib/r2/upload";
@@ -101,11 +102,13 @@ async function captureScreenshot(url: string) {
   try {
     console.log("SCREENSHOT START", { url });
 
-  browser = await chromium.launch({
-    args: chromiumExecutable.args,
-    executablePath: await chromiumExecutable.executablePath(),
-    headless: true,
-  });
+  browser = await playwright.launch({
+  args: chromium.args,
+  executablePath: await chromium.executablePath(),
+  headless: true,
+});
+
+    console.log("BROWSER LAUNCHED SUCCESSFULLY");
 
     console.log("SCREENSHOT BROWSER LAUNCHED", { url });
 
