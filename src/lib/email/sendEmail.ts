@@ -20,6 +20,7 @@ export async function sendAdminNotification({
 }) {
   const resend = getResendClient();
   if (!resend) return;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   try {
     const result = await resend.emails.send({
@@ -31,7 +32,7 @@ export async function sendAdminNotification({
     
     <div style="margin-bottom: 24px; text-align: center;">
   <img 
-    src="..." 
+    src="${siteUrl}/logo.png" 
     alt="Elessen Labs" 
     style="height: 52px; display: inline-block;" 
   />
@@ -72,9 +73,14 @@ export async function sendAuditPaymentConfirmation({
       to: email,
       cc: "hello@elessenlabs.com",
       subject: "Payment received — your Elessen audit is now in review",
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-          <h2 style="margin-bottom: 16px;">Payment received</h2>
+     html: `
+  <div ...
+    
+    <div ...>   ← logo block
+      <img src="${siteUrl}/logo.png" />
+    </div>
+
+    <h2>Payment received</h2>
 
           <p>Hi ${name},</p>
 
@@ -83,7 +89,7 @@ export async function sendAuditPaymentConfirmation({
           </p>
 
           <p>
-            Your audit is now in review by Elessen to help ensure the final output is accurate,
+            Your audit is now in review by an Elessen product audit expert to help ensure the final output is accurate,
             useful, and in strong shape before delivery.
           </p>
 
