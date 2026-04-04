@@ -461,12 +461,22 @@ const previewMode = !isUnlocked;
 const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlabs.com"}/audit/result/${id}`;
 
   return (
-    <main className="mx-auto max-w-7xl px-10 py-16">
-      <div className="rounded-3xl border border-black/10 bg-white p-10 shadow-sm">
+    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-10 lg:py-16">
+      <div className="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-6 lg:p-10">
         <div className="mb-10 border-b border-black/10 pb-6">
-          <div className="text-xs font-semibold tracking-[0.18em] text-black/45">
-            UX CONVERSION BLUEPRINT
-          </div>
+
+      {/* ✅ LOGO — THIS IS WHAT MAKES IT APPEAR IN PDF */}
+      <div className="mb-6 flex justify-center">
+        <img
+          src="/logo.png"
+          alt="Elessen Labs"
+          className="h-10 object-contain"
+      />
+  </div>
+
+    <div className="text-xs font-semibold tracking-[0.18em] text-black/45">
+      ELESSEN AUDIT ENGINE™
+  </div>
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
             Audit for {data.full_name || "Client"}
@@ -545,7 +555,7 @@ const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlab
           <PrintActions />
         </div>
 
-        <div className="mb-10 grid gap-4 md:grid-cols-4">
+        <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-2xl border border-black/10 p-5">
             <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
             <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
@@ -647,7 +657,7 @@ const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlab
 
       </div>
 
-      <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-8 text-black shadow-lg">
+      <div className="mt-10 rounded-3xl border border-orange-200 bg-[#FF7A00] p-5 text-black shadow-lg print:hidden sm:p-6 lg:p-8">
         <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/70">
           NEXT STEP
         </div>

@@ -333,7 +333,7 @@ function SectionContent({
             <img
               src={item.crop_url || uiReferenceScreenshot || ""}
               alt={`UI issue ${item.marker || index + 1}`}
-              className="block h-[180px] w-full rounded-xl object-cover object-top"
+              className="block h-[160px] w-full rounded-xl object-cover object-top sm:h-[180px]"
             />
 
           <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
@@ -536,9 +536,9 @@ export default function AuditSectionsClient({
     return (
   <>
     {/* SCREEN VERSION */}
-    <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8 print:hidden">
-      <div className="self-start">
-        <div className="sticky top-28 space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start lg:gap-8 print:hidden">
+    <div className="self-start">
+      <div className="space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm lg:sticky lg:top-28">
           {sections.map((section) => {
             const tone = getSectionNavTone(section.title);
             const hoverTone = getSectionNavHoverTone(section.title);
@@ -551,10 +551,10 @@ export default function AuditSectionsClient({
                 key={section.id}
                 type="button"
                 onClick={() => setActiveId(section.id)}
-                className={`block w-full rounded-xl border px-4 py-3 text-left text-sm font-medium text-black transition ${
+                className={`block w-full rounded-xl border px-4 py-3 text-left text-sm font-medium text-black transition break-words ${
                   isActive ? tone : `border-black/10 bg-white ${hoverTone}`
-                } ${isCriticalTab ? "relative" : ""}`}
-              >
+                  } ${isCriticalTab ? "relative" : ""}`}
+          >
                 <span className="relative inline-flex items-center gap-2">
                   {isCriticalTab && (
                     <span className="relative flex h-2.5 w-2.5">

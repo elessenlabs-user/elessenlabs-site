@@ -520,7 +520,7 @@ export default function AuditPreviewTabs({
     </p>
 
     <button className="mt-4 bg-[#FF7A00] text-white px-4 py-2 rounded-xl text-sm font-semibold">
-      Buy Full Audit — $199
+      Buy Full Audit — $149
     </button>
   </div>
 )}
