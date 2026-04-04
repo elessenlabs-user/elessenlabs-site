@@ -768,41 +768,42 @@ function getEvidencePosition(
 ): UiEvidence["position"] {
   const text = `${issue} ${evidence}`.toLowerCase();
 
-  const isHero = /hero|headline|top section|above the fold/.test(text);
-  const isNav = /nav|navigation|menu|header/.test(text);
-  const isCta = /cta|button|call to action|signup|book|start/.test(text);
-  const isPricing = /pricing|plan|billing/.test(text);
-  const isForm = /form|input|field|email/.test(text);
-  const isFooter = /footer|bottom/.test(text);
-
-  // 🎯 PRIORITY-BASED mapping (NOT marker-based anymore)
-
-  if (isNav) {
+  // STRONGER explicit mapping
+  if (/navigation|nav|menu|header/.test(text)) {
     return { x: 0.5, y: 0.08, width: 0.9, height: 0.12 };
   }
 
-  if (isHero) {
+  if (/hero|headline|title|top section|above the fold/.test(text)) {
     return { x: 0.5, y: 0.22, width: 0.9, height: 0.25 };
   }
 
-  if (isCta) {
+  if (/cta|button|call to action|signup|book|start/.test(text)) {
     return { x: 0.5, y: 0.45, width: 0.7, height: 0.2 };
   }
 
-  if (isPricing) {
+  if (/grid|cards|listing|results|gallery/.test(text)) {
     return { x: 0.5, y: 0.55, width: 0.9, height: 0.25 };
   }
 
-  if (isForm) {
+  if (/form|input|field|email/.test(text)) {
     return { x: 0.5, y: 0.6, width: 0.7, height: 0.25 };
   }
 
-  if (isFooter) {
+  if (/footer|bottom/.test(text)) {
     return { x: 0.5, y: 0.85, width: 0.9, height: 0.2 };
   }
 
-  // fallback
-  return { x: 0.5, y: 0.5, width: 0.85, height: 0.25 };
+  // ⚠️ CRITICAL FIX — fallback tied to marker index
+  const fallbackMap: Record<number, UiEvidence["position"]> = {
+    1: { x: 0.5, y: 0.2, width: 0.9, height: 0.25 },
+    2: { x: 0.5, y: 0.35, width: 0.9, height: 0.25 },
+    3: { x: 0.5, y: 0.5, width: 0.9, height: 0.25 },
+    4: { x: 0.5, y: 0.65, width: 0.9, height: 0.25 },
+    5: { x: 0.35, y: 0.8, width: 0.6, height: 0.2 },
+    6: { x: 0.65, y: 0.8, width: 0.6, height: 0.2 },
+  };
+
+  return fallbackMap[marker] || { x: 0.5, y: 0.5, width: 0.85, height: 0.25 };
 }
 
 async function generateEvidenceCrops(
