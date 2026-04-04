@@ -912,50 +912,31 @@ export async function runAuditPipeline(row: any) {
         throw new Error(`HTML_FETCH_FAILED for ${url}`);
       }
 
-    let screenshotUrl: string | null = null;
+          let screenshotUrl: string | null = null;
 
-try {
-  screenshotUrl = await captureScreenshot(url);
+      try {
+        screenshotUrl = await captureScreenshot(url);
 
-  console.log("AUDIT SCREENSHOT CAPTURE", {
-    url,
-    success: !!screenshotUrl,
-  });
+        console.log("AUDIT SCREENSHOT CAPTURE", {
+          url,
+          success: !!screenshotUrl,
+        });
 
-  if (!screenshotUrl) {
-    console.error(
-      "AUDIT STEP FAILED, continuing:",
-      `SCREENSHOT_FAILED for ${url}`
-    );
-  }
-} catch (err) {
-  console.error("AUDIT STEP FAILED, continuing:", err);
-  screenshotUrl = null;
-}
-
-    let markedScreenshotUrl: string | null = screenshotUrl;
-let markedScreenshotMap: Record<number, string> = {};
-
-if (screenshotUrl && uiEvidence.length) {
-  try {
-    markedScreenshotMap = await addScreenshotMarkers(
-      screenshotUrl,
-      uiEvidence
-    );
-
-    console.log("AUDIT MARKER OVERLAY", {
-      url,
-      success: Object.keys(markedScreenshotMap).length > 0,
-      count: Object.keys(markedScreenshotMap).length,
-    });
-  } catch (err) {
-    console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-    markedScreenshotMap = {};
-  }
-}
+        if (!screenshotUrl) {
+          console.error(
+            "AUDIT STEP FAILED, continuing:",
+            `SCREENSHOT_FAILED for ${url}`
+          );
+        }
+      } catch (err) {
+        console.error("AUDIT STEP FAILED, continuing:", err);
+        screenshotUrl = null;
+      }
 
       let auditMarkdown = "";
       let uiEvidence: UiEvidence[] = [];
+      let markedScreenshotUrl: string | null = screenshotUrl;
+      let markedScreenshotMap: Record<number, string> = {};
 
       try {
         auditMarkdown = await generateAuditMarkdown({
@@ -969,50 +950,47 @@ if (screenshotUrl && uiEvidence.length) {
         });
 
         auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
-uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
+        uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
-let markedScreenshotUrl: string | null = screenshotUrl;
-let markedScreenshotMap: Record<number, string> = {};
+        if (screenshotUrl && uiEvidence.length) {
+          try {
+            markedScreenshotMap = await addScreenshotMarkers(
+              screenshotUrl,
+              uiEvidence
+            );
 
-if (screenshotUrl && uiEvidence.length) {
-  try {
-    markedScreenshotMap = await addScreenshotMarkers(
-      screenshotUrl,
-      uiEvidence
-    );
+            const firstMarked = markedScreenshotMap[uiEvidence[0]?.marker];
+            markedScreenshotUrl = firstMarked || screenshotUrl;
 
-    const firstMarked = markedScreenshotMap[uiEvidence[0]?.marker];
-    markedScreenshotUrl = firstMarked || screenshotUrl;
+            console.log("AUDIT MARKER OVERLAY", {
+              url,
+              success: Object.keys(markedScreenshotMap).length > 0,
+              count: Object.keys(markedScreenshotMap).length,
+            });
+          } catch (err) {
+            console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
+            markedScreenshotMap = {};
+            markedScreenshotUrl = screenshotUrl;
+          }
+        }
 
-    console.log("AUDIT MARKER OVERLAY", {
-      url,
-      success: Object.keys(markedScreenshotMap).length > 0,
-      count: Object.keys(markedScreenshotMap).length,
-    });
-  } catch (err) {
-    console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-    markedScreenshotMap = {};
-    markedScreenshotUrl = screenshotUrl;
-  }
-}
+        if (uiEvidence.length) {
+          const nextEvidence: UiEvidence[] = [];
 
-if (uiEvidence.length) {
-  const nextEvidence: UiEvidence[] = [];
+          for (const item of uiEvidence) {
+            const imageForThisIssue =
+              markedScreenshotMap[item.marker] || screenshotUrl;
 
-  for (const item of uiEvidence) {
-    const imageForThisIssue =
-      markedScreenshotMap[item.marker] || screenshotUrl;
+            if (imageForThisIssue) {
+              const cropped = await generateEvidenceCrops(imageForThisIssue, [item]);
+              nextEvidence.push(cropped[0]);
+            } else {
+              nextEvidence.push(item);
+            }
+          }
 
-    if (imageForThisIssue) {
-      const cropped = await generateEvidenceCrops(imageForThisIssue, [item]);
-      nextEvidence.push(cropped[0]);
-    } else {
-      nextEvidence.push(item);
-    }
-  }
-
-  uiEvidence = nextEvidence;
-}
+          uiEvidence = nextEvidence;
+        }
 
         console.log("AUDIT MARKDOWN GENERATED", {
           url,
