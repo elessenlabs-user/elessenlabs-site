@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import Script from "next/script";
 import AppShell from "./AppShell";
 
 export const metadata: Metadata = {
@@ -30,6 +31,19 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-white text-gray-900">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XXXX"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXXX');
+          `}
+        </Script>
+
         <AppShell>{children}</AppShell>
       </body>
     </html>

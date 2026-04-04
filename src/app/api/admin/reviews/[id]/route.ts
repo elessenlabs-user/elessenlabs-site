@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../../lib/supabase-admin";
+import { sendAuditEmail } from "../../../../../lib/email/sendAuditEmail";
 
 function buildMarkdownFromPages(pages: any[]) {
   return (pages || [])
@@ -100,6 +101,30 @@ export async function POST(
         { status: 500 }
       );
     }
+
+    const { data: auditRow, error: auditRowError } = await supabaseAdmin
+  .from("audit_requests")
+  .select("id, full_name, email")
+  .eq("id", id)
+  .maybeSingle();
+
+if (auditRowError) {
+  console.error("FAILED TO LOAD AUDIT FOR EMAIL:", auditRowError);
+}
+
+if (auditRow?.email) {
+  try {
+    await sendAuditEmail({
+      email: auditRow.email,
+      name: auditRow.full_name || "there",
+      auditId: auditRow.id,
+    });
+
+    console.log("DELIVERY EMAIL SENT:", auditRow.id);
+  } catch (err) {
+    console.error("DELIVERY EMAIL FAILED:", err);
+  }
+}
 
     return NextResponse.json({
       ok: true,

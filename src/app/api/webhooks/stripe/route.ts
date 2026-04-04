@@ -36,6 +36,7 @@ export async function POST(req: Request) {
 
   try {
     if (event.type === "checkout.session.completed") {
+      
       const session = event.data.object as Stripe.Checkout.Session;
 
       const auditRequestId = session.metadata?.auditRequestId || "";
