@@ -1,17 +1,57 @@
+"use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
+function RotatingHeadline() {
+  const messages = [
+    "Not sure what’s hurting your conversion?",
+    "Landing page not converting?",
+    "App store page underperforming?",
+    "Users dropping off after signup?",
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % messages.length);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="text-sm md:text-base font-semibold text-white transition-opacity duration-500">
+      {messages[index]}
+    </div>
+  );
+}
+
 export default function Home() {
-  const SHOW_AUDIT_BANNER = false;
+  const SHOW_AUDIT_BANNER = true;
 
   return (
     <div className="space-y-20">
 
   {SHOW_AUDIT_BANNER && (
-    <div className="rounded-2xl px-6 py-4" style={{ backgroundColor: "#FF5619" }}>
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
-      <div className="text-sm md:text-base font-semibold text-white">
-        24-Hour UX Conversion Blueprint — $149
+    <div className="relative overflow-hidden rounded-2xl px-6 py-4 banner-pulse" style={{ backgroundColor: "#FF5619" }}>
+      <div className="pointer-events-none absolute inset-0 opacity-20 text-[10px] text-white space-y-1 animate-banner-scroll">
+        <div>Analyzing landing page...</div>
+        <div>Detecting drop-off points...</div>
+        <div>Evaluating CTA strength...</div>
+        <div>Scanning UX patterns...</div>
+        <div>Generating recommendations...</div>
       </div>
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+      
+      <div className="flex flex-col gap-2">
+        <RotatingHeadline />
+
+        <div className="text-xs md:text-sm text-white/90">
+          Get your Elessen Audit Engine™ report in 24 hours.
+          Human-guided. AI-powered. Built to convert.
+        </div>
+</div>
 
       <Link
         href="/audit"
@@ -22,7 +62,7 @@ export default function Home() {
         }}
         className="inline-flex items-center justify-center rounded-xl px-5 py-2 font-semibold shadow-md transition hover:opacity-95"
       >
-        Get My Blueprint
+        Get My Elessen Audit Report →
       </Link>
     </div>
   </div>

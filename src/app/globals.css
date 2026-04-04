@@ -277,3 +277,30 @@ header {
     page-break-before: always;
   }
 }
+@keyframes bannerScroll {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-banner-scroll {
+  animation: bannerScroll 10s linear infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.01);
+    opacity: 0.95;
+  }
+}
+
+.banner-pulse {
+  animation: subtlePulse 2.6s ease-in-out infinite;
+}
