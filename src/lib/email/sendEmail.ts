@@ -76,7 +76,7 @@ export async function sendAuditPaymentConfirmation({
      html: `
   <div ...
     
-    <div ...>   ← logo block
+    <div ...>  
       <img src="${siteUrl}/logo.png" />
     </div>
 
