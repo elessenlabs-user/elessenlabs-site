@@ -37,13 +37,13 @@ export async function sendAuditEmail({
      html: `
   <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
     
-    <div style="margin-bottom: 20px;">
-      <img 
-        src="${siteUrl}/logo.png" 
-        alt="Elessen Labs" 
-        style="height: 32px;" 
-      />
-    </div>
+    <div style="margin-bottom: 24px; text-align: center;">
+  <img 
+    src="..." 
+    alt="Elessen Labs" 
+    style="height: 52px; display: inline-block;" 
+  />
+</div>
           
           <p>Hi ${name || "there"},</p>
 

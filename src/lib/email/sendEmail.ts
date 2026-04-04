@@ -29,13 +29,13 @@ export async function sendAdminNotification({
      html: `
   <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
     
-    <div style="margin-bottom: 20px;">
-      <img 
-        src="${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/logo.png" 
-        alt="Elessen Labs" 
-        style="height: 32px;" 
-      />
-    </div>
+    <div style="margin-bottom: 24px; text-align: center;">
+  <img 
+    src="..." 
+    alt="Elessen Labs" 
+    style="height: 52px; display: inline-block;" 
+  />
+</div>
           <h2>New Audit Request</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Product URL:</strong> ${productUrl}</p>
