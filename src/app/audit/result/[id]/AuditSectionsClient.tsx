@@ -534,7 +534,9 @@ export default function AuditSectionsClient({
   }, [defaultSectionId]);
 
     return (
-    <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8">
+  <>
+    {/* SCREEN VERSION */}
+    <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start gap-8 print:hidden">
       <div className="self-start">
         <div className="sticky top-28 space-y-3 rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
           {sections.map((section) => {
@@ -594,6 +596,22 @@ export default function AuditSectionsClient({
           ))}
       </div>
 
+            <div className="hidden print:block space-y-6">
+        {sections.map((section) => (
+          <SectionContent
+            key={`print-${section.id}`}
+            title={section.title}
+            content={section.content}
+            uiEvidence={uiEvidence}
+            uiReferenceScreenshot={uiReferenceScreenshot}
+            locked={false}
+            currentStatus={currentStatus}
+            auditRequestId={auditRequestId}
+          />
+        ))}
+      </div>
+    
+
       {lightboxOpen && lightboxSrc && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6">
           <div
@@ -636,5 +654,25 @@ export default function AuditSectionsClient({
         </div>
       )}
     </div>
-  );
+
+    {/* PRINT / PDF VERSION */}
+    <div className="hidden print:block">
+      <div className="space-y-6">
+        {sections.map((section) => (
+          <div key={section.id} className="break-inside-avoid">
+            <SectionContent
+              title={section.title}
+              content={section.content}
+              uiEvidence={uiEvidence}
+              uiReferenceScreenshot={uiReferenceScreenshot}
+              locked={false}
+              currentStatus={currentStatus}
+              auditRequestId={auditRequestId}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </>
+);
 }

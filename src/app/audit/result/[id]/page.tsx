@@ -458,6 +458,7 @@ const isUnlocked =
   data.status === "delivered" || searchUnlock;
 
 const previewMode = !isUnlocked;
+const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlabs.com"}/audit/result/${id}`;
 
   return (
     <main className="mx-auto max-w-7xl px-10 py-16">
@@ -471,31 +472,46 @@ const previewMode = !isUnlocked;
             Audit for {data.full_name || "Client"}
           </h1>
 
-          <div className="mt-4 space-y-1 text-sm text-black/60">
-            <div>
-              <strong className="text-black/75">Product:</strong> {data.product_url}
-          </div>
+          <div className="mt-4 space-y-2 text-sm text-black/60">
+  <div>
+    <strong className="text-black/75">Product:</strong> {data.product_url}
+  </div>
 
-          {data.focus_page_url && (
-            <div>
-              <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
-          </div>
-      )}
+  {data.focus_page_url && (
+    <div>
+      <strong className="text-black/75">Focus page:</strong> {data.focus_page_url}
+    </div>
+  )}
 
-        <div>
-          <strong className="text-black/75">Status:</strong>{" "}
-          {data.status === "preview_ready"
-            ? "Preview Ready"
-            : data.status === "paid_pending_review"
-            ? "Pending Review"
-            : data.status === "in_review"
-            ? "In Review"
-            : data.status === "delivered"
-            ? "Delivered"
-            : data.status}
-        </div>
+  <div>
+    <strong className="text-black/75">Status:</strong>{" "}
+    {data.status === "preview_ready"
+      ? "Preview Ready"
+      : data.status === "paid_pending_review"
+      ? "Pending Review"
+      : data.status === "in_review"
+      ? "In Review"
+      : data.status === "delivered"
+      ? "Delivered"
+      : data.status}
+  </div>
 
-        {isPreviewOnly && (
+  <div className="pt-3 print:pt-4">
+    <strong className="text-black/75">Report URL:</strong>{" "}
+    <a
+      href={reportUrl}
+      className="break-all underline underline-offset-4"
+    >
+      {reportUrl}
+    </a>
+  </div>
+
+  <div className="text-xs text-black/50">
+    This audit link remains available for 30 days from delivery.
+  </div>
+
+  {isPreviewOnly && (
+
   <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-4 text-sm leading-6 text-black/75">
     <div className="font-semibold text-black">
       This is your preview report.
@@ -567,17 +583,17 @@ const previewMode = !isUnlocked;
 
 
        {pageGroups.map((page) => (
-  <div key={page.id} className="mb-12">
-    <div className="mb-6">
-      <div className="text-xs uppercase tracking-wide text-black/45">
+  <div key={page.id} className="mb-12 print:mb-16 break-before-page">
+    <div className="mb-6 border-b border-black/10 pb-4">
+      <div className="text-xs uppercase tracking-[0.18em] text-black/45">
         {page.title}
-      </div>
+    </div>
 
       {page.url && (
-        <div className="mt-1 break-all text-sm text-black/60">
-          {page.url}
-        </div>
-      )}
+        <div className="mt-2 break-all text-sm text-black/65">
+          <strong className="text-black/75">Page URL:</strong> {page.url}
+      </div>
+  )} 
     </div>
 
     {page.processing_failed ? (

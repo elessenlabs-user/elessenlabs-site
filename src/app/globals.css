@@ -250,27 +250,30 @@ header {
 /* =========================================================
    PRINT
    ========================================================= */
-
 @media print {
-  html,
-  body {
-    background: white !important;
-  }
-
-  details {
-    display: block !important;
-  }
-
-  details > summary {
-    list-style: none;
-    cursor: default !important;
-  }
-
-  details > summary::-webkit-details-marker {
-    display: none;
-  }
-
   .print-hide {
     display: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .break-before-page {
+    break-before: page;
+    page-break-before: always;
   }
 }
