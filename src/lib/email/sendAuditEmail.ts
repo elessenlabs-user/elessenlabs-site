@@ -39,9 +39,9 @@ export async function sendAuditEmail({
     
     <div style="margin-bottom: 24px; text-align: center;">
   <img 
-    src="..." 
+    src="${siteUrl}/logo.png" 
     alt="Elessen Labs" 
-    style="height: 52px; display: inline-block;" 
+    style="height: 80px; display: block; margin: 0 auto;" 
   />
 </div>
           

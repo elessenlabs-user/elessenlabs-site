@@ -34,7 +34,7 @@ export async function sendAdminNotification({
   <img 
     src="${siteUrl}/logo.png" 
     alt="Elessen Labs" 
-    style="height: 52px; display: inline-block;" 
+    style="height: 80px; display: block; margin: 0 auto;" 
   />
 </div>
           <h2>New Audit Request</h2>
@@ -76,9 +76,13 @@ export async function sendAuditPaymentConfirmation({
      html: `
   <div ...
     
-    <div ...>  
-      <img src="${siteUrl}/logo.png" />
-    </div>
+  <div style="margin-bottom: 24px; text-align: center;">
+    <img 
+      src="${siteUrl}/logo.png" 
+      alt="Elessen Labs" 
+      style="height: 80px; display: block; margin: 0 auto;" 
+    />
+</div>
 
     <h2>Payment received</h2>
 
