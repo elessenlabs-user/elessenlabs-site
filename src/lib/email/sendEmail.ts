@@ -26,8 +26,16 @@ export async function sendAdminNotification({
       from: "Elessen <hello@elessenlabs.com>",
       to: "hello@elessenlabs.com",
       subject: "New Audit Request Submitted",
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+     html: `
+  <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
+    
+    <div style="margin-bottom: 20px;">
+      <img 
+        src="${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/logo.png" 
+        alt="Elessen Labs" 
+        style="height: 32px;" 
+      />
+    </div>
           <h2>New Audit Request</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Product URL:</strong> ${productUrl}</p>

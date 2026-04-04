@@ -34,8 +34,16 @@ export async function sendAuditEmail({
       to: email,
       cc: "hello@elessenlabs.com",
       subject: "Your Elessen Audit Report is Ready 🚀",
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+     html: `
+  <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+    
+    <div style="margin-bottom: 20px;">
+      <img 
+        src="${siteUrl}/logo.png" 
+        alt="Elessen Labs" 
+        style="height: 32px;" 
+      />
+    </div>
           
           <p>Hi ${name || "there"},</p>
 
@@ -44,8 +52,6 @@ export async function sendAuditEmail({
           <p>
             <a href="${auditUrl}" target="_blank">${auditUrl}</a>
           </p>
-
-          <br/>
 
           <p>
             I personally reviewed how this system structures audits — 
@@ -62,11 +68,9 @@ export async function sendAuditEmail({
 
           <p><strong>This offer expires in 30 days.</strong></p>
 
-          <br/>
-
           <p>
-            Tanya Emma Elessen<br/>
-            Founder, Elessen Labs
+            Tanya Emma <br/>
+            <b>Founder, Elessen Labs</b>
           </p>
 
           <img src="${siteUrl}/api/email/open?id=${auditId}" width="1" height="1" style="display:none;" />
