@@ -273,16 +273,21 @@ const raw = await page.screenshot({
   }
 }
 
-async function addScreenshotMarkers(imageUrl: string) {
+async function addScreenshotMarkers(
+  imageUrl: string,
+  evidenceItems: UiEvidence[]
+): Promise<Record<number, string>> {
+  const result: Record<number, string> = {};
+
   try {
     const response = await fetch(imageUrl);
 
-  if (!response.ok) {
-    console.error(
-      `Failed to fetch screenshot for markers: ${response.status}`
-    );
-    return imageUrl; 
-  }
+    if (!response.ok) {
+      console.error(
+        `Failed to fetch screenshot for markers: ${response.status}`
+      );
+      return result;
+    }
 
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -291,52 +296,45 @@ async function addScreenshotMarkers(imageUrl: string) {
     const width = meta.width || 1440;
     const height = meta.height || 900;
 
-    const markers = [
-      { x: width * 0.12, y: height * 0.1, label: 1 },
-      { x: width * 0.5, y: height * 0.1, label: 2 },
-      { x: width * 0.86, y: height * 0.1, label: 3 },
-      { x: width * 0.5, y: height * 0.4, label: 4 },
-      { x: width * 0.2, y: height * 0.74, label: 5 },
-      { x: width * 0.8, y: height * 0.74, label: 6 },
-    ];
+    for (const item of evidenceItems) {
+      if (!item.marker || !item.position) continue;
 
-    const svg = `
-      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-        ${markers
-          .map(
-            (m) => `
-          <circle cx="${m.x}" cy="${m.y}" r="34" fill="#FF5A1F"/>
-          <circle cx="${m.x}" cy="${m.y}" r="40" fill="none" stroke="white" stroke-width="6"/>
+      const x = Math.round(item.position.x * width);
+      const y = Math.round(item.position.y * height);
+
+      const svg = `
+        <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="${x}" cy="${y}" r="34" fill="#FF5A1F"/>
+          <circle cx="${x}" cy="${y}" r="40" fill="none" stroke="white" stroke-width="6"/>
           <text
-            x="${m.x}"
-            y="${m.y + 11}"
+            x="${x}"
+            y="${y + 11}"
             text-anchor="middle"
             font-size="28"
             font-weight="800"
             fill="white"
             font-family="Arial, sans-serif"
-          >${m.label}</text>
-        `
-          )
-          .join("")}
-      </svg>
-    `;
+          >${item.marker}</text>
+        </svg>
+      `;
 
-    const out = await sharp(buffer)
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toBuffer();
+      const out = await sharp(buffer)
+        .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer();
 
-    const key = `screenshots/marked/${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(7)}.jpg`;
+      const key = `screenshots/marked/${Date.now()}-${item.marker}-${Math.random()
+        .toString(36)
+        .substring(7)}.jpg`;
 
-    const markedUrl = await uploadToR2(out, key);
+      const markedUrl = await uploadToR2(out, key);
+      result[item.marker] = markedUrl;
+    }
 
-    return markedUrl;
+    return result;
   } catch (err) {
     console.error("MARKER OVERLAY ERROR:", err);
-    return imageUrl;
+    return result;
   }
 }
 
@@ -935,24 +933,24 @@ try {
   screenshotUrl = null;
 }
 
-    let markedScreenshotUrl: string | null = null;
-      if (screenshotUrl) {
-  try {
-    const markerResult = await addScreenshotMarkers(screenshotUrl);
+    let markedScreenshotUrl: string | null = screenshotUrl;
+let markedScreenshotMap: Record<number, string> = {};
 
-    markedScreenshotUrl = markerResult || screenshotUrl;
+if (screenshotUrl && uiEvidence.length) {
+  try {
+    markedScreenshotMap = await addScreenshotMarkers(
+      screenshotUrl,
+      uiEvidence
+    );
 
     console.log("AUDIT MARKER OVERLAY", {
       url,
-      success: !!markerResult,
-      fallbackUsed: !markerResult,
+      success: Object.keys(markedScreenshotMap).length > 0,
+      count: Object.keys(markedScreenshotMap).length,
     });
-
   } catch (err) {
     console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-
-    // HARD fallback — NEVER leave this null
-    markedScreenshotUrl = screenshotUrl;
+    markedScreenshotMap = {};
   }
 }
 
@@ -971,17 +969,50 @@ try {
         });
 
         auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
-        uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
+uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
-      const baseImageForCrops =
-       markedScreenshotUrl || screenshotUrl;
+let markedScreenshotUrl: string | null = screenshotUrl;
+let markedScreenshotMap: Record<number, string> = {};
 
-        if (baseImageForCrops && uiEvidence.length) {
-          uiEvidence = await generateEvidenceCrops(
-          baseImageForCrops,
-          uiEvidence
-        );
-      }
+if (screenshotUrl && uiEvidence.length) {
+  try {
+    markedScreenshotMap = await addScreenshotMarkers(
+      screenshotUrl,
+      uiEvidence
+    );
+
+    const firstMarked = markedScreenshotMap[uiEvidence[0]?.marker];
+    markedScreenshotUrl = firstMarked || screenshotUrl;
+
+    console.log("AUDIT MARKER OVERLAY", {
+      url,
+      success: Object.keys(markedScreenshotMap).length > 0,
+      count: Object.keys(markedScreenshotMap).length,
+    });
+  } catch (err) {
+    console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
+    markedScreenshotMap = {};
+    markedScreenshotUrl = screenshotUrl;
+  }
+}
+
+if (uiEvidence.length) {
+  const nextEvidence: UiEvidence[] = [];
+
+  for (const item of uiEvidence) {
+    const imageForThisIssue =
+      markedScreenshotMap[item.marker] || screenshotUrl;
+
+    if (imageForThisIssue) {
+      const cropped = await generateEvidenceCrops(imageForThisIssue, [item]);
+      nextEvidence.push(cropped[0]);
+    } else {
+      nextEvidence.push(item);
+    }
+  }
+
+  uiEvidence = nextEvidence;
+}
 
         console.log("AUDIT MARKDOWN GENERATED", {
           url,
