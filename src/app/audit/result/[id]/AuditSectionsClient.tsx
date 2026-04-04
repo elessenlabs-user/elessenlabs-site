@@ -594,23 +594,7 @@ export default function AuditSectionsClient({
               }}
             />
           ))}
-      </div>
-
-            <div className="hidden print:block space-y-6">
-        {sections.map((section) => (
-          <SectionContent
-            key={`print-${section.id}`}
-            title={section.title}
-            content={section.content}
-            uiEvidence={uiEvidence}
-            uiReferenceScreenshot={uiReferenceScreenshot}
-            locked={false}
-            currentStatus={currentStatus}
-            auditRequestId={auditRequestId}
-          />
-        ))}
-      </div>
-    
+      </div>    
 
       {lightboxOpen && lightboxSrc && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-6">
