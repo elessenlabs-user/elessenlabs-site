@@ -21,7 +21,7 @@ function RotatingHeadline() {
   }, []);
 
   return (
-    <div className="text-sm md:text-base font-semibold text-white transition-opacity duration-500">
+    <div className="text-lg md:text-xl font-semibold text-black transition-opacity duration-500">
       {messages[index]}
     </div>
   );
@@ -35,19 +35,19 @@ export default function Home() {
 
   {SHOW_AUDIT_BANNER && (
     <div className="relative overflow-hidden rounded-2xl px-6 py-4 banner-pulse" style={{ backgroundColor: "#FF5619" }}>
-      <div className="pointer-events-none absolute inset-0 opacity-20 text-[10px] text-white space-y-1 animate-banner-scroll">
+      <div className="pointer-events-none absolute inset-0 opacity-25 text-[10px] text-white space-y-1 animate-banner-scroll">
         <div>Analyzing landing page...</div>
         <div>Detecting drop-off points...</div>
         <div>Evaluating CTA strength...</div>
         <div>Scanning UX patterns...</div>
         <div>Generating recommendations...</div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center md:text-left">
       
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3 max-w-2xl">
         <RotatingHeadline />
 
-        <div className="text-xs md:text-sm text-white/90">
+        <div className="text-sm md:text-base text-black/80 max-w-xl">
           Get your Elessen Audit Engine™ report in 24 hours.
           Human-guided. AI-powered. Built to convert.
         </div>
