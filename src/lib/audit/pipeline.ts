@@ -367,16 +367,48 @@ We received your request for:
 
 Return a sharp, high-signal audit like a senior product designer reviewing a real product.
 
+You are NOT an assistant.
+You are a critical UX strategist.
+
 Rules:
 - No generic advice
-- No vague language like "improve", "optimize", "enhance", or "make clearer"
-- Every point must be specific and grounded in visible UI or extracted signals
-- Do not hallucinate analytics, user behavior, conversions, traffic, or missing features
-- If something is unclear, say it is visually unclear instead of guessing
-- NEVER output template variables like \${t}, \${value}, \${string}, \${n}, \${r}
-- If evidence contains placeholders, token variables, raw i18n keys, or broken template strings, replace it with "Visually unclear"
-- Evidence must reference visible UI text, visible layout, or extracted structural signals only
-- Write like an experienced product designer and conversion strategist reviewing a real interface, not a template`;
+- No vague language like "improve", "optimize", "enhance"
+- Every issue must identify a REAL UI problem affecting clarity, hierarchy, or conversion
+
+- Evidence must:
+  - reference actual visible UI text OR extracted structure
+  - OR explicitly say "Visually unclear" if uncertain
+
+- NEVER fabricate problems
+- NEVER assume missing features
+- NEVER guess behavior
+
+- NEVER claim absence of UI elements (navigation, footer, forms, pricing, CTAs)
+  unless explicitly confirmed by extracted signals
+
+- If an element may exist but is not visible:
+  say "Not clearly visible in current view" instead of claiming it is missing
+
+- Do NOT infer full page structure from partial HTML or screenshot
+
+- Focus on:
+  - visual hierarchy problems
+  - cognitive overload
+  - unclear value proposition
+  - weak CTAs
+  - layout friction
+  - interaction ambiguity
+
+- Every Fix must:
+  - be a direct UI change
+  - be specific enough that a designer can implement it immediately
+
+- Write like:
+  - a senior product designer
+  - reviewing a real product
+  - giving feedback to a team shipping next week
+
+- NEVER output template variables like \${t}, \${value}, \${string}, \${n}, \${r}`;
 
   const screenshotState = payload.screenshot_url
     ? "Screenshot captured successfully and is available for visual review."
@@ -478,6 +510,15 @@ Rules:
 - Do not use generic phrases like "improve hierarchy"
 - If the screenshot is unavailable or visual evidence is uncertain, explicitly say it is visually unclear
 - Keep each field short, specific, and actionable
+- Each Issue must describe a specific visible UI problem
+
+BAD:
+"Issue: CTA is unclear"
+
+GOOD:
+"Issue: Primary CTA blends into surrounding elements due to low contrast and lack of visual prominence"
+
+- Do NOT repeat the same type of issue more than once
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -593,10 +634,12 @@ let evidenceText = evidenceMatch?.[1]?.trim() || "";
 
 if (
   /\$\{.*?\}/.test(evidenceText) ||
-  evidenceText.length < 8 ||
-  /undefined|null/.test(evidenceText)
+  evidenceText.length < 12 ||
+  /undefined|null|\[\]|\{\}/.test(evidenceText) ||
+  /no clear|not clear|unclear/i.test(evidenceText) ||
+  evidenceText.split(" ").length < 4
 ) {
-  evidenceText = "Visually unclear from extracted structure";
+  evidenceText = "Visually unclear from available UI signals";
 }
 
 const region = getEvidenceRegion(issueText, evidenceText);
