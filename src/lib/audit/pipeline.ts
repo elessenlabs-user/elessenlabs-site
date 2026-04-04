@@ -365,7 +365,7 @@ We received your request for:
 
   const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
-  const system = `You are Elessen Labs' senior product/UX auditor.
+    const system = `You are Elessen Labs' senior product/UX auditor.
 
 Return a sharp, high-signal audit like a senior product designer reviewing a real product.
 
@@ -375,6 +375,9 @@ Rules:
 - Every point must be specific and grounded in visible UI or extracted signals
 - Do not hallucinate analytics, user behavior, conversions, traffic, or missing features
 - If something is unclear, say it is visually unclear instead of guessing
+- NEVER output template variables like \${t}, \${value}, \${string}, \${n}, \${r}
+- If evidence contains placeholders, token variables, raw i18n keys, or broken template strings, replace it with "Visually unclear"
+- Evidence must reference visible UI text, visible layout, or extracted structural signals only
 - Write like an experienced product designer and conversion strategist reviewing a real interface, not a template`;
 
   const screenshotState = payload.screenshot_url
@@ -588,7 +591,16 @@ function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
     if (!marker) continue;
 
     const issueText = issueMatch?.[1]?.trim() || "";
-const evidenceText = evidenceMatch?.[1]?.trim() || "";
+let evidenceText = evidenceMatch?.[1]?.trim() || "";
+
+if (
+  /\$\{.*?\}/.test(evidenceText) ||
+  evidenceText.length < 8 ||
+  /undefined|null/.test(evidenceText)
+) {
+  evidenceText = "Visually unclear from extracted structure";
+}
+
 const region = getEvidenceRegion(issueText, evidenceText);
 
 results.push({
@@ -715,91 +727,42 @@ function getEvidencePosition(
 ): UiEvidence["position"] {
   const text = `${issue} ${evidence}`.toLowerCase();
 
-  const isNav =
-    /nav|navigation|menu|header|top nav|top navigation/.test(text);
+  const isHero = /hero|headline|top section|above the fold/.test(text);
+  const isNav = /nav|navigation|menu|header/.test(text);
+  const isCta = /cta|button|call to action|signup|book|start/.test(text);
+  const isPricing = /pricing|plan|billing/.test(text);
+  const isForm = /form|input|field|email/.test(text);
+  const isFooter = /footer|bottom/.test(text);
 
-  const isHero =
-    /hero|headline|subheadline|above the fold|first impression|value proposition|top section|main message|positioning/.test(
-      text
-    );
-
-  const isCta =
-    /cta|call to action|button|primary button|secondary button|download|apply|start|book|sign up|signup|join|request demo|demo|contact sales/.test(
-      text
-    );
-
-  const isPricing =
-    /pricing|price|plan|plans|billing|subscription|compare|comparison|tier|tiers|package|packages|table/.test(
-      text
-    );
-
-  const isTrust =
-    /trust|social proof|testimonial|testimonials|logo|logos|customer|customers|proof|credibility|review|reviews|case stud|brand|partner|partners/.test(
-      text
-    );
-
-  const isForm =
-    /form|input|field|email capture|lead capture|contact form|newsletter|subscribe/.test(
-      text
-    );
-
-  const isGrid =
-    /card|cards|grid|module|content block|resource|resources|feature block|feature grid|product block|product card|feature card|listing|section/.test(
-      text
-    );
-
-  const isFooter =
-    /footer|bottom|legal|privacy|terms|site links|site map|social links/.test(
-      text
-    );
+  // 🎯 PRIORITY-BASED mapping (NOT marker-based anymore)
 
   if (isNav) {
-    return { x: 0.5, y: 0.08, width: 0.92, height: 0.14 };
-  }
-
-  if (isHero && isCta) {
-    return { x: 0.5, y: 0.22, width: 0.9, height: 0.3 };
+    return { x: 0.5, y: 0.08, width: 0.9, height: 0.12 };
   }
 
   if (isHero) {
-    return { x: 0.5, y: 0.2, width: 0.9, height: 0.28 };
+    return { x: 0.5, y: 0.22, width: 0.9, height: 0.25 };
+  }
+
+  if (isCta) {
+    return { x: 0.5, y: 0.45, width: 0.7, height: 0.2 };
   }
 
   if (isPricing) {
-    return { x: 0.5, y: 0.48, width: 0.9, height: 0.28 };
+    return { x: 0.5, y: 0.55, width: 0.9, height: 0.25 };
   }
 
-  if (isCta || isForm) {
-    return { x: 0.5, y: 0.52, width: 0.8, height: 0.24 };
-  }
-
-  if (isTrust) {
-    return { x: 0.5, y: 0.42, width: 0.86, height: 0.22 };
-  }
-
-  if (isGrid) {
-    if (marker === 4) return { x: 0.5, y: 0.45, width: 0.9, height: 0.24 };
-    if (marker === 5) return { x: 0.35, y: 0.62, width: 0.6, height: 0.24 };
-    if (marker === 6) return { x: 0.65, y: 0.62, width: 0.6, height: 0.24 };
-    return { x: 0.5, y: 0.5, width: 0.9, height: 0.24 };
+  if (isForm) {
+    return { x: 0.5, y: 0.6, width: 0.7, height: 0.25 };
   }
 
   if (isFooter) {
-    return { x: 0.5, y: 0.86, width: 0.92, height: 0.18 };
+    return { x: 0.5, y: 0.85, width: 0.9, height: 0.2 };
   }
 
-  const fallbackMap: Record<number, UiEvidence["position"]> = {
-    1: { x: 0.5, y: 0.2, width: 0.9, height: 0.28 },
-    2: { x: 0.5, y: 0.32, width: 0.9, height: 0.24 },
-    3: { x: 0.5, y: 0.42, width: 0.9, height: 0.24 },
-    4: { x: 0.5, y: 0.52, width: 0.9, height: 0.24 },
-    5: { x: 0.35, y: 0.66, width: 0.6, height: 0.24 },
-    6: { x: 0.65, y: 0.66, width: 0.6, height: 0.24 },
-  };
-
-  return fallbackMap[marker] || { x: 0.5, y: 0.5, width: 0.85, height: 0.24 };
+  // fallback
+  return { x: 0.5, y: 0.5, width: 0.85, height: 0.25 };
 }
-
 
 async function generateEvidenceCrops(
   screenshotUrl: string,
@@ -825,13 +788,13 @@ async function generateEvidenceCrops(
 
     try {
       const desiredWidth = Math.max(
-        700,
-        Math.round(item.position.width * imageWidth * 1.35)
+        520,
+      Math.round(item.position.width * imageWidth * 1.1)
       );
 
       const desiredHeight = Math.max(
-        420,
-        Math.round(item.position.height * imageHeight * 1.35)
+        320,
+      Math.round(item.position.height * imageHeight * 1.1)
       );
 
       const centerX = Math.round(item.position.x * imageWidth);
