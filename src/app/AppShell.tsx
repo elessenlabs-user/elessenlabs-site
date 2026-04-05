@@ -76,28 +76,8 @@ export default function AppShell({
                   </details>
                 </div>
 
-                <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                  <Link
-                    href="/how-we-help"
-                    className="opacity-70 hover:opacity-100 transition"
-                  >
-                    How we help
-                  </Link>
-
-                  <Link
-                    href="/experience"
-                    className="opacity-70 hover:opacity-100 transition"
-                  >
-                    Experience
-                  </Link>
-
-                  <Link
-                    href="/readiness"
-                    className="opacity-70 hover:opacity-100 transition"
-                  >
-                    Readiness
-                  </Link>
-
+                <nav className="flex items-center gap-6">
+                  {/* Hidden until ready */}
                   <Link
                     href="/start"
                     className="rounded-xl border border-black/20 px-4 py-2 font-semibold transition-all duration-200 hover:border-black hover:-translate-y-[1px] hover:shadow-md"
