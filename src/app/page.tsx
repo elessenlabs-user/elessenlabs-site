@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { trackEvent } from "../lib/analytics";
 
 function RotatingHeadline() {
   const messages = [
@@ -52,17 +53,18 @@ export default function Home() {
           Human-guided. AI-powered. Built to convert.
         </div>
 </div>
-
+      
       <Link
-        href="/audit"
-        style={{
-          backgroundColor: "#111111",
-          color: "#FFFFFF",
-          border: "1px solid rgba(255,255,255,0.35)",
-        }}
-        className="inline-flex items-center justify-center rounded-xl px-5 py-2 font-semibold shadow-md transition hover:opacity-95"
+        href="/start"
+        onClick={() =>
+        trackEvent("start_product_clicked", {
+          location: "hero",
+          page: "home",
+        })
+      }
+      className="btn-primary"
       >
-        Get My Elessen Audit Report →
+        Get Elessen Audit Report →
       </Link>
     </div>
   </div>

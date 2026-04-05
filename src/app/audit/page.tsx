@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { trackEvent } from "../../lib/analytics";
 
 
 const AUDIT_PRICE = "$149";
@@ -98,6 +99,10 @@ export default function AuditPage() {
     }
 
     setLoading(true);
+
+    trackEvent("audit_started", {
+      page: "audit",
+    });
 
     try {
       // 1) Log lead first (keep this – good practice)

@@ -42,8 +42,11 @@ export default function RootLayout({
       function gtag(){dataLayer.push(arguments);}
       window.gtag = gtag;
       gtag('js', new Date());
-      gtag('config', 'G-X5S5S1HR9S');
-    `}
+      gtag('config', 'G-X5S5S1HR9S', {
+  page_title: document.title,
+  page_path: window.location.pathname,
+});
+`}
   </Script>
 </head>
       <body className="min-h-screen bg-white text-gray-900">
