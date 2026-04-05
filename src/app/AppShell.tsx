@@ -32,8 +32,8 @@ export default function AppShell({
                   <Image
                     src="/logo.png"
                     alt="Elessen Labs"
-                    width={220}
-                    height={70}
+                    width={500}
+                    height={250}
                     priority
                     className="relative h-12 w-auto md:h-[72px]"
                   />
