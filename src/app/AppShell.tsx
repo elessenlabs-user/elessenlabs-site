@@ -26,16 +26,16 @@ export default function AppShell({
         <>
           <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 backdrop-blur-md">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-              <Link href="/" className="flex items-center group shrink-0">
+              <Link href="/" className="flex items-center group shrink-0 scale-[1.3] md:scale-[1.6] origin-left">
                 <span className="relative inline-flex items-center">
                   <span className="absolute -inset-4 rounded-3xl logo-glow opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
                   <Image
                     src="/logo.png"
                     alt="Elessen Labs"
-                    width={300}
-                    height={100}
+                    width={400}
+                    height={140}
                     priority
-                    className="relative h-16 w-auto md:h-[90px]"
+                    className="relative h-20 w-auto md:h-[110px]"
                 />
                 </span>
               </Link>
