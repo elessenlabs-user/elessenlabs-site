@@ -3,92 +3,96 @@
 import Link from "next/link";
 import Image from "next/image";
 import { trackEvent } from "../../lib/analytics";
+import { useEffect, useState } from "react";
+
+function RotatingAuditText() {
+  const messages = [
+    "Discover critical issues in your product",
+    "Uncover where users drop off",
+    "Get clear UI improvements",
+    "Fix what’s hurting your conversion",
+    "See what to improve first",
+  ];
+
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const i = setInterval(() => {
+      setIndex((prev) => (prev + 1) % messages.length);
+    }, 2200);
+    return () => clearInterval(i);
+  }, []);
+
+  return (
+    <div className="text-3xl md:text-5xl font-semibold leading-tight transition-all duration-500">
+      {messages[index]}
+    </div>
+  );
+}
 
 export default function AuditLandingPage() {
   return (
     <main className="min-h-screen bg-[#0B0F1A] text-white">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,122,0,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.06),transparent_24%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,122,0,0.25),transparent_35%)]" />
 
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.05fr_.95fr] md:items-center md:px-8 md:py-24">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-white/70">
-              ELESSEN AUDIT ENGINE™
-            </div>
+  <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28 grid gap-12 md:grid-cols-2 items-center">
 
-            <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-              See exactly what to improve in your product
-            </h1>
+    {/* LEFT */}
+    <div className="space-y-6">
+      <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs tracking-widest text-white/70">
+        ELESSEN AUDIT ENGINE™
+      </div>
 
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/72 md:text-lg">
-              A designer-led audit engine for websites, apps, and App Store pages.
-              Built to show what needs redesign, where users may drop off, and what
-              to improve first.
-            </p>
+      <RotatingAuditText />
 
-            <p className="mt-4 text-sm text-white/52">
-              Built by product designers. Powered by AI.
-            </p>
+      <p className="text-white/70 max-w-lg text-base md:text-lg leading-relaxed">
+        A designer-led audit engine for websites, apps, and App Store pages.
+        Built to show what needs redesign, where users drop off, and what to fix first.
+      </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/audit#audit-form"
-                onClick={() =>
-                  trackEvent("audit_landing_primary_cta", {
-                    page: "audit-landing",
-                    location: "hero",
-                  })
-                }
-                className="inline-flex items-center justify-center rounded-2xl bg-[#FF7A00] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(255,122,0,0.22)] transition hover:brightness-95"
-              >
-                Run your audit
-              </Link>
+      <div className="flex gap-3 flex-wrap">
+        <Link
+          href="/audit#audit-form"
+          onClick={() =>
+            trackEvent("audit_landing_primary_cta", {
+              page: "audit-landing",
+              location: "hero",
+            })
+          }
+          className="bg-[#FF7A00] text-white px-7 py-3 rounded-xl font-semibold shadow-lg hover:brightness-95 transition"
+        >
+          Run your audit
+        </Link>
 
-              <a
-                href="#what-you-get"
-                onClick={() =>
-                  trackEvent("audit_landing_secondary_cta", {
-                    page: "audit-landing",
-                    location: "hero",
-                  })
-                }
-                className="inline-flex items-center justify-center rounded-2xl border border-white/12 bg-white/5 px-6 py-3 text-sm font-semibold text-white/85 transition hover:bg-white/10"
-              >
-                See how it works
-              </a>
-            </div>
-          </div>
+        <a
+          href="#what-you-get"
+          className="border border-white/20 text-white px-7 py-3 rounded-xl font-semibold hover:bg-white/10 transition"
+        >
+          See how it works
+        </a>
+      </div>
+    </div>
 
-          <div className="relative">
-            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-                </div>
+    {/* RIGHT */}
+    <div className="relative">
+      <div className="rounded-3xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.4)]">
+        <Image
+          src="/audit-preview.png"
+          alt="Audit preview"
+          width={1200}
+          height={1400}
+          className="w-full h-auto object-cover"
+          priority
+        />
+      </div>
 
-                <div className="text-[11px] font-medium tracking-wide text-white/45">
-                  audit-preview.elessen
-                </div>
+      {/* glow */}
+      <div className="absolute -inset-6 -z-10 bg-orange-500/20 blur-3xl rounded-full" />
+    </div>
 
-                <div className="h-2 w-2 rounded-full bg-white/10" />
-              </div>
-
-              <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
-                <Image
-                  src="/audit-preview.png"
-                  alt="Elessen Audit Engine preview"
-                  width={1200}
-                  height={1500}
-                  priority
-                  className="h-auto w-full object-cover object-top"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+  </div>
+</section>
 
       <section id="what-you-get" className="mx-auto max-w-6xl px-6 py-8 md:px-8 md:py-12">
         <div className="grid gap-4 md:grid-cols-3">
