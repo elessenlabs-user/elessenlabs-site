@@ -55,20 +55,20 @@ export default function Home() {
 </div>
       
       <Link
-        href="/start"
+        href="/audit"
         onClick={() =>
-        trackEvent("start_product_clicked", {
-          location: "hero",
+          trackEvent("audit_cta_clicked", {
+          location: "banner",
           page: "home",
-        })
-      }
-      className="btn-primary"
-      >
-        Get Elessen Audit Report →
+         })
+        }
+    className="btn-primary"
+>
+      Get Elessen Audit Report →
       </Link>
     </div>
   </div>
-)}
+  )}
 
  
       {/* Hero */}
