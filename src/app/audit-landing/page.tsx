@@ -6,11 +6,6 @@ import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { trackEvent } from "../../lib/analytics";
 
-export const metadata = {
-  title: "Elessen Audit Engine | Product Design Audit by Elessen Labs",
-  description:
-    "A designer-led audit engine for websites, apps, and App Store pages. See what to improve, where users may drop off, and what to tackle first.",
-};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
