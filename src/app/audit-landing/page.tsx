@@ -6,8 +6,14 @@ import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { trackEvent } from "../../lib/analytics";
 
+export const metadata = {
+  title: "Elessen Audit Engine | Product Design Audit by Elessen Labs",
+  description:
+    "A designer-led audit engine for websites, apps, and App Store pages. See what to improve, where users may drop off, and what to tackle first.",
+};
+
 const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
+  hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -29,7 +35,7 @@ function ScrollDepthTracker() {
         if (percent >= milestone && !milestones.current.has(milestone)) {
           milestones.current.add(milestone);
           trackEvent("audit_landing_scroll_depth", {
-            page: "audit-landing",
+            page: "audit_landing",
             milestone,
           });
         }
@@ -47,26 +53,26 @@ function ScrollDepthTracker() {
 
 export default function AuditLandingPage() {
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10 md:py-16">
+    <main className="mx-auto max-w-6xl px-6 py-8 md:py-14">
       <ScrollDepthTracker />
 
-      <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0B0B0B] px-6 py-12 text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:px-10 md:py-16">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,122,0,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.05),transparent_28%)]" />
+      <section className="relative overflow-hidden rounded-[2rem] border border-black/10 bg-[#0B0B0B] px-6 py-12 text-white shadow-[0_20px_60px_rgba(0,0,0,0.24)] md:px-10 md:py-16">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,122,0,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.05),transparent_28%)]" />
 
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          transition={{ duration: 0.45 }}
-          className="relative grid gap-10 md:grid-cols-[1.15fr_.85fr] md:items-center"
+          transition={{ duration: 0.4 }}
+          className="relative grid gap-10 md:grid-cols-[1.1fr_.9fr] md:items-center"
         >
           <div className="max-w-2xl">
-            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-white/70">
+            <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-white/68">
               ELESSEN AUDIT ENGINE™
             </div>
 
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white md:text-6xl">
-              A designer-led audit engine for products that need to perform better
+            <h1 className="mt-5 text-4xl font-semibold tracking-tight md:text-6xl">
+              See exactly what to improve in your product
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/72 md:text-lg">
@@ -74,16 +80,16 @@ export default function AuditLandingPage() {
               redesign, where users may drop off, and what to improve first.
             </p>
 
-            <div className="mt-4 text-sm text-white/55">
+            <p className="mt-4 text-sm text-white/55">
               Built by product designers, powered by AI
-            </div>
+            </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/audit"
                 onClick={() =>
                   trackEvent("audit_landing_primary_cta", {
-                    page: "audit-landing",
+                    page: "audit_landing",
                     location: "hero",
                   })
                 }
@@ -100,7 +106,7 @@ export default function AuditLandingPage() {
                     ?.scrollIntoView({ behavior: "smooth" });
 
                   trackEvent("audit_landing_secondary_cta", {
-                    page: "audit-landing",
+                    page: "audit_landing",
                     location: "hero",
                   });
                 }}
@@ -137,8 +143,7 @@ export default function AuditLandingPage() {
               </div>
 
               <div className="mt-3 text-xs leading-5 text-white/50">
-                Preview the type of structured output you’ll receive before entering
-                the full audit flow.
+                A fast first look before entering the full audit flow.
               </div>
             </div>
           </div>
@@ -167,7 +172,7 @@ export default function AuditLandingPage() {
         </div>
       </section>
 
-      <section className="py-4 md:py-8">
+      <section className="py-2 md:py-6">
         <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
           <div className="text-sm font-semibold text-black">What it works on</div>
 
@@ -184,10 +189,7 @@ export default function AuditLandingPage() {
         </div>
       </section>
 
-      <section
-        id="how-it-works"
-        className="py-10 md:py-14"
-      >
+      <section id="how-it-works" className="py-10 md:py-14">
         <div className="grid gap-8 rounded-[2rem] border border-black/10 bg-[#111111] px-6 py-8 text-white md:grid-cols-[.95fr_1.05fr] md:px-10 md:py-10">
           <div>
             <div className="text-xs font-semibold tracking-[0.18em] text-white/45">
@@ -241,12 +243,12 @@ export default function AuditLandingPage() {
         <div className="rounded-[2rem] border border-orange-200 bg-gradient-to-br from-[#FFF8F3] to-white px-6 py-10 text-center shadow-sm md:px-10">
           <div className="mx-auto max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight text-black">
-              See what to improve before your next sprint
+              Ready to see what to improve?
             </h2>
 
             <p className="mt-4 text-sm leading-7 text-black/65 md:text-base">
-              Use the audit as a focused starting point, then move into deeper design
-              and build support if you need execution help after.
+              Continue into the full audit flow and run your product through the
+              Elessen Audit Engine™.
             </p>
 
             <div className="mt-8">
@@ -254,7 +256,7 @@ export default function AuditLandingPage() {
                 href="/audit"
                 onClick={() =>
                   trackEvent("audit_landing_final_cta", {
-                    page: "audit-landing",
+                    page: "audit_landing",
                     location: "final",
                   })
                 }
