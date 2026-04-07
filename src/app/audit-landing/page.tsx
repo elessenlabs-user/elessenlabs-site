@@ -113,29 +113,74 @@ export default function AuditLandingPage() {
   </div>
 
   <div className="lg:justify-self-end">
-    <div className="grid max-w-2xl gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-      <div className="rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
-        <div className="text-lg font-semibold text-white">Critical issues</div>
-        <p className="mt-3 text-sm leading-7 text-white/85">
-          See the biggest blockers affecting clarity, trust, and action.
-        </p>
-      </div>
+  <div className="grid max-w-3xl gap-4 md:grid-cols-2">
 
-      <div className="rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm">
-        <div className="text-lg font-semibold text-white">UI improvements</div>
-        <p className="mt-3 text-sm leading-7 text-white/85">
-          Get practical design improvements you can review right away.
-        </p>
-      </div>
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">Executive Summary</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        A fast, structured overview of what matters most and what needs attention first.
+      </p>
+    </div>
 
-      <div className="rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm md:col-span-2 lg:col-span-1 xl:col-span-2">
-        <div className="text-lg font-semibold text-white">7 day sprint plan</div>
-        <p className="mt-3 text-sm leading-7 text-white/85">
-          Walk away with focused next steps your team can action this week.
-        </p>
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">Critical Issues</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        The biggest blockers affecting clarity, trust, conversion, and user action.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">Conversion Improvements</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        Opportunities to improve CTA performance, flow completion, and user progression.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">UI Improvements</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        Practical design fixes to improve hierarchy, readability, layout, and usability.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">Copy Improvements</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        Sharper messaging suggestions to improve clarity, trust, and conversion intent.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
+      <div className="text-lg font-semibold text-white">SEO Quick Wins</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        Immediate metadata, content, and discoverability improvements you can apply fast.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm md:col-span-2">
+      <div className="text-lg font-semibold text-white">7 Day Sprint Plan</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        A focused weekly action plan so your next sprint tackles the highest-value fixes first.
+      </p>
+    </div>
+
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm md:col-span-2">
+      <div className="text-lg font-semibold text-white">Downloadable PDF Report</div>
+      <p className="mt-3 text-sm leading-7 text-white/85">
+        Receive your audit in a clean downloadable PDF format that is easy to review and share.
+      </p>
+
+      <div className="mt-5 overflow-hidden rounded-2xl border border-white/20 bg-white/10">
+        <img
+          src="/sample.png"
+          alt="Sample Elessen audit preview"
+          className="h-auto w-full object-cover"
+        />
       </div>
     </div>
+
   </div>
+</div>
 </div>
 </div>
 </section>
