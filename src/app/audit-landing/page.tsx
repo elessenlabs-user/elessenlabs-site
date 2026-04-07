@@ -67,13 +67,13 @@ export default function AuditLandingPage() {
       {/* CONTENT */}<div className="relative z-10 h-screen overflow-hidden">
         <section className="flex min-h-screen items-start pt-6 md:pt-10">
           <div className="w-full px-6 pt-0 pb-16 md:px-10 lg:px-16">
-            <div className="grid w-full h-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
-    <div className="max-w-3xl flex flex-col justify-center h-full">
-    <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.22em] text-white/95 backdrop-blur-sm">
-      ELESSEN AUDIT ENGINE™
+            <div className="grid w-full items-start gap-8 lg:grid-cols-[1.02fr_.98fr]">
+          <div className="max-w-3xl self-start pt-4 md:pt-6"> 
+          <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.22em] text-white/95 backdrop-blur-sm">
+          ELESSEN AUDIT ENGINE™
     </div>
 
-    <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.22)] md:text-6xl lg:text-7xl">
+    <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.22)] md:text-6xl lg:text-7xl">
       Get Product Audit
       <br />
       for App Store
@@ -81,22 +81,22 @@ export default function AuditLandingPage() {
       and Website
     </h1>
 
-    <div className="mt-6 max-w-3xl">
+    <div className="mt-4 max-w-3xl">
       <RotatingAuditText />
     </div>
 
-    <p className="mt-4 max-w-2xl text-base leading-7 text-white/95 md:text-xl md:leading-8">
+    <p className="mt-3 max-w-2xl text-base leading-7 text-white/95 md:text-xl md:leading-8">
       Your time is precious, find things you can action today, with our
       7 day sprint plan included in your report.
     </p>
 
-    <p className="mt-4 max-w-2xl text-sm leading-7 text-white/85 md:text-base">
+    <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 md:text-base">
       Designer-led, AI-supported audits that highlight what needs
       attention now — clearly, quickly, and in a format you can use
       immediately.
     </p>
 
-    <div className="mt-8">
+    <div className="mt-6">
       <Link
         href="/audit#audit-form"
         onClick={() =>
@@ -112,8 +112,8 @@ export default function AuditLandingPage() {
     </div>
   </div>
 
-  <div className="lg:justify-self-end h-full flex items-center">
-  <div className="grid max-w-3xl gap-4 md:grid-cols-2 h-full content-center">
+  <div className="lg:justify-self-end self-start w-full max-w-[620px]">
+  <div className="grid gap-3 md:grid-cols-2">
 
     <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
       <div className="text-base font-semibold text-white">Executive Summary</div>
@@ -122,61 +122,61 @@ export default function AuditLandingPage() {
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">Critical Issues</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">Critical Issues</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         The biggest blockers affecting clarity, trust, conversion, and user action.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">Conversion Improvements</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">Conversion Improvements</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         Opportunities to improve CTA performance, flow completion, and user progression.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">UI Improvements</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">UI Improvements</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         Practical design fixes to improve hierarchy, readability, layout, and usability.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">Copy Improvements</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">Copy Improvements</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         Sharper messaging suggestions to improve clarity, trust, and conversion intent.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">SEO Quick Wins</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">SEO Quick Wins</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         Immediate metadata, content, and discoverability improvements you can apply fast.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm md:col-span-2">
-      <div className="text-lg font-semibold text-white">7 Day Sprint Plan</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm md:col-span-2">
+      <div className="text-base font-semibold text-white">7 Day Sprint Plan</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         A focused weekly action plan so your next sprint tackles the highest-value fixes first.
       </p>
     </div>
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm md:col-span-2">
-      <div className="text-lg font-semibold text-white">Downloadable PDF Report</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm md:col-span-2">
+      <div className="text-base font-semibold text-white">Downloadable PDF Report</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         Receive your audit in a clean downloadable PDF format that is easy to review and share.
       </p>
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-white/20 bg-white/10">
-        <img
-          src="/sample.png"
-          alt="Sample Elessen audit preview"
-          className="h-auto w-full object-cover"
-        />
-      </div>
+      <div className="mt-4 overflow-hidden rounded-2xl border border-white/20 bg-white/10">
+  <img
+    src="/sample.png"
+    alt="Sample Elessen audit preview"
+    className="h-[150px] w-full object-cover object-top md:h-[170px]"
+  />
+</div>
     </div>
 
   </div>
