@@ -67,8 +67,8 @@ export default function AuditLandingPage() {
       {/* CONTENT */}<div className="relative z-10 h-screen overflow-hidden">
         <section className="flex min-h-screen items-start pt-6 md:pt-10">
           <div className="w-full px-6 pt-0 pb-16 md:px-10 lg:px-16">
-            <div className="grid w-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
-  <div className="max-w-3xl">
+            <div className="grid w-full h-full items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+    <div className="max-w-3xl flex flex-col justify-center h-full">
     <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.22em] text-white/95 backdrop-blur-sm">
       ELESSEN AUDIT ENGINE™
     </div>
@@ -112,12 +112,12 @@ export default function AuditLandingPage() {
     </div>
   </div>
 
-  <div className="lg:justify-self-end">
-  <div className="grid max-w-3xl gap-4 md:grid-cols-2">
+  <div className="lg:justify-self-end h-full flex items-center">
+  <div className="grid max-w-3xl gap-4 md:grid-cols-2 h-full content-center">
 
-    <div className="rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-      <div className="text-lg font-semibold text-white">Executive Summary</div>
-      <p className="mt-3 text-sm leading-7 text-white/85">
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+      <div className="text-base font-semibold text-white">Executive Summary</div>
+      <p className="mt-2 text-sm leading-6 text-white/85">
         A fast, structured overview of what matters most and what needs attention first.
       </p>
     </div>
