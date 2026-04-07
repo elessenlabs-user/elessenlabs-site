@@ -98,17 +98,18 @@ export default function AuditLandingPage() {
 
     <div className="mt-6">
       <Link
-        href="/audit#audit-form"
-        onClick={() =>
-          trackEvent("audit_landing_primary_cta", {
-            page: "audit-landing",
-            location: "hero",
-          })
-        }
-        className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 font-semibold text-black shadow-lg transition hover:opacity-90"
-      >
-        Get Product Audit
-      </Link>
+  href="/audit#audit-form"
+  onClick={() =>
+    trackEvent("audit_landing_primary_cta", {
+      page: "audit-landing",
+      location: "hero",
+    })
+  }
+  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 font-semibold shadow-lg transition hover:opacity-90"
+  style={{ color: "#000000" }}
+>
+  Get Product Audit
+</Link>
     </div>
   </div>
 
@@ -170,15 +171,14 @@ export default function AuditLandingPage() {
         Receive your audit in a clean downloadable PDF format that is easy to review and share.
       </p>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-white/20 bg-white/10">
-  <img
-    src="/sample.png"
-    alt="Sample Elessen audit preview"
-    className="h-[150px] w-full object-cover object-top md:h-[170px]"
+    <div className="mt-4 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-3">
+      <img
+        src="/sample.png"
+        alt="Sample Elessen audit preview"
+        className="h-auto w-full rounded-xl object-contain"
   />
-</div>
     </div>
-
+    </div>
   </div>
 </div>
 </div>
