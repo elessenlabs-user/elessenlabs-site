@@ -74,7 +74,7 @@ export default function AuditLandingPage() {
     </div>
 
     <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.22)] md:text-6xl lg:text-7xl">
-      Get Product Audit
+      Start Your Free Product Audit 
       <br />
       for App Store
       <br />
@@ -171,13 +171,6 @@ export default function AuditLandingPage() {
         Receive your audit in a clean downloadable PDF format that is easy to review and share.
       </p>
 
-    <div className="mt-4 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-3">
-      <img
-        src="/sample.png"
-        alt="Sample Elessen audit preview"
-        className="h-auto w-full rounded-xl object-contain"
-  />
-    </div>
     </div>
   </div>
 </div>
