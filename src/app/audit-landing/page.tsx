@@ -66,8 +66,8 @@ export default function AuditLandingPage() {
 
       {/* CONTENT */}
       <div className="relative z-10 min-h-screen">
-        <section className="flex min-h-screen items-center">
-          <div className="w-full px-6 py-16 md:px-10 lg:px-16">
+        <section className="flex min-h-screen items-start pt-6 md:pt-10">
+          <div className="w-full px-6 pt-0 pb-16 md:px-10 lg:px-16">
             <div className="max-w-4xl">
               <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.22em] text-white/95 backdrop-blur-sm">
                 ELESSEN AUDIT ENGINE™
@@ -105,7 +105,7 @@ export default function AuditLandingPage() {
         location: "hero",
       })
     }
-    className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 font-semibold text-[#00a7b9] shadow-lg transition hover:opacity-90"
+    className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 font-semibold text-black shadow-lg transition hover:opacity-90"
   >
     Get Product Audit
   </Link>
