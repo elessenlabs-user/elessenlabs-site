@@ -35,7 +35,7 @@ export default function Home() {
     <div className="space-y-20">
 
   {SHOW_AUDIT_BANNER && (
-    <div className="relative overflow-hidden rounded-2xl px-6 py-4 banner-pulse" style={{ backgroundColor: "#FF5619" }}>
+    <div className="relative overflow-hidden rounded-2xl px-6 py-4 banner-pulse" style={{ backgroundColor: "#009fab" }}>
       <div className="pointer-events-none absolute inset-0 opacity-25 text-[10px] text-white space-y-1 animate-banner-scroll">
         <div>Analyzing landing page...</div>
         <div>Detecting drop-off points...</div>
