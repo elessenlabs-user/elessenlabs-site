@@ -1,20 +1,13 @@
 "use client";
 
-
-export const dynamic = "force-dynamic";
-
 import { useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackEvent } from "../../lib/analytics";
 
 export default function AuditInvitePage() {
-  const searchParams = useSearchParams();
-
-  const fullName = searchParams.get("fullName") || "";
-  const email = searchParams.get("email") || "";
-  const inviteCode = searchParams.get("inviteCode") || "";
-
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [productUrl, setProductUrl] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
