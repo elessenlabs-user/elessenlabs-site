@@ -16,12 +16,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing code or email" }, { status: 400 });
     }
 
-    // Get IP (basic)
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0] ||
-      req.headers.get("x-real-ip") ||
-      "unknown";
-
     // 1. Check if code exists
     const { data: invite, error: inviteError } = await supabase
       .from("invite_codes")
@@ -38,20 +32,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Code expired" }, { status: 400 });
     }
 
-    // 3. Check if already used by this email OR IP
+    // 3. Check if already used by this email
     const { data: existing } = await supabase
       .from("invite_redemptions")
-      .select("*")
+      .select("id")
       .eq("code", code)
-      .or(`email.eq.${email},ip.eq.${ip}`);
+      .eq("email", email)
+      .limit(1);
 
     if (existing && existing.length > 0) {
       return NextResponse.json(
-        { error: "Code already used" },
+        { error: "Code already used for this email" },
         { status: 400 }
       );
     }
-
 
     return NextResponse.json({ success: true });
   } catch (err) {
