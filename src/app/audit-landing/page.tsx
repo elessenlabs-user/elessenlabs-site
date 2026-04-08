@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { trackEvent } from "../../lib/analytics";
 import { useEffect, useState } from "react";
 
@@ -30,7 +29,14 @@ function RotatingAuditText() {
 }
 
 export default function AuditLandingPage() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   return (
+
     <main className="relative left-1/2 right-1/2 ml-[-50vw] mr-[-50vw] min-h-screen w-screen overflow-x-hidden bg-[#00a7b9] text-white">
       {/* FULL PAGE BACKGROUND */}
       <div className="absolute inset-0 z-0 overflow-hidden">
@@ -96,21 +102,22 @@ export default function AuditLandingPage() {
       immediately.
     </p>
 
-    <div className="mt-6">
-      <Link
-  href="/audit#audit-form"
-  onClick={() =>
-    trackEvent("audit_landing_primary_cta", {
-      page: "audit-landing",
-      location: "hero",
-    })
-  }
-  className="inline-flex items-center justify-center rounded-xl bg-white px-7 py-3 font-semibold shadow-lg transition hover:opacity-90"
-  style={{ color: "#000000" }}
->
-  Get Product Audit
-</Link>
-    </div>
+   <div className="mt-8">
+  <button
+    onClick={() => {
+      trackEvent("audit_landing_primary_cta", {
+        page: "audit-landing",
+        location: "hero",
+      });
+
+      window.location.href = "/audit-invite";
+    }}
+    className="inline-flex items-center justify-center rounded-2xl bg-[#FF7A00] px-8 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(255,122,0,0.22)] transition hover:brightness-95"
+  >
+    Start my free audit
+  </button>
+</div>
+
   </div>
 
   <div className="lg:justify-self-end self-start w-full max-w-[620px]">

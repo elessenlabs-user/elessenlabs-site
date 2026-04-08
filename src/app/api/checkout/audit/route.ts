@@ -15,7 +15,8 @@ function withHttps(url: string) {
 
 export async function POST(req: Request) {
   try {
-    const { fullName, email, productUrl, focusPageUrl, extraPageUrls, notes } = await req.json();
+    const { fullName, email, productUrl, focusPageUrl, extraPageUrls, notes, inviteCode, invite } = await req.json();
+    
 
 
     if (!fullName || !email || !productUrl) {
@@ -24,6 +25,69 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // 🔑 INVITE FLOW (minimal + isolated)
+if (invite === true) {
+  if (!inviteCode) {
+    return NextResponse.json(
+      { error: "Missing invite code." },
+      { status: 400 }
+    );
+  }
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0] ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  // 1. Check code exists
+  const { data: inviteRow, error: inviteErr } = await supabaseAdmin
+    .from("invite_codes")
+    .select("*")
+    .eq("code", inviteCode)
+    .single();
+
+  if (inviteErr || !inviteRow) {
+    return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+  }
+
+  // 2. Check usage limit
+  if (inviteRow.used_count >= inviteRow.max_uses) {
+    return NextResponse.json({ error: "Code expired" }, { status: 400 });
+  }
+
+  // 3. Check email/IP reuse
+  const { data: existing } = await supabaseAdmin
+    .from("invite_redemptions")
+    .select("*")
+    .eq("code", inviteCode)
+    .or(`email.eq.${email},ip.eq.${ip}`);
+
+  if (existing && existing.length > 0) {
+    return NextResponse.json(
+      { error: "Code already used" },
+      { status: 400 }
+    );
+  }
+
+  // 4. Record redemption
+  const { error: insertErr } = await supabaseAdmin
+    .from("invite_redemptions")
+    .insert([{ code: inviteCode, email, ip }]);
+
+  if (insertErr) {
+    return NextResponse.json(
+      { error: "Failed to record invite usage" },
+      { status: 500 }
+    );
+  }
+
+  // 5. Increment usage
+  await supabaseAdmin
+    .from("invite_codes")
+    .update({ used_count: inviteRow.used_count + 1 })
+    .eq("code", inviteCode);
+}
 
     const normalizedProductUrl = withHttps(String(productUrl).replace(/\s+/g, ""));
 
@@ -56,16 +120,9 @@ export async function POST(req: Request) {
         focus_page_url: focusPageUrl
           ? withHttps(String(focusPageUrl).replace(/\s+/g, ""))
           : null,
-        pages: [
-          { url: normalizedProductUrl },
-          ...(focusPageUrl
-            ? [{ url: withHttps(String(focusPageUrl).replace(/\s+/g, "")) }]
-            : []),
-          ...((extraPageUrls || [])
-            .map((url: string) => withHttps(String(url).replace(/\s+/g, "")))
-            .filter(Boolean)
-            .map((url: string) => ({ url }))),
-        ],
+      pages: [
+  { url: normalizedProductUrl },
+],
         notes: notes || "",
         status: "preview_ready",
       })
