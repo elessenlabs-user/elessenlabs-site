@@ -52,26 +52,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Record redemption
-    const { error: insertError } = await supabase
-      .from("invite_redemptions")
-      .insert([
-        {
-          code,
-          email,
-          ip,
-        },
-      ]);
-
-    if (insertError) {
-      return NextResponse.json({ error: "Failed to record usage" }, { status: 500 });
-    }
-
-    // 5. Increment usage count
-    await supabase
-      .from("invite_codes")
-      .update({ used_count: invite.used_count + 1 })
-      .eq("code", code);
 
     return NextResponse.json({ success: true });
   } catch (err) {
