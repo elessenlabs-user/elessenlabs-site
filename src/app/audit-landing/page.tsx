@@ -104,6 +104,7 @@ export default function AuditLandingPage() {
 
    <div className="mt-8">
   <button
+    type="button"
     onClick={() => {
       trackEvent("audit_landing_primary_cta", {
         page: "audit-landing",
@@ -114,7 +115,7 @@ export default function AuditLandingPage() {
     }}
     className="inline-flex items-center justify-center rounded-2xl bg-[#FF7A00] px-8 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(255,122,0,0.22)] transition hover:brightness-95"
   >
-    Start my free audit
+    Start My Free Audit
   </button>
 </div>
 
