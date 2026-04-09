@@ -11,165 +11,6 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
-export async function sendAdminNotification({
-  name,
-  productUrl,
-}: {
-  name: string;
-  productUrl: string;
-}) {
-  const resend = getResendClient();
-  if (!resend) return;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  try {
-    const result = await resend.emails.send({
-      from: "Elessen <hello@elessenlabs.com>",
-      to: "hello@elessenlabs.com",
-      subject: "New Audit Request Submitted",
-     html: `
-  <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
-    
-    <div style="margin-bottom: 24px; text-align: center;">
-  <img 
-    src="${siteUrl}/logo.png" 
-    alt="Elessen Labs" 
-    style="height: 80px; display: block; margin: 0 auto;" 
-  />
-</div>
-          <h2>New Audit Request</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Product URL:</strong> ${productUrl}</p>
-        </div>
-      `,
-    });
-
-    console.log("RESEND SUCCESS:", result);
-  } catch (err) {
-    console.error("EMAIL ERROR:", err);
-  }
-}
-export async function sendInviteAuditAdminNotification({
-  name,
-  email,
-  productUrl,
-  auditId,
-}: {
-  name: string;
-  email: string;
-  productUrl: string;
-  auditId: string;
-}) {
-  const resend = getResendClient();
-  if (!resend) return;
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const reviewUrl = `${siteUrl}/admin/reviews`;
-
-  try {
-    const result = await resend.emails.send({
-      from: "Elessen <hello@elessenlabs.com>",
-      to: ["hello@elessenlabs.com", "tanya@elessenlabs.com"],
-      subject: "New Invite Audit Submitted",
-      html: `
-        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
-          <div style="margin-bottom: 24px; text-align: center;">
-            <img 
-              src="${siteUrl}/logo.png" 
-              alt="Elessen Labs" 
-              style="height: 80px; display: block; margin: 0 auto;" 
-            />
-          </div>
-
-          <h2>New Invite Audit Submitted</h2>
-
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Product URL:</strong> ${productUrl}</p>
-          <p><strong>Audit ID:</strong> ${auditId}</p>
-
-          <p>
-            Review queue:
-            <br />
-            <a href="${reviewUrl}" target="_blank" rel="noopener noreferrer">${reviewUrl}</a>
-          </p>
-        </div>
-      `,
-    });
-
-    console.log("INVITE ADMIN EMAIL SENT:", result);
-  } catch (err) {
-    console.error("INVITE ADMIN EMAIL ERROR:", err);
-  }
-}
-
-export async function sendInviteAuditConfirmation({
-  email,
-  name,
-  productUrl,
-}: {
-  email: string;
-  name: string;
-  productUrl: string;
-}) {
-  const resend = getResendClient();
-  if (!resend) return;
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  try {
-    const result = await resend.emails.send({
-      from: "Elessen <hello@elessenlabs.com>",
-      to: email,
-      cc: "hello@elessenlabs.com",
-      subject: "Thank you for trying the Elessen Audit Engine",
-      html: `
-        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-          <div style="margin-bottom: 24px; text-align: center;">
-            <img 
-              src="${siteUrl}/logo.png" 
-              alt="Elessen Labs" 
-              style="height: 80px; display: block; margin: 0 auto;" 
-            />
-          </div>
-
-          <p>Hello ${name},</p>
-
-          <p>
-            Thank you for taking the time to try out the Elessen Audit Engine.
-          </p>
-
-          <p>
-            We’re now reviewing your report to help ensure it is validated before it is shared.
-          </p>
-
-          <p>
-            You should receive it within <strong>24 hours</strong>, though it often takes less time depending on the URL submitted.
-          </p>
-
-          <p>
-            <strong>Product submitted:</strong> ${productUrl}
-          </p>
-
-          <p>
-            We’ll send your report as soon as it’s ready.
-          </p>
-
-          <p style="margin-top: 24px;">
-            Tanya Emma
-            <br />
-            <strong>Founder, Elessen Labs</strong>
-          </p>
-        </div>
-      `,
-    });
-
-    console.log("INVITE USER CONFIRMATION EMAIL SENT:", result);
-  } catch (err) {
-    console.error("INVITE USER CONFIRMATION EMAIL ERROR:", err);
-  }
-}
-
 export async function sendAuditPaymentConfirmation({
   email,
   name,
@@ -193,18 +34,18 @@ export async function sendAuditPaymentConfirmation({
       to: email,
       cc: "hello@elessenlabs.com",
       subject: "Payment received — your Elessen audit is now in review",
-     html: `
-  <div ...
-    
-  <div style="margin-bottom: 24px; text-align: center;">
-    <img 
-      src="${siteUrl}/logo.png" 
-      alt="Elessen Labs" 
-      style="height: 80px; display: block; margin: 0 auto;" 
-    />
-</div>
+      html: `
+        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
+          
+          <div style="margin-bottom: 24px; text-align: center;">
+            <img 
+              src="${siteUrl}/logo.png" 
+              alt="Elessen Labs" 
+              style="height: 80px; display: block; margin: 0 auto;" 
+            />
+          </div>
 
-    <h2>Payment received</h2>
+          <h2>Payment received</h2>
 
           <p>Hi ${name},</p>
 
@@ -213,18 +54,17 @@ export async function sendAuditPaymentConfirmation({
           </p>
 
           <p>
-            Your audit is now in review by an Elessen product audit expert to help ensure the final output is accurate,
-            useful, and in strong shape before delivery.
+            Your audit is now in review by an Elessen product audit expert.
           </p>
 
           <p>
-            Delivery can take up to <strong>24 hours</strong>, although it is often completed sooner.
+            Delivery can take up to <strong>24 hours</strong>, although it is often sooner.
           </p>
 
           <p>
             Your audit link:
             <br />
-            <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">${auditUrl}</a>
+            <a href="${auditUrl}" target="_blank">${auditUrl}</a>
           </p>
 
           <p>
@@ -247,6 +87,7 @@ export async function sendAuditPaymentConfirmation({
     console.error("PAYMENT CONFIRMATION EMAIL ERROR:", err);
   }
 }
+// ✅ INVITE — ADMIN NOTIFICATION
 export async function sendInviteAuditAdminNotification({
   name,
   email,
@@ -261,45 +102,40 @@ export async function sendInviteAuditAdminNotification({
   const resend = getResendClient();
   if (!resend) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const reviewUrl = `${siteUrl}/admin/reviews`;
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   try {
-    const result = await resend.emails.send({
+    await resend.emails.send({
       from: "Elessen <hello@elessenlabs.com>",
       to: ["hello@elessenlabs.com", "tanya@elessenlabs.com"],
-      subject: "New Invite Audit Submitted",
+      subject: "New Invite Audit Submission",
       html: `
-        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6;">
-          <div style="margin-bottom: 24px; text-align: center;">
-            <img 
-              src="${siteUrl}/logo.png" 
-              alt="Elessen Labs" 
-              style="height: 80px; display: block; margin: 0 auto;" 
-            />
-          </div>
+        <div style="max-width:520px;margin:0 auto;font-family:Arial;">
+          <h2>New Invite Audit</h2>
 
-          <h2>New Invite Audit Submitted</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Product URL:</strong> ${productUrl}</p>
-          <p><strong>Audit ID:</strong> ${auditId}</p>
+          <p><strong>Product:</strong> ${productUrl}</p>
 
           <p>
-            Review queue:
-            <br />
-            <a href="${reviewUrl}" target="_blank" rel="noopener noreferrer">${reviewUrl}</a>
+            <a href="${siteUrl}/admin/reviews">
+              Open Review Dashboard
+            </a>
           </p>
+
+          <p><strong>Audit ID:</strong> ${auditId}</p>
         </div>
       `,
     });
 
-    console.log("INVITE ADMIN EMAIL SENT:", result);
+    console.log("INVITE ADMIN EMAIL SENT:", auditId);
   } catch (err) {
     console.error("INVITE ADMIN EMAIL ERROR:", err);
   }
 }
 
+// ✅ INVITE — USER CONFIRMATION
 export async function sendInviteAuditConfirmation({
   email,
   name,
@@ -312,51 +148,57 @@ export async function sendInviteAuditConfirmation({
   const resend = getResendClient();
   if (!resend) return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   try {
-    const result = await resend.emails.send({
+    await resend.emails.send({
       from: "Elessen <hello@elessenlabs.com>",
       to: email,
-      cc: "hello@elessenlabs.com",
-      subject: "Thank you for trying the Elessen Audit Engine",
+      subject: "Your Elessen Audit is being prepared",
       html: `
-        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-          <div style="margin-bottom: 24px; text-align: center;">
-            <img 
-              src="${siteUrl}/logo.png" 
-              alt="Elessen Labs" 
-              style="height: 80px; display: block; margin: 0 auto;" 
-            />
+        <div style="max-width:520px;margin:0 auto;font-family:Arial;line-height:1.6;">
+          
+          <div style="text-align:center;margin-bottom:20px;">
+            <img src="${siteUrl}/logo.png" style="height:80px;" />
           </div>
 
-          <p>Hello ${name},</p>
-
-          <p>Thank you for taking the time to try out the Elessen Audit Engine.</p>
+          <p>Hey ${name || "there"},</p>
 
           <p>
-            We’re now reviewing your report to help ensure it is validated before it is shared.
+            Thank you for trying the <strong>Elessen Audit Engine</strong>.
           </p>
 
           <p>
-            You should receive it within <strong>24 hours</strong>, though it often takes less time depending on the URL submitted.
+            Your report is currently being reviewed to ensure it is accurate,
+            actionable, and high quality before delivery.
           </p>
 
-          <p><strong>Product submitted:</strong> ${productUrl}</p>
+          <p>
+            You will receive your audit within <strong>24 hours</strong>,
+            although it is often delivered much sooner depending on the product.
+          </p>
 
-          <p>We’ll send your report as soon as it’s ready.</p>
+          <p>
+            <strong>Product submitted:</strong><br/>
+            ${productUrl}
+          </p>
 
-          <p style="margin-top: 24px;">
-            Tanya Emma
-            <br />
-            <strong>Founder, Elessen Labs</strong>
+          <p>
+            Keep an eye out for an email from
+            <strong>hello@elessenlabs.com</strong>.
+          </p>
+
+          <p style="margin-top:24px;">
+            Tanya Emma<br/>
+            <b>Founder, Elessen Labs</b>
           </p>
         </div>
       `,
     });
 
-    console.log("INVITE USER CONFIRMATION EMAIL SENT:", result);
+    console.log("INVITE USER EMAIL SENT:", email);
   } catch (err) {
-    console.error("INVITE USER CONFIRMATION EMAIL ERROR:", err);
+    console.error("INVITE USER EMAIL ERROR:", err);
   }
 }
