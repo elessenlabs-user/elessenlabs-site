@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 //import Stripe from "stripe";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+import {
+  sendInviteAuditAdminNotification,
+  sendInviteAuditConfirmation,
+} from "../../../../lib/email/sendEmail";
+
 
 
 export const runtime = "nodejs";
@@ -200,6 +205,22 @@ if (invite === true) {
     } catch (e) {
       console.error("PREVIEW GENERATE ERROR:", e);
     }
+
+    if (invite === true) {
+  await sendInviteAuditAdminNotification({
+    name: fullName,
+    email,
+    productUrl: normalizedProductUrl,
+    auditId: auditRequestId,
+  });
+
+  await sendInviteAuditConfirmation({
+    email,
+    name: fullName,
+    productUrl: normalizedProductUrl,
+  });
+}
+
 
     return NextResponse.json({ id: auditRequestId })
 
