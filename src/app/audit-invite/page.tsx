@@ -165,7 +165,10 @@ export default function AuditInvitePage() {
       }
 
       const successName = encodeURIComponent(fullName.trim());
-      window.location.href = `/audit-invite/success?name=${successName}`;
+    setTimeout(() => {
+        window.location.href = `/audit-invite/success?name=${successName}`;
+    }, 1800);
+    
     } catch {
       setStatus("Something went wrong. Please try again.");
       setLoading(false);
@@ -226,7 +229,9 @@ export default function AuditInvitePage() {
                   setEmail(e.target.value);
                   setCodeValid(false);
                 }}
-                onBlur={validateCode}
+                onBlur={() => {
+                    if (isValidEmail(email)) validateCode();
+                }}
                 placeholder="name@company.com"
                 autoComplete="email"
                 inputMode="email"
@@ -254,7 +259,7 @@ export default function AuditInvitePage() {
             />
             {productUrl.trim().length > 0 && !isValidUrl(productUrl) && (
               <p className="mt-2 text-xs text-red-600">
-                Please enter a valid website URL, such as airbnb.com.
+                Enter a valid URL (e.g. airbnb.com, www.airbnb.com, or https://airbnb.com)
               </p>
             )}
           </div>
@@ -267,8 +272,14 @@ export default function AuditInvitePage() {
                 className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
                 value={inviteCode}
                 onChange={(e) => {
-                  setInviteCode(e.target.value.toUpperCase());
-                  setCodeValid(false);
+                    const val = e.target.value.toUpperCase();
+                    setInviteCode(val);
+                    setCodeValid(false);
+
+                // auto-validate when length looks valid
+                if (val.length >= 6 && isValidEmail(email)) {
+                    validateCode();
+                }
                 }}
                 onBlur={validateCode}
                 placeholder="Enter your code"
@@ -329,9 +340,9 @@ export default function AuditInvitePage() {
             </h2>
 
             <p className="mt-3 text-sm text-black/60 leading-6">
-              We’re analyzing your product and preparing your report. Please do not close this window.
+              We’re analyzing your product and preparing your report. This can take upto 2 minutes.
             </p>
-
+            <p> Do Not Close This Window </p>
             <div className="mt-6 overflow-hidden rounded-full border border-black/10 bg-black/[0.06]">
               <div className="h-2 w-2/3 animate-pulse rounded-full bg-[#FF7A00]" />
             </div>
