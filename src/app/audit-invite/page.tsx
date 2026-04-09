@@ -37,6 +37,7 @@ export default function AuditInvitePage() {
       if (!hostname.includes(".")) return false;
 
       const parts = hostname.split(".").filter(Boolean);
+
       if (parts.length < 2) return false;
 
       if (parts[0] === "www" && parts.length < 3) return false;
@@ -66,7 +67,9 @@ export default function AuditInvitePage() {
     setStatus("");
     setCodeValid(false);
 
-    if (!inviteCode.trim()) return;
+    const normalizedCode = inviteCode.trim().toUpperCase();
+
+    if (!normalizedCode) return;
     if (!isValidEmail(email)) return;
 
     setCheckingCode(true);
@@ -78,7 +81,7 @@ export default function AuditInvitePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          code: inviteCode,
+          code: normalizedCode,
           email,
         }),
       });
@@ -93,6 +96,7 @@ export default function AuditInvitePage() {
       }
 
       setCodeValid(true);
+      setInviteCode(normalizedCode);
       setCheckingCode(false);
     } catch {
       setStatus("Could not validate code right now.");
@@ -103,6 +107,8 @@ export default function AuditInvitePage() {
 
   async function onRunAudit() {
     setStatus("");
+
+    const normalizedCode = inviteCode.trim().toUpperCase();
 
     if (!fullName.trim() || fullName.trim().length < 2) {
       setStatus("Please enter your name.");
@@ -115,11 +121,11 @@ export default function AuditInvitePage() {
     }
 
     if (!isValidUrl(productUrl)) {
-      setStatus("Please enter a valid website/app link.");
+      setStatus("Please enter a valid website/app link (https://...).");
       return;
     }
 
-    if (!inviteCode.trim()) {
+    if (!normalizedCode) {
       setStatus("Please enter your access code.");
       return;
     }
@@ -145,7 +151,7 @@ export default function AuditInvitePage() {
           fullName,
           email,
           productUrl,
-          inviteCode,
+          inviteCode: normalizedCode,
           invite: true,
         }),
       });
@@ -160,7 +166,7 @@ export default function AuditInvitePage() {
 
       const successName = encodeURIComponent(fullName.trim());
       window.location.href = `/audit-invite/success?name=${successName}`;
-    } catch (e) {
+    } catch {
       setStatus("Something went wrong. Please try again.");
       setLoading(false);
     }
@@ -199,7 +205,7 @@ export default function AuditInvitePage() {
             <div>
               <label className="text-sm font-medium">Full name</label>
               <input
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3"
+                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your name"
@@ -210,15 +216,26 @@ export default function AuditInvitePage() {
               <label className="text-sm font-medium">Email</label>
               <input
                 type="email"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3"
+                className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:ring-4 ${
+                  email.trim().length > 0 && !isValidEmail(email)
+                    ? "border-red-300 focus:ring-red-100"
+                    : "border-black/10 focus:ring-black/10"
+                } focus:border-orange-300`}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
                   setCodeValid(false);
                 }}
-                placeholder="name@company.com"
                 onBlur={validateCode}
+                placeholder="name@company.com"
+                autoComplete="email"
+                inputMode="email"
               />
+              {email.trim().length > 0 && !isValidEmail(email) && (
+                <p className="mt-2 text-xs text-red-600">
+                  Please enter a valid email address.
+                </p>
+              )}
             </div>
           </div>
 
@@ -226,11 +243,20 @@ export default function AuditInvitePage() {
             <label className="text-sm font-medium">Website / Product link</label>
             <input
               type="text"
-              className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3"
+              className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:ring-4 ${
+                productUrl.trim().length > 0 && !isValidUrl(productUrl)
+                  ? "border-red-300 focus:ring-red-100"
+                  : "border-black/10 focus:ring-orange-200"
+              } focus:border-orange-300`}
               value={productUrl}
               onChange={(e) => setProductUrl(e.target.value)}
-              placeholder="yoursite.com or https://yourapp.com"
+              placeholder="yoursite.com, www.yoursite.com, or https://yoursite.com"
             />
+            {productUrl.trim().length > 0 && !isValidUrl(productUrl) && (
+              <p className="mt-2 text-xs text-red-600">
+                Please enter a valid website URL, such as airbnb.com.
+              </p>
+            )}
           </div>
 
           <div className="mt-4">
@@ -238,10 +264,10 @@ export default function AuditInvitePage() {
             <div className="relative">
               <input
                 type="text"
-                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12"
+                className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
                 value={inviteCode}
                 onChange={(e) => {
-                  setInviteCode(e.target.value);
+                  setInviteCode(e.target.value.toUpperCase());
                   setCodeValid(false);
                 }}
                 onBlur={validateCode}
@@ -285,7 +311,7 @@ export default function AuditInvitePage() {
                   : "bg-gray-400 cursor-not-allowed"
               }`}
             >
-              {loading ? "Generating..." : "Generate Free Report"}
+              {loading ? "Generating Free Report..." : "Generate Free Report"}
             </motion.button>
           </div>
         </div>

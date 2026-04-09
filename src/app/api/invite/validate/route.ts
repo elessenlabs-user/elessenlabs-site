@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// ⚠️ Make sure these exist in your env
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // MUST be service role
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: NextRequest) {
@@ -13,30 +12,38 @@ export async function POST(req: NextRequest) {
     const { code, email } = body;
 
     if (!code || !email) {
-      return NextResponse.json({ error: "Missing code or email" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing code or email" },
+        { status: 400 }
+      );
     }
 
-    // 1. Check if code exists
+    const normalizedCode = String(code).trim().toUpperCase();
+
     const { data: invite, error: inviteError } = await supabase
       .from("invite_codes")
       .select("*")
-      .eq("code", code)
+      .eq("code", normalizedCode)
       .single();
 
     if (inviteError || !invite) {
       return NextResponse.json({ error: "Invalid code" }, { status: 400 });
     }
 
-    // 2. Check usage limit
     if (invite.used_count >= invite.max_uses) {
       return NextResponse.json({ error: "Code expired" }, { status: 400 });
     }
 
-    // 3. Check if already used by this email
+    // ✅ special test code: reusable up to max_uses regardless of same email
+    if (normalizedCode === "ELSN-TEST") {
+      return NextResponse.json({ success: true });
+    }
+
+    // Standard codes: one use per email
     const { data: existing } = await supabase
       .from("invite_redemptions")
       .select("id")
-      .eq("code", code)
+      .eq("code", normalizedCode)
       .eq("email", email)
       .limit(1);
 

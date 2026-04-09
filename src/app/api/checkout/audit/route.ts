@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔑 INVITE FLOW (minimal + isolated)
+// 🔑 INVITE FLOW (minimal + isolated)
 if (invite === true) {
   if (!inviteCode) {
     return NextResponse.json(
@@ -34,6 +34,8 @@ if (invite === true) {
       { status: 400 }
     );
   }
+
+  const normalizedCode = String(inviteCode).trim().toUpperCase();
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0] ||
@@ -44,7 +46,7 @@ if (invite === true) {
   const { data: inviteRow, error: inviteErr } = await supabaseAdmin
     .from("invite_codes")
     .select("*")
-    .eq("code", inviteCode)
+    .eq("code", normalizedCode)
     .single();
 
   if (inviteErr || !inviteRow) {
@@ -56,24 +58,27 @@ if (invite === true) {
     return NextResponse.json({ error: "Code expired" }, { status: 400 });
   }
 
-  // 3. Check email/IP reuse
-  const { data: existing } = await supabaseAdmin
-    .from("invite_redemptions")
-    .select("*")
-    .eq("code", inviteCode)
-    .or(`email.eq.${email},ip.eq.${ip}`);
+  // 3. Check reuse (skip for test code)
+  if (normalizedCode !== "ELSN-TEST") {
+    const { data: existing } = await supabaseAdmin
+      .from("invite_redemptions")
+      .select("id")
+      .eq("code", normalizedCode)
+      .eq("email", email)
+      .limit(1);
 
-  if (existing && existing.length > 0) {
-    return NextResponse.json(
-      { error: "Code already used" },
-      { status: 400 }
-    );
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: "Code already used for this email" },
+        { status: 400 }
+      );
+    }
   }
 
   // 4. Record redemption
   const { error: insertErr } = await supabaseAdmin
     .from("invite_redemptions")
-    .insert([{ code: inviteCode, email, ip }]);
+    .insert([{ code: normalizedCode, email, ip }]);
 
   if (insertErr) {
     return NextResponse.json(
@@ -86,9 +91,8 @@ if (invite === true) {
   await supabaseAdmin
     .from("invite_codes")
     .update({ used_count: inviteRow.used_count + 1 })
-    .eq("code", inviteCode);
+    .eq("code", normalizedCode);
 }
-
     const normalizedProductUrl = withHttps(String(productUrl).replace(/\s+/g, ""));
 
     const originFromReq =

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+//import Stripe from "stripe";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+//const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 function withHttps(url: string) {
   const s = (url || "").trim();
@@ -14,27 +15,81 @@ function withHttps(url: string) {
 
 export async function POST(req: Request) {
   try {
-    const { auditRequestId } = await req.json();
+    const { fullName, email, productUrl, focusPageUrl, extraPageUrls, notes, inviteCode, invite } = await req.json();
+    
 
-    if (!auditRequestId) {
+
+    if (!fullName || !email || !productUrl) {
       return NextResponse.json(
-        { error: "Missing auditRequestId." },
+        { error: "Missing required fields." },
         { status: 400 }
       );
     }
 
-    const { data: auditRow, error: auditErr } = await supabaseAdmin
-      .from("audit_requests")
-      .select("id, email")
-      .eq("id", auditRequestId)
-      .maybeSingle();
+    // 🔑 INVITE FLOW (minimal + isolated)
+if (invite === true) {
+  if (!inviteCode) {
+    return NextResponse.json(
+      { error: "Missing invite code." },
+      { status: 400 }
+    );
+  }
 
-    if (auditErr || !auditRow) {
-      return NextResponse.json(
-        { error: "Audit request not found." },
-        { status: 404 }
-      );
-    }
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0] ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  // 1. Check code exists
+  const { data: inviteRow, error: inviteErr } = await supabaseAdmin
+    .from("invite_codes")
+    .select("*")
+    .eq("code", inviteCode)
+    .single();
+
+  if (inviteErr || !inviteRow) {
+    return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+  }
+
+  // 2. Check usage limit
+  if (inviteRow.used_count >= inviteRow.max_uses) {
+    return NextResponse.json({ error: "Code expired" }, { status: 400 });
+  }
+
+  // 3. Check email/IP reuse
+  const { data: existing } = await supabaseAdmin
+    .from("invite_redemptions")
+    .select("*")
+    .eq("code", inviteCode)
+    .or(`email.eq.${email},ip.eq.${ip}`);
+
+  if (existing && existing.length > 0) {
+    return NextResponse.json(
+      { error: "Code already used" },
+      { status: 400 }
+    );
+  }
+
+  // 4. Record redemption
+  const { error: insertErr } = await supabaseAdmin
+    .from("invite_redemptions")
+    .insert([{ code: inviteCode, email, ip }]);
+
+  if (insertErr) {
+    return NextResponse.json(
+      { error: "Failed to record invite usage" },
+      { status: 500 }
+    );
+  }
+
+  // 5. Increment usage
+  await supabaseAdmin
+    .from("invite_codes")
+    .update({ used_count: inviteRow.used_count + 1 })
+    .eq("code", inviteCode);
+}
+
+    const normalizedProductUrl = withHttps(String(productUrl).replace(/\s+/g, ""));
 
     const originFromReq =
       req.headers.get("origin") ||
@@ -49,38 +104,106 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!process.env.STRIPE_AUDIT_PRICE_ID) {
+    //if (!process.env.STRIPE_AUDIT_PRICE_ID) {
+    //  return NextResponse.json(
+      //  { error: "Server misconfigured: STRIPE_AUDIT_PRICE_ID is missing." },
+      //  { status: 500 }
+     // );
+   // }
+
+    const { data: created, error: createErr } = await supabaseAdmin
+      .from("audit_requests")
+            .insert({
+        full_name: fullName,
+        email,
+        product_url: normalizedProductUrl,
+        focus_page_url: focusPageUrl
+          ? withHttps(String(focusPageUrl).replace(/\s+/g, ""))
+          : null,
+      pages: [
+  { url: normalizedProductUrl },
+],
+        notes: notes || "",
+        status: "preview_ready",
+      })
+      .select("id")
+      .single();
+
+    if (createErr || !created?.id) {
+      console.error("audit_requests insert failed:", createErr);
       return NextResponse.json(
-        { error: "Server misconfigured: STRIPE_AUDIT_PRICE_ID is missing." },
+        { error: "Failed to create audit request." },
         { status: 500 }
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      customer_email: auditRow.email || undefined,
-      line_items: [
-        {
-          price: process.env.STRIPE_AUDIT_PRICE_ID,
-          quantity: 1,
+    const auditRequestId = created.id as string;
+
+    const secret = process.env.AUDIT_ENGINE_SECRET;
+
+  //  const isLocal =
+      //  process.env.NODE_ENV === "development" &&
+      //  req.headers.get("host")?.includes("localhost");
+
+    // if (isLocal) {
+  // const secret = process.env.AUDIT_ENGINE_SECRET;
+
+  // try {
+    // await fetch(
+     // `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/audit/generate?id=${auditRequestId}`,
+     // {
+      //  method: "POST",
+      //  headers: {
+       //   "x-audit-secret": secret || "",
+      //  },
+     // }
+   // );
+  // } catch (e) {
+  //  console.error("LOCAL GENERATE ERROR:", e);
+ // }
+
+  // return NextResponse.json({
+  //  url: `/audit/result/${auditRequestId}?test_checkout=1`,
+  // });
+// }
+
+  // const session = await stripe.checkout.sessions.create({
+    // mode: "payment",
+    // customer_email: email,
+    // line_items: [{ price: process.env.STRIPE_AUDIT_PRICE_ID, quantity: 1 }],
+    //  success_url: `${siteUrl}/audit/success?session_id={CHECKOUT_SESSION_ID}`,
+    //  cancel_url: `${siteUrl}/audit?canceled=1`,
+    //  metadata: {
+    //  auditRequestId,
+    //    intent: "audit",
+    //  },
+    // });
+
+   // await supabaseAdmin
+   //   .from("audit_requests")
+   //   .update({ stripe_session_id: session.id })
+   //   .eq("id", auditRequestId);
+
+    // return NextResponse.json({ url: session.url });
+
+   try {
+      await fetch(`${siteUrl}/api/audit/generate?id=${auditRequestId}`, {
+        method: "POST",
+        headers: {
+          "x-audit-secret": secret || "",
         },
-      ],
-      success_url: `${siteUrl}/audit/success?audit_id=${auditRequestId}`,
-      cancel_url: `${siteUrl}/audit/result/${auditRequestId}?canceled=1`,
-      metadata: {
-        auditRequestId,
-        intent: "full_audit_unlock",
-      },
-    });
+      });
+    } catch (e) {
+      console.error("PREVIEW GENERATE ERROR:", e);
+    }
 
-    await supabaseAdmin
-      .from("audit_requests")
-      .update({ stripe_session_id: session.id })
-      .eq("id", auditRequestId);
+    return NextResponse.json({ id: auditRequestId })
 
-    return NextResponse.json({ url: session.url });
+   
+
+
   } catch (err: any) {
-    console.error("checkout/full-audit error:", err);
+    console.error("checkout/audit error:", err);
     return NextResponse.json(
       { error: err?.message || "Checkout failed." },
       { status: 500 }

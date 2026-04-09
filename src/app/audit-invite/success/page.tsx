@@ -11,16 +11,20 @@ export default async function AuditInviteSuccessPage({
       <section className="relative overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-[#FFF9F4] p-8 shadow-sm md:p-10">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white to-gray-50" />
 
-        <div className="relative text-center">
+        <div className="relative">
           <div className="inline-flex items-center rounded-full border border-orange-200 bg-white px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-[#FF7A00] shadow-sm">
             ELESSEN AUDIT ENGINE
           </div>
 
           <h1 className="mt-4 text-2xl font-semibold tracking-tight md:text-3xl">
-            Hey {name}, thanks for testing out our Elessen Audit Engine
+            Hey there {name},
           </h1>
 
           <p className="mt-4 text-sm leading-7 text-black/65">
+            Thanks for testing out our Elessen Audit Engine.
+          </p>
+
+          <p className="mt-2 text-sm leading-7 text-black/65">
             I’m very excited to have you give it a spin.
           </p>
 
@@ -30,10 +34,14 @@ export default async function AuditInviteSuccessPage({
           </p>
 
           <p className="mt-2 text-sm leading-7 text-black/65">
-            We’re excited for you to give us your feedback — good or bad. 
-            Best,
-            Tanya Emma Elessen - Founder, Elessen Labs
+            We’re excited for you to give us your feedback — good or bad.
           </p>
+
+          <div className="mt-8 text-sm leading-7 text-black/75">
+            <div>Best,</div>
+            <div className="mt-1 font-semibold">Tanya Emma</div>
+            <div>Founder, Elessen Labs</div>
+          </div>
         </div>
       </section>
     </div>
