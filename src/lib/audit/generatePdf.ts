@@ -126,23 +126,25 @@ export async function generateAuditPdfBuffer({
   }
 
   async function drawLogo() {
-    try {
-      const logoBytes = await loadLogoBytes();
-      const logoImage = await pdfDoc.embedPng(logoBytes);
-      const dims = logoImage.scale(0.22);
+  try {
+    const logoBytes = await loadLogoBytes();
+    const logoImage = await pdfDoc.embedPng(logoBytes);
 
-      page.drawImage(logoImage, {
-        x: margin,
-        y: y - dims.height,
-        width: dims.width,
-        height: dims.height,
-      });
+    const scale = 0.12;
+    const dims = logoImage.scale(scale);
 
-      y -= dims.height + 18;
-    } catch (err) {
-      console.error("PDF LOGO LOAD ERROR:", err);
-    }
+    page.drawImage(logoImage, {
+      x: (pageWidth - dims.width) / 2,
+      y: y - dims.height,
+      width: dims.width,
+      height: dims.height,
+    });
+
+    y -= dims.height + 20;
+  } catch (err) {
+    console.error("PDF LOGO LOAD ERROR:", err);
   }
+}
 
   async function drawRemoteImagePage(imageUrl: string, heading?: string) {
     try {
