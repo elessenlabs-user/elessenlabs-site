@@ -291,15 +291,17 @@ export async function sendInviteAuditDelivery({
 
           <p>
             <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">View Report</a>
-            <br/>
-            <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer">Download PDF</a>
-            <br/>
-            <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Submit Feedback</a>
           </p>
 
-          <p>
-            Thank you again for trying the Elessen Audit Engine. We’d really value your feedback — good or bad.
-          </p>
+        <p>
+          Your PDF report is attached to this email for easy review and sharing.
+        </p>
+
+        <p>
+          If you have a moment, we’d really value your feedback — it helps us refine and elevate the Audit Engine with every report we deliver.
+        <br/>
+        <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Share your feedback</a>
+        </p>
 
           <p>
             Tanya Emma<br/>

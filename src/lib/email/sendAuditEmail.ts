@@ -63,10 +63,16 @@ export async function sendAuditEmail({
 
 <p>
   <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">View Report</a>
+</p>
+
+<p>
+  Your PDF report is attached to this email for easy review and sharing.
+</p>
+
+<p>
+  If you have a moment, we’d really value your feedback — it helps us refine and elevate the Audit Engine with every report we deliver.
   <br/>
-  <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer">Download PDF</a>
-  <br/>
-  <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Submit Feedback</a>
+  <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Share your feedback</a>
 </p>
 
 <p>
@@ -82,7 +88,6 @@ export async function sendAuditEmail({
 </p>
 
 <p><strong>This offer expires in 30 days.</strong></p>
-
 
 <p>
 Tanya Emma <br/>
