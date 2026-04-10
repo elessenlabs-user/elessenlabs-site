@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackEvent } from "../../lib/analytics";
 
+
+
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0 },
@@ -64,47 +66,48 @@ export default function AuditInvitePage() {
     );
   }, [fullName, email, productUrl, inviteCode, codeValid, loading]);
 
-  async function validateCode() {
-    setStatus("");
-    setCodeValid(false);
+  async function validateCode(codeArg?: string, emailArg?: string) {
+  setStatus("");
+  setCodeValid(false);
 
-    const normalizedCode = inviteCode.trim().toUpperCase();
+  const normalizedCode = (codeArg ?? inviteCode).trim().toUpperCase();
+  const normalizedEmail = (emailArg ?? email).trim();
 
-    if (!normalizedCode) return;
-    if (!isValidEmail(email)) return;
+  if (!normalizedCode) return;
+  if (!isValidEmail(normalizedEmail)) return;
 
-    setCheckingCode(true);
+  setCheckingCode(true);
 
-    try {
-      const res = await fetch("/api/invite/validate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          code: normalizedCode,
-          email,
-        }),
-      });
+  try {
+    const res = await fetch("/api/invite/validate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: normalizedCode,
+        email: normalizedEmail,
+      }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        setStatus(data?.error || "Invalid or expired code.");
-        setCodeValid(false);
-        setCheckingCode(false);
-        return;
-      }
-
-      setCodeValid(true);
-      setInviteCode(normalizedCode);
-      setCheckingCode(false);
-    } catch {
-      setStatus("Could not validate code right now.");
+    if (!res.ok) {
+      setStatus(data?.error || "Invalid or expired code.");
       setCodeValid(false);
       setCheckingCode(false);
+      return;
     }
+
+    setInviteCode(normalizedCode);
+    setCodeValid(true);
+    setCheckingCode(false);
+  } catch {
+    setStatus("Could not validate code right now.");
+    setCodeValid(false);
+    setCheckingCode(false);
   }
+}
 
   async function onRunAudit() {
     setStatus("");
@@ -227,8 +230,13 @@ export default function AuditInvitePage() {
                 } focus:border-orange-300`}
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value);
-                  setCodeValid(false);
+                    const val = e.target.value;
+                    setEmail(val);
+                    setCodeValid(false);
+
+                if (inviteCode.trim().length >= 6 && isValidEmail(val)) {
+                validateCode(inviteCode.trim(), val.trim());
+                    }
                 }}
                 
                 placeholder="name@company.com"
@@ -284,10 +292,10 @@ export default function AuditInvitePage() {
   }
 
   const timer = setTimeout(() => {
-    if (val.trim().length >= 6 && isValidEmail(email)) {
-      validateCode();
-    }
-  }, 500);
+  if (val.trim().length >= 6 && isValidEmail(email)) {
+    validateCode(val.trim(), email.trim());
+  }
+}, 500);
 
   setDebounceTimer(timer);
 }}
