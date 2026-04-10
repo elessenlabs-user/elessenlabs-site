@@ -93,6 +93,7 @@ export async function POST(
   fullName: existing.full_name || null,
   productUrl: existing.product_url || null,
   auditContent: finalAuditContent,
+  pages: Array.isArray(existing.pages) ? existing.pages : [],
 });
 
 const filePath = `audits/${id}.pdf`;
