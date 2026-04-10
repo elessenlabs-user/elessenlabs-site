@@ -67,14 +67,22 @@ export default function AuditInvitePage() {
   }, [fullName, email, productUrl, inviteCode, codeValid, loading]);
 
   async function validateCode(codeArg?: string, emailArg?: string) {
-  setStatus("");
-  setCodeValid(false);
-
   const normalizedCode = (codeArg ?? inviteCode).trim().toUpperCase();
   const normalizedEmail = (emailArg ?? email).trim();
 
-  if (!normalizedCode) return;
-  if (!isValidEmail(normalizedEmail)) return;
+  if (!normalizedCode) {
+    setStatus("");
+    setCodeValid(false);
+    setCheckingCode(false);
+    return;
+  }
+
+  if (!isValidEmail(normalizedEmail)) {
+    setStatus("");
+    setCodeValid(false);
+    setCheckingCode(false);
+    return;
+  }
 
   setCheckingCode(true);
 
@@ -99,6 +107,7 @@ export default function AuditInvitePage() {
       return;
     }
 
+    setStatus("");
     setInviteCode(normalizedCode);
     setCodeValid(true);
     setCheckingCode(false);
