@@ -250,7 +250,7 @@ export default function AuditFeedbackPage() {
         {/* SECTION 8 */}
         <div className="mb-8">
           <label>
-            Invite 2 founders (optional)
+            Invite 2 founders and we’ll send you an new audit code. (optional)
           </label>
           <input
             placeholder="email1, email2"
