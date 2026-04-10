@@ -27,6 +27,8 @@ export async function sendAuditEmail({
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const auditUrl = `${siteUrl}/audit/result/${auditId}`;
+  const pdfUrl = `${siteUrl}/api/audit/pdf?id=${auditId}`;
+  const feedbackUrl = `${siteUrl}/audit/feedback?id=${auditId}`;
 
   try {
     const result = await resend.emails.send({
@@ -45,33 +47,37 @@ export async function sendAuditEmail({
   />
 </div>
           
-          <p>Hi ${name || "there"},</p>
+<p>Hi ${name || "there"},</p>
 
-          <p>Your Elessen Audit Report is ready.</p>
+<p>Your Elessen Audit Report is ready.</p>
 
-          <p>
-            <a href="${auditUrl}" target="_blank">${auditUrl}</a>
-          </p>
+<p>
+  <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">View Report</a>
+  <br/>
+  <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer">Download PDF</a>
+  <br/>
+  <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Submit Feedback</a>
+</p>
 
-          <p>
-            I personally reviewed how this system structures audits — 
-            and I’d be happy to walk you through the findings with you.
-          </p>
+<p>
+  I personally reviewed how this system structures audits — and I’d be happy to walk you through the findings with you.
+</p>
 
-          <p>
-            Book a <strong>free 15-minute session</strong> here:
-            <br/>
-            <a href="https://calendly.com/elessenlabs/product_clarity_call">
-              https://calendly.com/elessenlabs/product_clarity_call
-            </a>
-          </p>
+<p>
+  Book a <strong>free 15-minute session</strong> here:
+  <br/>
+  <a href="https://calendly.com/elessenlabs/product_clarity_call">
+    https://calendly.com/elessenlabs/product_clarity_call
+  </a>
+</p>
 
-          <p><strong>This offer expires in 30 days.</strong></p>
+<p><strong>This offer expires in 30 days.</strong></p>
 
-          <p>
-            Tanya Emma <br/>
-            <b>Founder, Elessen Labs</b>
-          </p>
+
+<p>
+Tanya Emma <br/>
+<b>Founder, Elessen Labs</b>
+</p>
 
           <img src="${siteUrl}/api/email/open?id=${auditId}" width="1" height="1" style="display:none;" />
 

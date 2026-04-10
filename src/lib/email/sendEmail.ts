@@ -239,3 +239,68 @@ export async function sendInviteAuditConfirmation({
     console.error("INVITE USER CONFIRMATION EMAIL ERROR:", err);
   }
 }
+export async function sendInviteAuditDelivery({
+  email,
+  name,
+  auditId,
+}: {
+  email: string;
+  name?: string | null;
+  auditId: string;
+}) {
+  const resend = getResendClient();
+  if (!resend) return;
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const auditUrl = `${siteUrl}/audit/result/${auditId}`;
+  const pdfUrl = `${siteUrl}/api/audit/pdf?id=${auditId}`;
+  const feedbackUrl = `${siteUrl}/audit/feedback?id=${auditId}`;
+
+  try {
+    const result = await resend.emails.send({
+      from: "Elessen <hello@elessenlabs.com>",
+      to: email,
+      cc: "hello@elessenlabs.com",
+      subject: "Your Elessen Audit Report is Ready",
+      html: `
+        <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+          
+          <div style="margin-bottom: 24px; text-align: center;">
+            <img 
+              src="${siteUrl}/logo.png" 
+              alt="Elessen Labs" 
+              style="height: 80px; display: block; margin: 0 auto;" 
+            />
+          </div>
+
+          <p>Hello ${name || "there"},</p>
+
+          <p>Your audit has been reviewed and is ready.</p>
+
+          <p>
+            <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">View Report</a>
+            <br/>
+            <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer">Download PDF</a>
+            <br/>
+            <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Submit Feedback</a>
+          </p>
+
+          <p>
+            Thank you again for trying the Elessen Audit Engine. We’d really value your feedback — good or bad.
+          </p>
+
+          <p>
+            Tanya Emma<br/>
+            <b>Founder, Elessen Labs</b>
+          </p>
+        </div>
+      `,
+    });
+
+    console.log("INVITE AUDIT DELIVERY EMAIL SENT:", result);
+  } catch (err) {
+    console.error("INVITE AUDIT DELIVERY EMAIL ERROR:", err);
+  }
+}

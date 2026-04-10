@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../../lib/supabase-admin";
 import { sendAuditEmail } from "../../../../../lib/email/sendAuditEmail";
+import { sendInviteAuditDelivery } from "../../../../../lib/email/sendEmail";
 
 function buildMarkdownFromPages(pages: any[]) {
   return (pages || [])
@@ -103,10 +104,10 @@ export async function POST(
     }
 
     const { data: auditRow, error: auditRowError } = await supabaseAdmin
-  .from("audit_requests")
-  .select("id, full_name, email")
-  .eq("id", id)
-  .maybeSingle();
+      .from("audit_requests")
+      .select("id, full_name, email, stripe_session_id")
+      .eq("id", id)
+      .maybeSingle();
 
 if (auditRowError) {
   console.error("FAILED TO LOAD AUDIT FOR EMAIL:", auditRowError);
@@ -114,13 +115,23 @@ if (auditRowError) {
 
 if (auditRow?.email) {
   try {
-    await sendAuditEmail({
-      email: auditRow.email,
-      name: auditRow.full_name || "there",
-      auditId: auditRow.id,
-    });
+    if (auditRow.stripe_session_id) {
+      await sendAuditEmail({
+        email: auditRow.email,
+        name: auditRow.full_name || "there",
+        auditId: auditRow.id,
+      });
 
-    console.log("DELIVERY EMAIL SENT:", auditRow.id);
+      console.log("PAID DELIVERY EMAIL SENT:", auditRow.id);
+    } else {
+      await sendInviteAuditDelivery({
+        email: auditRow.email,
+        name: auditRow.full_name || "there",
+        auditId: auditRow.id,
+      });
+
+      console.log("INVITE DELIVERY EMAIL SENT:", auditRow.id);
+    }
   } catch (err) {
     console.error("DELIVERY EMAIL FAILED:", err);
   }
