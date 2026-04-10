@@ -1,7 +1,9 @@
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../../lib/supabase-admin";
 import { sendAuditEmail } from "../../../../../lib/email/sendAuditEmail";
 import { sendInviteAuditDelivery } from "../../../../../lib/email/sendEmail";
+import { generateAuditPdfBuffer } from "../../../../../lib/audit/generatePdf";
 
 function buildMarkdownFromPages(pages: any[]) {
   return (pages || [])
@@ -59,7 +61,7 @@ export async function POST(
 
   const { data: existing, error: fetchError } = await supabaseAdmin
     .from("audit_requests")
-    .select("id, status, pages, audit_content, edited_audit_content")
+    .select("id, status, pages, audit_content, edited_audit_content, full_name, email, product_url, stripe_session_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -86,28 +88,65 @@ export async function POST(
         ? existing.audit_content
         : buildMarkdownFromPages(Array.isArray(existing.pages) ? existing.pages : []);
 
-    const { error } = await supabaseAdmin
-      .from("audit_requests")
-      .update({
-        audit_content: finalAuditContent,
-        status: "delivered",
-        delivered_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+    const pdfBuffer = await generateAuditPdfBuffer({
+  auditId: id,
+  fullName: existing.full_name || null,
+  productUrl: existing.product_url || null,
+  auditContent: finalAuditContent,
+});
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || "Failed to approve audit." },
-        { status: 500 }
-      );
-    }
+const filePath = `audits/${id}.pdf`;
 
-    const { data: auditRow, error: auditRowError } = await supabaseAdmin
-      .from("audit_requests")
-      .select("id, full_name, email, stripe_session_id")
-      .eq("id", id)
-      .maybeSingle();
+const { error: uploadError } = await supabaseAdmin.storage
+  .from("audit-pdfs")
+  .upload(filePath, new Uint8Array(pdfBuffer), {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+
+if (uploadError) {
+  return NextResponse.json(
+    { error: uploadError.message || "Failed to upload PDF." },
+    { status: 500 }
+  );
+}
+
+const { data: publicUrlData } = supabaseAdmin.storage
+  .from("audit-pdfs")
+  .getPublicUrl(filePath);
+
+const auditPdfUrl = publicUrlData?.publicUrl || null;
+
+if (!auditPdfUrl) {
+  return NextResponse.json(
+    { error: "Failed to generate PDF URL." },
+    { status: 500 }
+  );
+}
+
+const { error: updateError } = await supabaseAdmin
+  .from("audit_requests")
+  .update({
+    audit_content: finalAuditContent,
+    audit_pdf_url: auditPdfUrl,
+    status: "delivered",
+    delivered_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  })
+  .eq("id", id);
+
+if (updateError) {
+  return NextResponse.json(
+    { error: updateError.message || "Failed to approve audit." },
+    { status: 500 }
+  );
+}
+
+   const { data: auditRow, error: auditRowError } = await supabaseAdmin
+    .from("audit_requests")
+    .select("id, full_name, email, stripe_session_id, audit_pdf_url")
+    .eq("id", id)
+    .maybeSingle();
 
 if (auditRowError) {
   console.error("FAILED TO LOAD AUDIT FOR EMAIL:", auditRowError);
@@ -120,6 +159,7 @@ if (auditRow?.email) {
         email: auditRow.email,
         name: auditRow.full_name || "there",
         auditId: auditRow.id,
+        auditPdfUrl: auditRow.audit_pdf_url || null,
       });
 
       console.log("PAID DELIVERY EMAIL SENT:", auditRow.id);
@@ -128,6 +168,7 @@ if (auditRow?.email) {
         email: auditRow.email,
         name: auditRow.full_name || "there",
         auditId: auditRow.id,
+        auditPdfUrl: auditRow.audit_pdf_url || null,
       });
 
       console.log("INVITE DELIVERY EMAIL SENT:", auditRow.id);

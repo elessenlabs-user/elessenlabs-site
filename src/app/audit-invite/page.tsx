@@ -19,6 +19,7 @@ export default function AuditInvitePage() {
 
   const [checkingCode, setCheckingCode] = useState(false);
   const [codeValid, setCodeValid] = useState(false);
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   function isValidEmail(v: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
@@ -229,9 +230,7 @@ export default function AuditInvitePage() {
                   setEmail(e.target.value);
                   setCodeValid(false);
                 }}
-                onBlur={() => {
-                    if (isValidEmail(email)) validateCode();
-                }}
+                
                 placeholder="name@company.com"
                 autoComplete="email"
                 inputMode="email"
@@ -271,17 +270,27 @@ export default function AuditInvitePage() {
                 type="text"
                 className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12 outline-none transition focus:ring-4 focus:ring-orange-200 focus:border-orange-300"
                 value={inviteCode}
-                onChange={(e) => {
-                    const val = e.target.value.toUpperCase();
-                    setInviteCode(val);
-                    setCodeValid(false);
+                
 
-                // auto-validate when length looks valid
-                if (val.length >= 6 && isValidEmail(email)) {
-                    validateCode();
-                }
-                }}
-                onBlur={validateCode}
+            onChange={(e) => {
+  const val = e.target.value.toUpperCase();
+
+  setInviteCode(val);
+  setCodeValid(false);
+  setStatus("");
+
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+
+  const timer = setTimeout(() => {
+    if (val.trim().length >= 6 && isValidEmail(email)) {
+      validateCode();
+    }
+  }, 500);
+
+  setDebounceTimer(timer);
+}}
                 placeholder="Enter your code"
               />
 

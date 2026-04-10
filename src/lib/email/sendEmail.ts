@@ -243,10 +243,12 @@ export async function sendInviteAuditDelivery({
   email,
   name,
   auditId,
+  auditPdfUrl,
 }: {
   email: string;
   name?: string | null;
   auditId: string;
+  auditPdfUrl?: string | null;
 }) {
   const resend = getResendClient();
   if (!resend) return;
@@ -255,7 +257,7 @@ export async function sendInviteAuditDelivery({
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
   const auditUrl = `${siteUrl}/audit/result/${auditId}`;
-  const pdfUrl = `${siteUrl}/api/audit/pdf?id=${auditId}`;
+  const pdfUrl = auditPdfUrl || "";
   const feedbackUrl = `${siteUrl}/audit/feedback?id=${auditId}`;
 
   try {
@@ -264,6 +266,14 @@ export async function sendInviteAuditDelivery({
       to: email,
       cc: "hello@elessenlabs.com",
       subject: "Your Elessen Audit Report is Ready",
+      attachments: pdfUrl
+  ? [
+      {
+        path: pdfUrl,
+        filename: `elessen-audit-${auditId}.pdf`,
+      },
+    ]
+  : [],
       html: `
         <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
           
