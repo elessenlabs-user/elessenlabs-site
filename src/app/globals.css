@@ -304,3 +304,15 @@ header {
 .banner-pulse {
   animation: subtlePulse 2.6s ease-in-out infinite;
 }
+@keyframes softOrangeBorder {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.35), 0 0 18px rgba(255, 122, 0, 0.12);
+  }
+}
+
+.soft-orange-border {
+  animation: softOrangeBorder 3.2s ease-in-out infinite;
+}

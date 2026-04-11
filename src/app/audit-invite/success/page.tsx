@@ -8,8 +8,7 @@ export default async function AuditInviteSuccessPage({
 
   return (
     <div className="mx-auto flex max-w-3xl items-center justify-center px-6 py-24">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[32px] border border-orange-200 bg-white p-12 text-center shadow-[0_20px_60px_rgba(0,0,0,0.06)] animate-[pulse_3.6s_ease-in-out_infinite] md:p-14">
-        <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-orange-100" />
+<div className="relative w-full max-w-2xl overflow-hidden rounded-[32px] border border-orange-200 bg-white p-12 text-center shadow-[0_20px_60px_rgba(0,0,0,0.06)] md:p-14 soft-orange-border">        <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-orange-100" />
 
         <div className="mx-auto inline-flex items-center rounded-full border border-orange-200 bg-[#FFF8F2] px-4 py-2 text-[11px] font-semibold tracking-[0.18em] text-[#FF7A00] shadow-sm">
           ELESSEN AUDIT ENGINE™
