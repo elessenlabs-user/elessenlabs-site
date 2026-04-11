@@ -94,6 +94,37 @@ function extractSignals(html: string, url: string) {
     counts: { inputCount, formCount },
   };
 }
+async function handleCookieBanner(page: any) {
+  const candidates = [
+    'button:has-text("Accept")',
+    'button:has-text("Accept all")',
+    'button:has-text("Allow all")',
+    'button:has-text("I agree")',
+    'button:has-text("Agree")',
+    'button:has-text("Got it")',
+    'button:has-text("Continue")',
+    '[aria-label="Accept"]',
+    '[id*="accept"]',
+    '[class*="accept"]',
+  ];
+
+  for (const selector of candidates) {
+    try {
+      const el = page.locator(selector).first();
+      if (await el.isVisible({ timeout: 500 })) {
+        await el.click({ timeout: 1000 });
+        await page.waitForTimeout(1200);
+        console.log("COOKIE BANNER HANDLED", { selector });
+        return true;
+      }
+    } catch {
+      // continue
+    }
+  }
+
+  return false;
+}
+
 
 async function captureScreenshot(url: string) {
   let browser: any = null;
@@ -141,7 +172,38 @@ for (let attempt = 1; attempt <= 2; attempt++) {
       timeout: 45000,
     });
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1800);
+
+    try {
+      await page.waitForLoadState("load", { timeout: 8000 });
+    } catch {
+      console.log("LOAD STATE TIMEOUT - continuing", { url, attempt });
+    }
+
+    try {
+      await handleCookieBanner(page);
+    } catch {
+      console.log("COOKIE HANDLER SKIPPED", { url, attempt });
+    }
+
+    try {
+      await page.evaluate(async () => {
+        window.scrollTo({ top: document.body.scrollHeight * 0.45, behavior: "instant" as ScrollBehavior });
+      });
+      await page.waitForTimeout(900);
+
+      await page.evaluate(async () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior });
+      });
+      await page.waitForTimeout(900);
+
+      await page.evaluate(async () => {
+        window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      });
+      await page.waitForTimeout(1200);
+    } catch {
+      console.log("SCROLL STABILIZATION SKIPPED", { url, attempt });
+    }
 
     success = true;
     break;
@@ -159,7 +221,21 @@ if (!success) {
       timeout: 45000,
     });
 
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1800);
+
+    try {
+      await page.waitForLoadState("load", { timeout: 8000 });
+    } catch {
+      console.log("FALLBACK LOAD STATE TIMEOUT - continuing", { url });
+    }
+
+    try {
+      await handleCookieBanner(page);
+    } catch {
+      console.log("FALLBACK COOKIE HANDLER SKIPPED", { url });
+    }
+
+    await page.waitForTimeout(1200);
 
     success = true;
   } catch (err) {
@@ -171,8 +247,7 @@ if (!success) {
   throw new Error("NAVIGATION_FAILED");
 }
 
-// fallback wait — do NOT rely on networkidle in serverless
-await page.waitForTimeout(2000);
+await page.waitForTimeout(1200);
 
 console.log("SCREENSHOT PAGE GOTO OK", { url });
 

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ special test code: reusable up to max_uses regardless of same email
-    if (normalizedCode === "ELSN-TEST") {
+    if (normalizedCode === "ELSN-TEST" || normalizedCode === "ELSN-51") {
       return NextResponse.json({ success: true });
     }
 
