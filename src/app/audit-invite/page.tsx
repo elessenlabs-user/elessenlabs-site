@@ -261,7 +261,19 @@ export default function AuditInvitePage() {
           </div>
 
           <div className="mt-4">
-            <label className="text-sm font-medium">Website / Product link</label>
+            <label className="text-sm font-medium flex items-center gap-2">
+                Website / Product link
+
+                <span className="relative group cursor-pointer">
+                <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] rounded-full border border-black/30 text-black/40">
+                i
+                </span>
+
+                <span className="absolute left-1/2 -translate-x-1/2 top-6 w-64 rounded-lg bg-black text-white text-[11px] leading-5 px-3 py-2 opacity-0 group-hover:opacity-100 transition pointer-events-none z-50 shadow-lg">
+                    Some websites may render differently due to cookie banners, bot protection, or dynamic content. This may slightly affect screenshot accuracy.
+                </span>
+            </span>
+        </label>
             <input
               type="text"
               className={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 outline-none transition focus:ring-4 ${
