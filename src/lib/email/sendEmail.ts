@@ -297,6 +297,7 @@ export async function sendInviteAuditDelivery({
   await resend.emails.send({
     from: "Elessen <hello@elessenlabs.com>",
     to: email,
+    cc: "hello@elessenlabs.com",
     subject: "Your Elessen Audit Report is Ready",
     html: baseTemplate(content, siteUrl),
   });

@@ -116,9 +116,10 @@ export async function sendAuditEmail({
 `;
 
   await transporter.sendMail({
-    from: `"Elessen" <hello@elessenlabs.com>`,
-    to: email,
-    subject: "Your Elessen Audit Report is Ready",
-    html,
-  });
+  from: `"Elessen" <hello@elessenlabs.com>`,
+  to: email,
+  cc: "hello@elessenlabs.com",
+  subject: "Your Elessen Audit Report is Ready",
+  html,
+});
 }
