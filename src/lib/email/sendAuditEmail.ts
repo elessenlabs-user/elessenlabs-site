@@ -43,36 +43,44 @@ export async function sendAuditEmail({
       </p>
 
       <!-- CTA: View Report -->
-      <div style="text-align:center; margin:30px 0;">
-        <a href="${reportUrl}" 
-          style="
-            background:#FF7A00;
-            color:#fff;
-            padding:14px 28px;
-            border-radius:10px;
-            text-decoration:none;
-            font-weight:bold;
-            display:inline-block;
-          ">
-          View Your Report
-        </a>
-      </div>
+      <div style="text-align:center; margin:32px 0 16px;">
+  <a href="${reportUrl}" 
+    style="
+      background:#FF7A00;
+      color:#000;
+      padding:16px 30px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:600;
+      display:inline-block;
+      font-size:15px;
+      box-shadow: 0 6px 16px rgba(255,122,0,0.25);
+    ">
+    View Your Report
+  </a>
+</div>
+
+<p style="font-size:13px; color:#666; text-align:center; margin-bottom:12px;">
+  We’d really appreciate your feedback — it directly helps us improve the Audit Engine.
+</p>
 
       <!-- CTA: Feedback -->
-      <div style="text-align:center; margin:10px 0 30px;">
-        <a href="${feedbackUrl}" 
-          style="
-            background:#000;
-            color:#fff;
-            padding:12px 24px;
-            border-radius:10px;
-            text-decoration:none;
-            font-weight:bold;
-            display:inline-block;
-          ">
-          Share Feedback
-        </a>
-      </div>
+      <div style="text-align:center; margin:0 0 32px;">
+  <a href="${feedbackUrl}" 
+    style="
+      background:#DFF5E3;
+      color:#000;
+      padding:14px 26px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:600;
+      display:inline-block;
+      font-size:14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    ">
+    Share Feedback
+  </a>
+</div>
 
       <!-- Supporting text -->
       <p style="font-size:13px; color:#777; text-align:center; line-height:1.6;">
