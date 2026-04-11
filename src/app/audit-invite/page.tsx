@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackEvent } from "../../lib/analytics";
 
@@ -22,6 +22,8 @@ export default function AuditInvitePage() {
   const [checkingCode, setCheckingCode] = useState(false);
   const [codeValid, setCodeValid] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [showUrlInfo, setShowUrlInfo] = useState(false);
+  const urlInfoRef = useRef<HTMLSpanElement | null>(null);
 
   function isValidEmail(v: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(v.trim());
@@ -65,6 +67,22 @@ export default function AuditInvitePage() {
       !loading
     );
   }, [fullName, email, productUrl, inviteCode, codeValid, loading]);
+
+  useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      urlInfoRef.current &&
+      !urlInfoRef.current.contains(event.target as Node)
+    ) {
+      setShowUrlInfo(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   async function validateCode(codeArg?: string, emailArg?: string) {
   const normalizedCode = (codeArg ?? inviteCode).trim().toUpperCase();
@@ -264,13 +282,21 @@ export default function AuditInvitePage() {
             <label className="text-sm font-medium flex items-center gap-2">
                 Website / Product link
 
-                <span className="relative group cursor-pointer">
-                <span className="inline-flex items-center justify-center w-4 h-4 text-[10px] rounded-full border border-black/30 text-black/40">
-                i
-                </span>
+               <span className="relative">
+                <button
+                    type="button"
+                    onClick={() => setShowUrlInfo((prev) => !prev)}
+                    className="inline-flex items-center justify-center w-4 h-4 text-[10px] rounded-full border border-black/30 text-black/40"
+                >
+                    i
+                </button>
 
-                <span className="absolute left-1/2 -translate-x-1/2 top-6 w-64 rounded-lg bg-black text-white text-[11px] leading-5 px-3 py-2 opacity-0 group-hover:opacity-100 transition pointer-events-none z-50 shadow-lg">
-                    Some websites may render differently due to cookie banners, bot protection, or dynamic content. This may slightly affect screenshot accuracy.
+            <span
+                className={`absolute left-1/2 -translate-x-1/2 top-6 w-64 rounded-lg bg-black text-white text-[11px] leading-5 px-3 py-2 transition z-50 shadow-lg ${
+                showUrlInfo ? "opacity-100 visible" : "opacity-0 invisible"
+                }`}
+            >
+                Some websites may render differently due to cookie banners, bot protection, or dynamic content. This may slightly affect screenshot accuracy.
                 </span>
             </span>
         </label>
