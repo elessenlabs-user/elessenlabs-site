@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../../lib/supabase-admin";
 import { sendAuditEmail } from "../../../../../lib/email/sendAuditEmail";
 import { sendInviteAuditDelivery } from "../../../../../lib/email/sendEmail";
-import { generateAuditPdfBuffer } from "../../../../../lib/audit/generatePdf";
+
 
 function buildMarkdownFromPages(pages: any[]) {
   return (pages || [])
@@ -88,48 +88,11 @@ export async function POST(
         ? existing.audit_content
         : buildMarkdownFromPages(Array.isArray(existing.pages) ? existing.pages : []);
 
-    const pdfBuffer = await generateAuditPdfBuffer({
-  auditId: id,
-  fullName: existing.full_name || null,
-  productUrl: existing.product_url || null,
-  auditContent: finalAuditContent,
-  pages: Array.isArray(existing.pages) ? existing.pages : [],
-});
-
-const filePath = `audits/${id}.pdf`;
-
-const { error: uploadError } = await supabaseAdmin.storage
-  .from("audit-pdfs")
-  .upload(filePath, new Uint8Array(pdfBuffer), {
-    contentType: "application/pdf",
-    upsert: true,
-  });
-
-if (uploadError) {
-  return NextResponse.json(
-    { error: uploadError.message || "Failed to upload PDF." },
-    { status: 500 }
-  );
-}
-
-const { data: publicUrlData } = supabaseAdmin.storage
-  .from("audit-pdfs")
-  .getPublicUrl(filePath);
-
-const auditPdfUrl = publicUrlData?.publicUrl || null;
-
-if (!auditPdfUrl) {
-  return NextResponse.json(
-    { error: "Failed to generate PDF URL." },
-    { status: 500 }
-  );
-}
 
 const { error: updateError } = await supabaseAdmin
   .from("audit_requests")
   .update({
     audit_content: finalAuditContent,
-    audit_pdf_url: auditPdfUrl,
     status: "delivered",
     delivered_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -145,7 +108,7 @@ if (updateError) {
 
    const { data: auditRow, error: auditRowError } = await supabaseAdmin
     .from("audit_requests")
-    .select("id, full_name, email, stripe_session_id, audit_pdf_url")
+    .select("id, full_name, email, stripe_session_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -156,12 +119,11 @@ if (auditRowError) {
 if (auditRow?.email) {
   try {
     if (auditRow.stripe_session_id) {
-      await sendAuditEmail({
-        email: auditRow.email,
-        name: auditRow.full_name || "there",
-        auditId: auditRow.id,
-        auditPdfUrl: auditRow.audit_pdf_url || null,
-      });
+    await sendAuditEmail({
+      email: auditRow.email,
+      name: auditRow.full_name || "there",
+      auditId: auditRow.id,
+  });
 
       console.log("PAID DELIVERY EMAIL SENT:", auditRow.id);
     } else {
@@ -169,7 +131,6 @@ if (auditRow?.email) {
         email: auditRow.email,
         name: auditRow.full_name || "there",
         auditId: auditRow.id,
-        auditPdfUrl: auditRow.audit_pdf_url || null,
       });
 
       console.log("INVITE DELIVERY EMAIL SENT:", auditRow.id);

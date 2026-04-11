@@ -1,107 +1,98 @@
-import { Resend } from "resend";
-
-function getResendClient() {
-  const apiKey = process.env.RESEND_API_KEY;
-
-  if (!apiKey) {
-    console.error("RESEND_API_KEY is missing");
-    return null;
-  }
-
-  return new Resend(apiKey);
-}
+import nodemailer from "nodemailer";
 
 export async function sendAuditEmail({
   email,
   name,
   auditId,
-  auditPdfUrl,
 }: {
   email: string;
-  name?: string | null;
+  name?: string;
   auditId: string;
-  auditPdfUrl?: string | null;
 }) {
-  const resend = getResendClient();
-  if (!resend) return;
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: true,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const reportUrl = `https://www.elessenlabs.com/audit/result/${auditId}`;
+  const feedbackUrl = `https://www.elessenlabs.com/feedback/${auditId}`;
 
-  const auditUrl = `${siteUrl}/audit/result/${auditId}`;
-  const pdfUrl = auditPdfUrl || "";
-  const feedbackUrl = `${siteUrl}/audit/feedback?id=${auditId}`;
+  const html = `
+  <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:40px 20px;">
+    <div style="max-width:600px; margin:0 auto; background:#ffffff; padding:32px; border-radius:16px;">
 
-  try {
-    const result = await resend.emails.send({
-      from: "Elessen <hello@elessenlabs.com>",
-      to: email,
-      cc: "hello@elessenlabs.com",
-      subject: "Your Elessen Audit Report is Ready 🚀",
-      attachments: pdfUrl
-  ? [
-      {
-        path: pdfUrl,
-        filename: `elessen-audit-${auditId}.pdf`,
-      },
-    ]
-  : [],
-     html: `
-  <div style="max-width: 520px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-    
-    <div style="margin-bottom: 24px; text-align: center;">
-  <img 
-    src="${siteUrl}/logo.png" 
-    alt="Elessen Labs" 
-    style="height: 80px; display: block; margin: 0 auto;" 
-  />
-</div>
-          
-<p>Hi ${name || "there"},</p>
+      <!-- Logo -->
+      <div style="text-align:center; margin-bottom:24px;">
+        <img src="https://www.elessenlabs.com/logo.png" style="height:36px;" />
+      </div>
 
-<p>Your Elessen Audit Report is ready.</p>
+      <!-- Title -->
+      <h2 style="text-align:center; margin-bottom:16px;">
+        Your Audit Report is Ready
+      </h2>
 
-<p>
-  <a href="${auditUrl}" target="_blank" rel="noopener noreferrer">View Report</a>
-</p>
+      <!-- Greeting -->
+      <p style="text-align:center; color:#555; line-height:1.6;">
+        Hello ${name || "there"},<br/><br/>
+        Your product audit has been completed and is ready for review.
+      </p>
 
-<p>
-  Your PDF report is attached to this email for easy review and sharing.
-</p>
+      <!-- CTA: View Report -->
+      <div style="text-align:center; margin:30px 0;">
+        <a href="${reportUrl}" 
+          style="
+            background:#FF7A00;
+            color:#fff;
+            padding:14px 28px;
+            border-radius:10px;
+            text-decoration:none;
+            font-weight:bold;
+            display:inline-block;
+          ">
+          View Your Report
+        </a>
+      </div>
 
-<p>
-  If you have a moment, we’d really value your feedback — it helps us refine and elevate the Audit Engine with every report we deliver.
-  <br/>
-  <a href="${feedbackUrl}" target="_blank" rel="noopener noreferrer">Share your feedback</a>
-</p>
+      <!-- CTA: Feedback -->
+      <div style="text-align:center; margin:10px 0 30px;">
+        <a href="${feedbackUrl}" 
+          style="
+            background:#000;
+            color:#fff;
+            padding:12px 24px;
+            border-radius:10px;
+            text-decoration:none;
+            font-weight:bold;
+            display:inline-block;
+          ">
+          Share Feedback
+        </a>
+      </div>
 
-<p>
-  I personally reviewed how this system structures audits — and I’d be happy to walk you through the findings with you.
-</p>
+      <!-- Supporting text -->
+      <p style="font-size:13px; color:#777; text-align:center; line-height:1.6;">
+        Your feedback helps us refine and improve the Elessen Audit Engine with every report we deliver.
+      </p>
 
-<p>
-  Book a <strong>free 15-minute session</strong> here:
-  <br/>
-  <a href="https://calendly.com/elessenlabs/product_clarity_call">
-    https://calendly.com/elessenlabs/product_clarity_call
-  </a>
-</p>
+      <!-- Signature -->
+      <div style="margin-top:30px; text-align:center; font-size:14px;">
+        <strong>Tanya Emma</strong><br/>
+        Founder, Elessen Labs
+      </div>
 
-<p><strong>This offer expires in 30 days.</strong></p>
+    </div>
+  </div>
+  `;
 
-<p>
-Tanya Emma <br/>
-<b>Founder, Elessen Labs</b>
-</p>
-
-          <img src="${siteUrl}/api/email/open?id=${auditId}" width="1" height="1" style="display:none;" />
-
-        </div>
-      `,
-    });
-
-    console.log("AUDIT DELIVERY EMAIL SENT:", result);
-  } catch (err) {
-    console.error("AUDIT DELIVERY EMAIL ERROR:", err);
-  }
+  await transporter.sendMail({
+    from: `"Elessen" <hello@elessenlabs.com>`,
+    to: email,
+    subject: "Your Elessen Audit Report is Ready",
+    html,
+  });
 }
