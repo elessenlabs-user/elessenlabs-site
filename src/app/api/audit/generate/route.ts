@@ -137,15 +137,26 @@ export async function POST(req: Request) {
     const nextStatus = getNextStatus(row.status);
 
     const auditContent = clip(
-  processedPages
-    .map((page: any) =>
-      (page.sections || [])
-        .map((section: any) => `## ${section.title}\n${section.content}`)
-        .join("\n\n")
-    )
-    .join("\n\n---\n\n"),
+  `## Audit Build Info
+- Pipeline Version: v2.1-STRUCTURE-ENFORCED
+- Model: ${process.env.OPENAI_MODEL || "gpt-5.3"}
+- Generated At: ${new Date().toISOString()}
+
+---
+
+` +
+    processedPages
+      .map((page: any) =>
+        (page.sections || [])
+          .map((section: any) => `## ${section.title}\n${section.content}`)
+          .join("\n\n")
+      )
+      .join("\n\n---\n\n"),
   250000
 );
+
+console.log("🚨 FINAL AUDIT CONTENT PREVIEW:");
+console.log(auditContent.substring(0, 500));
 
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")
