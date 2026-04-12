@@ -849,6 +849,31 @@ Before returning the audit, ensure:
 
 If it feels templated, rewrite it.
 
+----------------------------------
+CRITICAL: PRODUCT CONTEXT HYPOTHESIS
+----------------------------------
+
+Before writing the audit, you MUST determine:
+
+- What type of product this is:
+  (SaaS / marketplace / enterprise / agency / e-commerce / informational)
+
+- What the likely conversion model is:
+  (self-serve / sales-led / lead generation / awareness)
+
+- Whether the page is intended to:
+  (convert immediately OR build trust OR educate)
+
+You MUST use this to guide your audit.
+
+If the page appears to be sales-led or enterprise:
+
+- Do NOT assume missing pricing is a problem
+- Do NOT assume lack of direct CTA is a flaw
+- Evaluate based on trust, clarity, and credibility instead
+
+If uncertain, explicitly state the uncertainty.
+
 RETURN FINAL MARKDOWN ONLY.`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
