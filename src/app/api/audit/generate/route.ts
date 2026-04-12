@@ -72,36 +72,9 @@ export async function POST(req: Request) {
     }
 
     if (data.status === "generating") {
-      return NextResponse.json({
-        ok: true,
-        id: data.id,
-        status: data.status,
-        message: "Audit is already generating.",
-      });
-    }
-
-    if (
-      data.status === "paid_pending_review" ||
-      data.status === "in_review" ||
-      data.status === "paid_in_review" ||
-      data.status === "ready_for_review"
-) {
-    return NextResponse.json({
-      ok: true,
-      id: data.id,
-      status: data.status,
-      message: "Audit is already in review.",
-    });
+  console.log("⚠️ FORCING REGEN — was generating before");
 }
 
-    if (data.status === "delivered") {
-      return NextResponse.json({
-        ok: true,
-        id: data.id,
-        status: data.status,
-        message: "Audit is already delivered.",
-      });
-    }
 
     row = data;
   } else {
@@ -164,12 +137,15 @@ export async function POST(req: Request) {
     const nextStatus = getNextStatus(row.status);
 
     const auditContent = clip(
-      processedPages
-        .flatMap((page: any) => page.sections || [])
+  processedPages
+    .map((page: any) =>
+      (page.sections || [])
         .map((section: any) => `## ${section.title}\n${section.content}`)
-        .join("\n\n"),
-      250000
-    );
+        .join("\n\n")
+    )
+    .join("\n\n---\n\n"),
+  250000
+);
 
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")

@@ -1341,6 +1341,9 @@ function buildAuditPages(row: any): string[] {
 }
 
 export async function runAuditPipeline(row: any) {
+  console.log("🚨 PIPELINE EXECUTION STARTED 🚨");
+  console.log("ROW ID:", row?.id);
+  console.log("PRODUCT URL:", row?.product_url);
   const pageUrls = buildAuditPages(row);
   const processedPages = [];
 
@@ -1403,16 +1406,19 @@ export async function runAuditPipeline(row: any) {
       let markedScreenshotMap: Record<number, string> = {};
 
       try {
-        auditMarkdown = await generateAuditMarkdown({
-          product_url: row.product_url || url,
-          focus_page_url: row.focus_page_url || "",
-          notes: row.notes,
-          signals,
-          focus_signals: null,
-          screenshot_url: screenshotUrl,
-          focus_screenshot_url: null,
-        });
+       auditMarkdown = await generateAuditMarkdown({
+  product_url: row.product_url || url,
+  focus_page_url: row.focus_page_url || "",
+  notes: row.notes,
+  signals,
+  focus_signals: null,
+  screenshot_url: screenshotUrl,
+  focus_screenshot_url: null,
+});
 
+console.log("🧠 NEW MARKDOWN GENERATED");
+console.log("MARKDOWN LENGTH:", auditMarkdown.length);
+console.log("MARKDOWN PREVIEW:", auditMarkdown.substring(0, 300));
         // auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
         uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
