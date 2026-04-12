@@ -492,6 +492,18 @@ async function fetchImageBuffer(imageUrl: string) {
 }
 
 async function generateAuditMarkdown(payload: any) {
+  const s = payload?.signals || {};
+
+const productContext = {
+  type: s.featureSnippets?.length > 5 ? "technical platform" : "general product",
+  hasStrongCTA: (s.ctas?.length || 0) > 0,
+  complexity: (s.h2?.length || 0) > 6 ? "high" : "medium",
+  likelyIntent: (s.ctas || []).join(" ").toLowerCase().includes("demo")
+    ? "sales-led"
+    : (s.ctas || []).join(" ").toLowerCase().includes("buy")
+    ? "transactional"
+    : "informational",
+};
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return `# Audit (AI not configured)
@@ -576,6 +588,10 @@ Continuously evaluate:
 5. ACTION MOMENT
 - Is it obvious what to do next?
 - Is the action compelling or easy to ignore?
+
+Audit Metadata:
+- Pipeline Version: ${PIPELINE_VERSION}
+- Model: ${model}
 
 ----------------------------------
 SECTION QUALITY REQUIREMENTS
@@ -663,6 +679,20 @@ OUTPUT RULES
 - Avoid fluff
 - Avoid filler
 - Avoid generic phrasing
+
+----------------------------------
+ANTI-TEMPLATE ENFORCEMENT
+----------------------------------
+
+If your output contains phrases like:
+- "lacks hierarchy"
+- "causes cognitive overload"
+- "reducing conversion"
+- "improve UX"
+
+You MUST rewrite that section with more specific reasoning.
+
+Generic phrasing is considered a failure.
 - Do not output placeholders or template variables
 
 The final output should feel like:
@@ -674,8 +704,11 @@ A real UX/product consultant reviewed this product and wrote a focused, high-val
 
   const user = `AUDIT REQUEST
 
-  PIPELINE VERSION: ${PIPELINE_VERSION}
-  MODEL: ${model}
+Audit Metadata:
+- Pipeline Version: ${PIPELINE_VERSION}
+- Model: ${model}
+
+----------------------------------
 
 URL: ${payload.product_url}
 FOCUS PAGE: ${payload.focus_page_url || "Not provided"}
@@ -686,6 +719,11 @@ ${screenshotState}
 
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
+
+----------------------------------
+PRODUCT CONTEXT (DERIVED)
+----------------------------------
+${JSON.stringify(productContext, null, 2)}
 
 ----------------------------------
 DERIVED STRUCTURE (HIGH SIGNAL)
@@ -767,6 +805,22 @@ BAD:
 
 GOOD:
 "Replace 'Menu' with a primary action like 'Book a Consultation' and position it directly in the hero to create a clear next step"
+
+CRITICAL DIFFERENTIATION RULE:
+
+If the product appears highly technical or niche:
+- Avoid generic SaaS recommendations
+- Focus on:
+  - comprehension gap
+  - audience mismatch
+  - technical abstraction issues
+
+If the product appears enterprise or deep-tech:
+- Do NOT recommend generic UX improvements
+- Focus on:
+  - clarity of positioning
+  - explanation layers
+  - onboarding of understanding
 
 ----------------------------------
 DIFFERENTIATION CHECK
@@ -1416,10 +1470,14 @@ export async function runAuditPipeline(row: any) {
   focus_screenshot_url: null,
 });
 
+if (!auditMarkdown || auditMarkdown.length < 500) {
+  throw new Error("LLM_OUTPUT_TOO_WEAK");
+}
+
 console.log("🧠 NEW MARKDOWN GENERATED");
 console.log("MARKDOWN LENGTH:", auditMarkdown.length);
 console.log("MARKDOWN PREVIEW:", auditMarkdown.substring(0, 300));
-        // auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
+        auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
         uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
         if (screenshotUrl && uiEvidence.length) {
