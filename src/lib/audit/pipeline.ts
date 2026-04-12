@@ -126,22 +126,38 @@ function extractSignals(html: string, url: string) {
   const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
   const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
 
+  // ADD THIS RIGHT BEFORE return
+const heroGuess = {
+  headline: h1[0] || "",
+  subhead: paragraphs[0] || "",
+  primaryCTA: ctas[0] || "",
+};
+
+const structureHints = {
+  hasMultipleCTAs: ctas.length > 3,
+  hasWeakCTA: ctas.length === 0,
+  hasTrustSignals: trustSignals.length > 0,
+  hasClearNav: navLabels.length > 0,
+};
+
   return {
-    url,
-    title,
-    metaDescription,
-    h1,
-    h2,
-    paragraphs,
-    navLabels,
-    ctas,
-    trustSignals,
-    pricingSignals,
-    featureSnippets,
-    links,
-    flags: { hasPricing, hasCheckout, hasEmailCapture },
-    counts: { inputCount, formCount },
-  };
+  url,
+  title,
+  metaDescription,
+  h1,
+  h2,
+  paragraphs,
+  navLabels,
+  ctas,
+  trustSignals,
+  pricingSignals,
+  featureSnippets,
+  links,
+  heroGuess,
+  structureHints,
+  flags: { hasPricing, hasCheckout, hasEmailCapture },
+  counts: { inputCount, formCount },
+};
 }
 
 
@@ -487,7 +503,7 @@ We received your request for:
 **Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
   }
 
-  const model = process.env.OPENAI_MODEL || "gpt-4.1";
+  const model = process.env.OPENAI_MODEL || "gpt-5.3";
 
     const system = `You are Elessen Labs' senior product designer and conversion strategist.
 
@@ -584,13 +600,15 @@ SECTION QUALITY REQUIREMENTS
 - Prioritize high-impact changes
 
 ## UI Improvements
-- Focus strictly on:
-  - hierarchy
-  - spacing
-  - grouping
-  - readability
-  - visual dominance
-- Avoid repeating strategic issues already covered
+
+Generate 4–6 improvements based on importance.
+
+Prioritize:
+- clarity
+- hierarchy
+- visual dominance
+
+Do NOT force 6 if not justified.
 
 ## Copy Improvements
 - Rewrite with intent
@@ -660,6 +678,15 @@ ${screenshotState}
 
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
+
+----------------------------------
+DERIVED STRUCTURE (HIGH SIGNAL)
+----------------------------------
+Hero:
+${JSON.stringify(payload.signals?.heroGuess, null, 2)}
+
+Structure:
+${JSON.stringify(payload.signals?.structureHints, null, 2)}
 
 ----------------------------------
 STEP 1 — INTERPRET THE PRODUCT FIRST
@@ -732,6 +759,50 @@ BAD:
 
 GOOD:
 "Replace 'Menu' with a primary action like 'Book a Consultation' and position it directly in the hero to create a clear next step"
+
+----------------------------------
+DIFFERENTIATION CHECK
+----------------------------------
+
+Evaluate whether the product feels:
+- generic
+- interchangeable
+- clearly differentiated
+
+If differentiation is weak, explicitly explain:
+- why it feels generic
+- how that impacts conversion
+
+----------------------------------
+MANDATORY INTERNAL REASONING (DO NOT SKIP)
+----------------------------------
+
+Before writing the audit:
+
+1. Reconstruct the page mentally using:
+   - title
+   - headings
+   - CTAs
+   - signals
+
+2. Determine:
+   - What the product is
+   - Who it's for
+   - What action is expected
+
+3. Identify:
+   - What is unclear within 5 seconds
+   - What weakens trust
+   - What slows decision-making
+
+4. Rank the top 5 issues by:
+   - impact on clarity
+   - impact on trust
+   - impact on conversion
+
+Only AFTER this, write the audit.
+
+DO NOT output this reasoning.
 
 ----------------------------------
 OUTPUT FORMAT (MANDATORY)
@@ -876,21 +947,28 @@ If uncertain, explicitly state the uncertainty.
 
 RETURN FINAL MARKDOWN ONLY.`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      temperature: 0.25,
-    }),
-  });
+  const res = await fetch("https://api.openai.com/v1/responses", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model,
+    temperature: 0.2,
+
+    input: [
+      {
+        role: "system",
+        content: system,
+      },
+      {
+        role: "user",
+        content: user,
+      },
+    ],
+  }),
+});
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
@@ -898,7 +976,7 @@ RETURN FINAL MARKDOWN ONLY.`;
   }
 
   const json = await res.json();
-  const content = json?.choices?.[0]?.message?.content || "";
+  const content = json?.output_text || "";
   return content.trim();
 }
 
@@ -1327,7 +1405,7 @@ export async function runAuditPipeline(row: any) {
           focus_screenshot_url: null,
         });
 
-        auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
+        // auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
         uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
         if (screenshotUrl && uiEvidence.length) {
