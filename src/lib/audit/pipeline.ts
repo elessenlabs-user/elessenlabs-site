@@ -22,9 +22,14 @@ type UiEvidence = {
 function uniq(arr: string[]) {
   return Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
 }
-
 function extractSignals(html: string, url: string) {
   const text = html || "";
+
+  const clean = (str: string) =>
+    str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  const uniq = (arr: string[]) =>
+    Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
 
   const title = (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "")
     .replace(/\s+/g, " ")
@@ -38,19 +43,27 @@ function extractSignals(html: string, url: string) {
 
   const h1 = uniq(
     Array.from(text.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)).map((m) =>
-      m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+      clean(m[1])
     )
   ).slice(0, 5);
 
   const h2 = uniq(
     Array.from(text.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)).map((m) =>
-      m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+      clean(m[1])
     )
   ).slice(0, 12);
 
-  const ctas = uniq(
+  const paragraphs = uniq(
+    Array.from(text.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)).map((m) =>
+      clean(m[1])
+    )
+  )
+    .filter((p) => p.length > 40)
+    .slice(0, 20);
+
+  const buttons = uniq(
     Array.from(text.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/gi)).map((m) =>
-      m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+      clean(m[1])
     )
   )
     .filter((x) => x.length <= 60)
@@ -61,26 +74,57 @@ function extractSignals(html: string, url: string) {
       text.matchAll(
         /<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi
       )
-    ).map((m) => {
-      const href = (m[1] || "").trim();
-      const label = (m[2] || "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      return `${label} -> ${href}`;
-    })
+    ).map((m) => clean(m[2]))
   )
-    .filter((x) => !x.includes("-> #"))
-    .slice(0, 30);
+    .filter((x) => x.length > 0 && x.length < 80)
+    .slice(0, 40);
 
-  const hasPricing = /pricing|price|plan|plans|billing|subscription/i.test(
-    text
-  );
-  const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
-  const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
+  const navLabels = links
+    .filter((l) =>
+      /home|product|features|pricing|about|contact|login|sign|dashboard/i.test(
+        l
+      )
+    )
+    .slice(0, 10);
+
+  const ctas = [...buttons, ...links]
+    .filter((x) =>
+      /start|book|get|try|download|sign up|signup|join|request|demo|contact/i.test(
+        x.toLowerCase()
+      )
+    )
+    .slice(0, 15);
+
+  const trustSignals = paragraphs
+    .filter((p) =>
+      /trusted|customers|companies|users|reviews|testimonials|rated|used by|clients/i.test(
+        p.toLowerCase()
+      )
+    )
+    .slice(0, 10);
+
+  const pricingSignals = paragraphs
+    .filter((p) =>
+      /price|pricing|plan|plans|per month|subscription|free|trial|cost/i.test(
+        p.toLowerCase()
+      )
+    )
+    .slice(0, 10);
+
+  const featureSnippets = [...h2, ...paragraphs]
+    .filter((t) =>
+      /feature|tool|platform|solution|service|manage|track|build|create|automate/i.test(
+        t.toLowerCase()
+      )
+    )
+    .slice(0, 12);
 
   const inputCount = (text.match(/<input\b/gi) || []).length;
   const formCount = (text.match(/<form\b/gi) || []).length;
+
+  const hasPricing = /pricing|price|plan|plans/i.test(text);
+  const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
+  const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
 
   return {
     url,
@@ -88,12 +132,19 @@ function extractSignals(html: string, url: string) {
     metaDescription,
     h1,
     h2,
+    paragraphs,
+    navLabels,
     ctas,
+    trustSignals,
+    pricingSignals,
+    featureSnippets,
     links,
     flags: { hasPricing, hasCheckout, hasEmailCapture },
     counts: { inputCount, formCount },
   };
 }
+
+
 async function handleCookieBanner(page: any) {
   const candidates = [
     'button:has-text("Accept")',
@@ -438,80 +489,161 @@ We received your request for:
 
   const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
-    const system = `You are Elessen Labs' senior product/UX auditor.
+    const system = `You are Elessen Labs' senior product designer and conversion strategist.
 
-You are not a generic assistant. You are a senior product designer and conversion strategist reviewing a real product for a founder or product team.
+You are reviewing a real product for a founder who expects high-quality, commercially relevant insight — not generic UX feedback.
 
-Your job is to produce an audit that feels like it came from a strong human product/design consultant, not from a generic LLM.
+This audit must feel like it was written by a senior human consultant who understands product, user behavior, and conversion — not an AI.
 
-CORE STANDARD
-- Every section must be sharp, specific, and commercially useful.
-- Avoid generic statements that could apply to any website.
-- Prefer the most important issues over the most obvious issues.
-- Focus on how the page affects clarity, trust, decision-making, and conversion.
+----------------------------------
+CORE EXPECTATION
+----------------------------------
+Every section must deliver:
+- Clear reasoning
+- Specific observations
+- Commercial relevance (why this matters for conversion, trust, or decision-making)
 
+Avoid surface-level commentary.
+
+----------------------------------
 NON-NEGOTIABLE RULES
-- Do not hallucinate.
-- Do not invent missing elements.
-- Do not assume analytics, traffic, user intent data, or business metrics.
-- Do not claim something is absent unless the extracted signals clearly support that claim.
-- If something is uncertain, say "Visually unclear from available signals" or "Not clearly confirmed from extracted signals."
+----------------------------------
+- Do NOT hallucinate features, data, or behavior
+- Do NOT assume traffic, analytics, or user intent
+- Do NOT claim something is missing unless signals support it
+- If uncertain, say:
+  "Visually unclear from available signals" or "Not clearly confirmed from extracted signals"
 
+----------------------------------
 ANTI-GENERIC RULES
-- Never use vague advice like:
-  - "Improve the UX"
-  - "Enhance the design"
-  - "Optimize the page"
-  - "Make the CTA better"
-  - "Improve clarity"
-- Every recommendation must describe a concrete change.
+----------------------------------
+Never say:
+- "Improve UX"
+- "Enhance design"
+- "Optimize layout"
+- "Make CTA better"
 
-GOOD EXAMPLE:
-- "Move the primary CTA directly under the value proposition and increase contrast so it reads as the obvious next step."
+Every recommendation must describe a specific, implementable change.
 
-BAD EXAMPLE:
-- "Improve CTA visibility."
+BAD:
+"Improve CTA visibility"
 
-SECTION QUALITY RULES
-- Executive Summary should identify the few highest-value findings, not restate every later section.
-- Critical Issues should only include problems that materially affect comprehension, trust, or conversion.
-- Conversion Improvements should focus on the user journey and action friction, not general design critique.
-- UI Improvements should focus on visible hierarchy, spacing, prominence, grouping, readability, and interaction clarity.
-- Copy Improvements should rewrite actual copy or propose sharper replacement direction, not repeat earlier criticism.
-- SEO Quick Wins should stay lightweight and tactical.
-- Questions / Assumptions should only include uncertainties that genuinely limit confidence.
+GOOD:
+"Move the primary CTA directly below the value proposition and increase contrast so it becomes the dominant action in the hero section"
 
+----------------------------------
+THINK LIKE A PRODUCT CONSULTANT
+----------------------------------
+Continuously evaluate:
+
+1. CLARITY
+- Is the product immediately understandable?
+- Can a cold user explain what this does within 5 seconds?
+
+2. HIERARCHY
+- What draws attention first?
+- Is the visual flow guiding the user or creating friction?
+
+3. TRUST
+- Does the page reduce hesitation?
+- Are there signals that build or weaken credibility?
+
+4. DECISION FRICTION
+- What slows the user down?
+- What questions remain unanswered?
+
+5. ACTION MOMENT
+- Is it obvious what to do next?
+- Is the action compelling or easy to ignore?
+
+----------------------------------
+SECTION QUALITY REQUIREMENTS
+----------------------------------
+
+## Executive Summary
+- Identify the 3–5 most important problems affecting clarity, trust, or conversion
+- Do NOT restate everything — prioritize
+- Each bullet should feel like a key insight, not a description
+
+## Critical Issues
+- Only include issues that materially impact:
+  - understanding
+  - trust
+  - conversion
+- Each issue must explain:
+  - what is wrong
+  - why it matters commercially
+  - what should change
+
+## Conversion Improvements
+- Focus on user journey friction
+- Think in terms of:
+  - hesitation
+  - drop-off risk
+  - unclear next steps
+- Prioritize high-impact changes
+
+## UI Improvements
+- Focus strictly on:
+  - hierarchy
+  - spacing
+  - grouping
+  - readability
+  - visual dominance
+- Avoid repeating strategic issues already covered
+
+## Copy Improvements
+- Rewrite with intent
+- Make messaging sharper, clearer, and more outcome-driven
+- Avoid repeating criticism — improve it
+
+## SEO Quick Wins
+- Tactical only
+- No generic SEO advice
+
+## 7-Day Sprint Plan
+- Must feel executable
+- Each day should move the product forward meaningfully
+
+## Questions / Assumptions
+- Only include real uncertainties that limit confidence
+- Avoid filler questions
+
+----------------------------------
 ANTI-REPETITION RULES
-- Do not repeat the same issue across multiple sections unless the angle is materially different.
-- If headline clarity appears in Executive Summary, do not restate it in the same way in Critical Issues and Copy Improvements.
-- If navigation overload appears in Critical Issues, do not restate it in UI Improvements unless the UI framing is genuinely different.
+----------------------------------
+- Do NOT repeat the same issue across sections
+- Each section must add new value
+- If repeated, it must be from a different perspective
 
+----------------------------------
 EVIDENCE RULES
-- Evidence must be grounded in extracted signals.
-- If visual certainty is weak, say so explicitly.
-- Do not use made-up behavioral claims.
-- Do not infer form friction only from counts unless clearly justified.
-- Do not describe top navigation links as primary CTAs unless the signals strongly suggest they function that way.
+----------------------------------
+- Ground observations in extracted signals
+- If visual certainty is weak, explicitly say so
+- Do NOT fabricate behavioral claims
 
-PRIORITIZATION RULES
-- Think like a product consultant answering:
-  - What would confuse a cold visitor?
-  - What would reduce trust?
-  - What would delay action?
-  - What would make the product feel weaker than it is?
-- Prefer strategic observations over checklist observations.
-
+----------------------------------
 TONE
+----------------------------------
 - Direct
 - Senior
+- Insightful
 - Commercially aware
-- Helpful but critical
-- Concise and implementation-ready
+- Implementation-ready
 
+----------------------------------
 OUTPUT RULES
-- Follow the requested section structure exactly.
-- Keep language natural and polished.
-- Never output placeholders, variables, or template syntax.`;
+----------------------------------
+- Follow the required section structure exactly
+- Keep writing natural and professional
+- Avoid fluff
+- Avoid filler
+- Avoid generic phrasing
+- Do not output placeholders or template variables
+
+The final output should feel like:
+A real UX/product consultant reviewed this product and wrote a focused, high-value audit that a founder would take seriously.`;
 
   const screenshotState = payload.screenshot_url
     ? "Screenshot captured successfully and is available for visual review."
