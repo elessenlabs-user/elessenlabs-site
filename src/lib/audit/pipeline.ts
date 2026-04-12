@@ -661,99 +661,159 @@ ${screenshotState}
 EXTRACTED SIGNALS (from HTML)
 ${JSON.stringify(payload.signals, null, 2)}
 
-Use ONLY:
-- extracted signals
-- the fact that a screenshot exists when screenshot status says it is available
+----------------------------------
+STEP 1 — INTERPRET THE PRODUCT FIRST
+----------------------------------
 
-DO NOT:
-- assume traffic, users, or analytics
-- invent missing elements
-- guess functionality not visible
+Before writing the audit, you MUST internally determine:
 
-If something is unclear, say it is unclear.
+- What this product appears to do
+- Who it is likely for
+- What the user is trying to accomplish on this page
+- What action the page is trying (or failing) to drive
 
-RETURN THE AUDIT IN CLEAN MARKDOWN USING THESE EXACT HEADINGS:
+Do NOT output this as a separate section, but USE it to inform all insights.
+
+If unclear, explicitly say:
+"Positioning is not clearly communicated from available signals"
+
+----------------------------------
+STEP 2 — IDENTIFY REAL BREAKDOWNS
+----------------------------------
+
+Focus on:
+
+- Where understanding breaks
+- Where trust is weakened
+- Where decision-making slows down
+- Where the user would hesitate or drop off
+
+Avoid surface-level observations.
+
+Every issue must answer:
+→ “Why does this actually hurt conversion or user confidence?”
+
+----------------------------------
+STEP 3 — WRITE LIKE A SENIOR REVIEWING A LIVE PRODUCT
+----------------------------------
+
+Assume:
+- This is a real company
+- This affects real revenue
+- The team could ship fixes this week
+
+Your tone should reflect:
+- Commercial awareness
+- Product thinking
+- UX depth
+- Clarity of reasoning
+
+----------------------------------
+STRICT RULES
+----------------------------------
+
+- DO NOT repeat the same issue across sections
+- DO NOT restate the same idea in different wording
+- EACH section must add new insight
+
+- DO NOT rely only on counts (e.g. "10 H2s")
+- ALWAYS interpret what that means for the user
+
+BAD:
+"Too many headings cause cognitive overload"
+
+GOOD:
+"Multiple peer-level headings compete for attention, making it unclear where the user should focus first or what step to take next"
+
+- DO NOT give generic fixes
+
+BAD:
+"Improve CTA"
+
+GOOD:
+"Replace 'Menu' with a primary action like 'Book a Consultation' and position it directly in the hero to create a clear next step"
+
+----------------------------------
+OUTPUT FORMAT (MANDATORY)
+----------------------------------
 
 ## Executive Summary
 - Max 5 bullets
-- Focus on product clarity, messaging, and conversion
+- Each bullet = a high-level insight about:
+  - clarity
+  - trust
+  - conversion
+- No repetition
 
 ## Critical Issues
-For each issue use this exact format:
+For each issue:
 
 - Severity: Critical / High / Medium / Low
-  Issue: short issue title
-  Evidence: what proves this problem from the extracted signals
-  Why it matters: why this hurts UX or conversion
+  Issue: specific breakdown (NOT generic)
+  Evidence: what proves it (signals or visible structure)
+  Why it matters: explain user impact + conversion impact
   Recommended fix: specific action
 
-## Conversion Improvements
-For each improvement use this exact format:
+ONLY include issues that materially affect conversion.
 
-- Issue: short issue title
-  Evidence: what proves this problem
-  Fix: recommended action
-  Effort: Low / Medium / High
-  Impact: Low / Medium / High
+## Conversion Improvements
+- Focus ONLY on user decision-making and funnel friction
+- Do NOT repeat Critical Issues
+
+For each:
+
+- Issue:
+- Evidence:
+- Fix:
+- Effort: Low / Medium / High
+- Impact: Low / Medium / High
 
 ## UI Improvements
 
-You MUST generate EXACTLY 6 UI improvements.
+You MUST generate EXACTLY 6 improvements.
 
-Use this exact marker sequence once each and in order:
-1, 2, 3, 4, 5, 6
+Each must be:
+- visual
+- layout-related
+- hierarchy-related
+- non-repetitive
 
-Every item MUST begin with:
-- Marker: X
-
-STRICT FORMAT FOR ALL 6 ITEMS:
+STRICT FORMAT:
 
 - Marker: 1
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
 - Marker: 2
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
 - Marker: 3
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
 - Marker: 4
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
 - Marker: 5
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
 - Marker: 6
-  Issue: specific UI problem
-  Evidence: specific visible or structurally inferred evidence
-  Fix: one precise UI change
+  Issue:
+  Evidence:
+  Fix:
 
-Rules:
-- Use each marker exactly once
-- Do not skip any marker
-- Do not repeat any marker
-- Do not use generic phrases like "improve hierarchy"
-- If the screenshot is unavailable or visual evidence is uncertain, explicitly say it is visually unclear
-- Keep each field short, specific, and actionable
-- Each Issue must describe a specific visible UI problem
-
-BAD:
-"Issue: CTA is unclear"
-
-GOOD:
-"Issue: Primary CTA blends into surrounding elements due to low contrast and lack of visual prominence"
-
-- Do NOT repeat the same type of issue more than once
+RULES:
+- Each marker must be unique
+- Each issue must describe a REAL UI problem
+- No vague language
 
 ## Copy Improvements
 - Main headline rewrite:
@@ -762,20 +822,34 @@ GOOD:
 - Messaging improvement:
 - Messaging improvement:
 
+Make rewrites sharper, clearer, and outcome-driven.
+
 ## SEO Quick Wins
-- One recommendation per bullet
+- Only tactical recommendations
+- No generic SEO advice
 
 ## 7-Day Sprint Plan
-- Day 1: task
-- Day 2: task
-- Day 3: task
-- Day 4: task
-- Day 5: task
-- Day 6: task
-- Day 7: task
+- Each day must move the product forward meaningfully
+- No fluff tasks
 
 ## Questions / Assumptions
-- Max 6 bullets`;
+- Only include real uncertainties that limit confidence
+- Max 6 bullets
+
+----------------------------------
+FINAL CHECK BEFORE OUTPUT
+----------------------------------
+
+Before returning the audit, ensure:
+
+- It does NOT feel generic
+- It does NOT repeat itself
+- It reads like a human expert wrote it
+- It includes reasoning, not just observations
+
+If it feels templated, rewrite it.
+
+RETURN FINAL MARKDOWN ONLY.`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
