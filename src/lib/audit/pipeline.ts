@@ -505,6 +505,11 @@ We received your request for:
 
   const model = process.env.OPENAI_MODEL || "gpt-5.3";
 
+  const PIPELINE_VERSION = "v2.1-STRUCTURE-ENFORCED";
+
+console.log("AUDIT PIPELINE VERSION:", PIPELINE_VERSION);
+console.log("MODEL USED:", model);
+
     const system = `You are Elessen Labs' senior product designer and conversion strategist.
 
 You are reviewing a real product for a founder who expects high-quality, commercially relevant insight — not generic UX feedback.
@@ -668,6 +673,9 @@ A real UX/product consultant reviewed this product and wrote a focused, high-val
     : "Screenshot not available.";
 
   const user = `AUDIT REQUEST
+
+  PIPELINE VERSION: ${PIPELINE_VERSION}
+  MODEL: ${model}
 
 URL: ${payload.product_url}
 FOCUS PAGE: ${payload.focus_page_url || "Not provided"}
