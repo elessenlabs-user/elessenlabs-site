@@ -40,8 +40,15 @@ function getNextStatus(currentStatus: string | null | undefined) {
   return "preview_ready";
 }
 
+
 export async function POST(req: Request) {
   const auth = requireSecret(req);
+
+  console.log("AUDIT ROUTE ENV CHECK", {
+  vercelEnv: process.env.VERCEL_ENV,
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+});
+
   if (!auth.ok) {
     return NextResponse.json({ error: auth.msg }, { status: 401 });
   }
@@ -138,8 +145,10 @@ export async function POST(req: Request) {
 
     const auditContent = clip(
   `## Audit Build Info
+- Environment: ${process.env.VERCEL_ENV || "unknown"}
+- Site URL: ${process.env.NEXT_PUBLIC_SITE_URL || "missing"}
 - Pipeline Version: v2.1-STRUCTURE-ENFORCED
-- Model: ${process.env.OPENAI_MODEL || "gpt-5.3"}
+- Model: ${process.env.OPENAI_MODEL || "gpt-4.1"}
 - Generated At: ${new Date().toISOString()}
 
 ---
@@ -154,6 +163,17 @@ export async function POST(req: Request) {
       .join("\n\n---\n\n"),
   250000
 );
+
+console.log("FINAL AUDIT BUILD INFO", {
+  env: process.env.VERCEL_ENV,
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+  model: process.env.OPENAI_MODEL,
+  rowId: row.id,
+});
+
+console.log("🚨 FINAL AUDIT CONTENT PREVIEW:");
+console.log(auditContent.substring(0, 500));
+
 
 console.log("🚨 FINAL AUDIT CONTENT PREVIEW:");
 console.log(auditContent.substring(0, 500));
