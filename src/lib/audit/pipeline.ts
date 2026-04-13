@@ -1432,7 +1432,8 @@ export async function runAuditPipeline(row: any) {
         signals = extractSignals(html, url);
       } catch (err) {
         console.error("AUDIT HTML FETCH FAILED:", url, err);
-        throw new Error(`HTML_FETCH_FAILED for ${url}`);
+        html = "";
+        signals = extractSignals("", url);
       }
 
           let screenshotUrl: string | null = null;
