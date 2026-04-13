@@ -1475,7 +1475,19 @@ export async function runAuditPipeline(row: any) {
         auditMarkdown = await generateAuditMarkdown(auditPayload);
 
         if (!auditMarkdown || auditMarkdown.length < 1200) {
-  console.warn("⚠️ LLM OUTPUT STILL WEAK — USING CONTROLLED FALLBACK");
+  console.warn("⚠️ LLM OUTPUT WEAK — RETRYING");
+
+  auditMarkdown = await generateAuditMarkdown({
+    product_url: row.product_url || url,
+    focus_page_url: row.focus_page_url || "",
+    notes: row.notes,
+    signals,
+    screenshot_url: screenshotUrl,
+    retry: true,
+  });
+}
+if (!auditMarkdown || auditMarkdown.length < 800) {
+  console.warn("⚠️ LLM OUTPUT STILL WEAK — USING SAFE FALLBACK");
 
   auditMarkdown = `
 ## Executive Summary
