@@ -1575,6 +1575,8 @@ Day 7: Review full user journey
         console.log("MARKDOWN PREVIEW:", auditMarkdown.substring(0, 300));
 
         auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
+
+        uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
         
         if (screenshotUrl && uiEvidence.length) {
           try {
@@ -1624,9 +1626,87 @@ Day 7: Review full user journey
           cropCount: uiEvidence.filter((item) => !!item.crop_url).length,
         });
       } catch (err) {
-        console.error("AUDIT MARKDOWN FAILED:", url, err);
-        throw err;
-      }
+  console.error("AUDIT MARKDOWN FAILED:", url, err);
+
+  // ✅ DO NOT CRASH — fallback instead
+  auditMarkdown = `
+## Executive Summary
+The audit could not be fully generated due to a processing issue. A fallback audit has been created to ensure continuity.
+
+## Critical Issues
+- Severity: High  
+  Issue: Audit generation failed  
+  Evidence: LLM processing error  
+  Why it matters: Prevents structured insights from being delivered  
+  Recommended fix: Retry processing or verify upstream signals
+
+## Conversion Improvements
+- Issue: No structured conversion analysis available  
+  Evidence: Markdown generation failed  
+  Fix: Ensure page signals are valid and retry  
+  Effort: Low  
+  Impact: High
+
+## UI Improvements
+- Marker: 1
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+- Marker: 2
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+- Marker: 3
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+- Marker: 4
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+- Marker: 5
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+- Marker: 6
+  Issue: Unable to evaluate UI
+  Evidence: No rendered audit
+  Fix: Retry analysis
+
+## Copy Improvements
+- Main headline rewrite: Clarify product value  
+- Primary CTA rewrite: Add clear action  
+- Messaging improvement: Remove ambiguity  
+- Messaging improvement: Focus on user benefit  
+- Messaging improvement: Improve clarity
+
+## SEO Quick Wins
+- Ensure metadata is present  
+- Add structured headings  
+
+## 7-Day Sprint Plan
+Day 1: Fix data pipeline  
+Day 2: Retry audit generation  
+Day 3: Validate signals  
+Day 4: Improve fallback  
+Day 5: Test again  
+Day 6: Stabilize  
+Day 7: Final QA
+
+## Questions / Assumptions
+- Was the page reachable?
+- Did signals extract correctly?
+- Is the page dynamic?
+- Is content blocked?
+- Should another page be used?
+- Should retry logic increase?
+`;
+}
 
       const sections = auditMarkdown
         .split(/(?=## )/g)
