@@ -491,7 +491,7 @@ async function fetchImageBuffer(imageUrl: string) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return "Restricted audit unavailable (AI not configured)";
 
-  const model = process.env.OPENAI_MODEL || "gpt-4o";
+  const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
   const system = `
 You are a senior product designer generating a RESTRICTED audit.
@@ -569,8 +569,18 @@ Explain what blocked analysis
   });
 
   const json = await res.json();
-  return json?.output_text?.trim() || "Restricted audit failed";
+
+const output =
+  json?.output?.[0]?.content?.[0]?.text ||
+  json?.output_text ||
+  "";
+
+if (!output || output.length < 200) {
+  console.error("LLM BAD RESPONSE:", JSON.stringify(json, null, 2));
+  return "";
 }
+
+return output.trim();
 
 function ensureUiImprovementMarkers(markdown: string) {
   if (!markdown || !markdown.includes("## UI Improvements")) {
@@ -1091,7 +1101,7 @@ sections.unshift({
   title: "Audit Build Info",
   content: `
 Environment: ${process.env.VERCEL_ENV || "unknown"}
-Model: ${process.env.OPENAI_MODEL || "gpt-4o"}
+Model: ${process.env.OPENAI_MODEL || "gpt-4.1"}
 Generated At: ${new Date().toISOString()}
 Mode: ${restrictedMode ? "Restricted" : "Full"}
 `,

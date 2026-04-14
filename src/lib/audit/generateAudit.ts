@@ -2,10 +2,11 @@ export async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY missing");
 
-  const model = process.env.OPENAI_MODEL || "gpt-4o";
+  const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
   const system = `
 You are a senior UX/product strategist.
+
 
 STRICT RULES:
 - No fluff
@@ -89,7 +90,8 @@ OUTPUT FORMAT:
     },
     body: JSON.stringify({
       model,
-      temperature: payload?.retry ? 0.4 : 0.2,
+      temperature: payload?.retry ? 0.6 : 0.5,
+      max_output_tokens: 2000,
       input: [
         { role: "system", content: system },
         { role: "user", content: user },
@@ -104,5 +106,15 @@ OUTPUT FORMAT:
 
   const json = await res.json();
 
-  return json?.output_text?.trim() || "";
+  const output =
+  json?.output?.[0]?.content?.[0]?.text ||
+  json?.output_text ||
+  "";
+
+if (!output || output.length < 500) {
+  console.error("❌ LLM WEAK OR EMPTY RESPONSE:", JSON.stringify(json, null, 2));
+  return "";
+}
+
+return output.trim();
 }
