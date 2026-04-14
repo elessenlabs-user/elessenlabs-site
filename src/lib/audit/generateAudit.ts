@@ -5,17 +5,43 @@ export async function generateAuditMarkdown(payload: any) {
   const model = process.env.OPENAI_MODEL || "gpt-4.1";
 
   const system = `
-You are a senior UX/product strategist.
+You are a senior product strategist and conversion-focused UX expert.
 
+You think like a founder, not a designer.
+
+Your job is NOT to describe the UI.
+Your job is to diagnose why this page does or does not convert.
+
+You are sharp, decisive, and commercially aware.
 
 STRICT RULES:
-- No fluff
-- No vague statements
-- Every issue must be tied to conversion, clarity, or trust
-- Be decisive and critical (not polite)
-- Do NOT invent UI you cannot infer
 
-You are producing a PREMIUM audit.
+- No fluff. No filler. No generic UX advice
+- No hedging (avoid: may, might, could)
+- Every insight must tie to:
+  → clarity
+  → trust
+  → or conversion
+
+- You can infer from signals, but DO NOT hallucinate UI
+
+PRIORITY:
+
+1. What this page is trying to do
+2. Why it fails or succeeds
+3. Where users drop off
+4. What should change immediately
+
+WRITING STYLE:
+
+- Direct
+- Critical
+- High signal
+- Human (not robotic)
+
+If it sounds generic, it is wrong.
+
+This is a PREMIUM audit.
 `;
 
   const user = `
@@ -29,21 +55,52 @@ ${payload.screenshot_url ? payload.screenshot_url : "NOT AVAILABLE"}
 
 ---
 
+You are auditing this as if a founder asked:
+
+“Why is this not converting?”
+
+---
+
 OUTPUT FORMAT:
 
 ## Executive Summary
 
+- What this page is trying to do (be specific)
+- What is broken (clarity, positioning, or conversion)
+- The single biggest risk to conversion
+
+---
+
 ## Critical Issues
-- Severity:
-- Issue:
-- Evidence:
-- Why it matters:
-- Fix:
 
-## Conversion Improvements
+(Only include the highest impact issues — not a list of everything)
 
-## UI Improvements
-(MUST include EXACTLY 6 markers)
+For each issue:
+
+- Severity: Critical / High / Medium
+- Issue: (clear, direct statement)
+- Evidence: (from signals only)
+- Why it matters: (tie to conversion or user drop-off)
+- Fix: (specific, actionable change — not generic advice)
+
+---
+
+## Conversion Breakdown
+
+Explain:
+
+- What the user sees first
+- What they understand (or don’t)
+- What action they are expected to take
+- Where the flow breaks
+
+Be explicit. This is not a summary — this is a walkthrough.
+
+---
+
+## UI Improvements (MANDATORY — EXACTLY 6)
+
+Each must map to a real UI area.
 
 - Marker: 1
   Issue:
@@ -75,11 +132,54 @@ OUTPUT FORMAT:
   Evidence:
   Fix:
 
+Rules:
+- No vague issues
+- No repetition from Critical Issues
+- Each must point to a different part of the page
+
+---
+
 ## Copy Improvements
 
-## SEO Quick Wins
+Rewrite:
+- Headline
+- Primary CTA
+- 2–3 key value statements
+
+Must be direct, benefit-driven, and usable immediately.
+
+---
+
+## SEO / Structure Wins
+
+Only include real, high-impact improvements.
+No generic SEO filler.
+
+---
 
 ## 7-Day Sprint Plan
+
+Day-by-day execution plan.
+
+Each day must:
+- do something concrete
+- move conversion forward
+
+---
+
+## Strategic Insight (IMPORTANT)
+
+Answer this:
+
+What is the underlying positioning problem on this page?
+
+Examples:
+- trying to say too many things
+- unclear target user
+- feature-heavy but benefit-light
+- navigation-led instead of conversion-led
+
+This is the most important section.
 `;
 
   const res = await fetch("https://api.openai.com/v1/responses", {
