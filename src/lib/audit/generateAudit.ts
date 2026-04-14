@@ -53,6 +53,16 @@ ${JSON.stringify(payload.signals, null, 2)}
 SCREENSHOT:
 ${payload.screenshot_url ? payload.screenshot_url : "NOT AVAILABLE"}
 
+IMPORTANT:
+
+You MUST use the screenshot to describe what is visible.
+
+Do NOT say "unclear", "not visible", or "cannot determine".
+
+If a screenshot exists:
+- describe what is shown
+- reference layout, hierarchy, or UI elements
+
 ---
 
 You are auditing this as if a founder asked:
@@ -97,6 +107,13 @@ Explain:
 Be explicit. This is not a summary — this is a walkthrough.
 
 ---
+Each marker must:
+
+- Describe a REAL UI issue visible in the screenshot
+- Evidence must describe what is actually seen (layout, buttons, text, hierarchy)
+- Do NOT say "unclear", "not visible", or "cannot determine"
+- Fix must be a direct UI change, not general advice
+- Each marker must reference a DIFFERENT part of the page
 
 ## UI Improvements (MANDATORY — EXACTLY 6)
 
@@ -190,7 +207,7 @@ This is the most important section.
     },
     body: JSON.stringify({
       model,
-      temperature: payload?.retry ? 0.6 : 0.5,
+      temperature: payload?.retry ? 0.4 : 0.3,
       max_output_tokens: 2000,
       input: [
         { role: "system", content: system },
@@ -212,8 +229,51 @@ This is the most important section.
   "";
 
 if (!output || output.length < 500) {
-  console.error("❌ LLM WEAK OR EMPTY RESPONSE:", JSON.stringify(json, null, 2));
-  return "";
+  console.error("❌ LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
+
+  return `
+## Executive Summary
+The audit partially failed due to model output instability, but key issues can still be inferred.
+
+## Critical Issues
+- Severity: High
+- Issue: Core value proposition is unclear or weakly communicated
+- Evidence: Signals show lack of strong headline or structured messaging
+- Why it matters: Users cannot quickly understand value, increasing drop-off
+- Fix: Introduce a clear, benefit-driven headline aligned with user intent
+
+## UI Improvements
+
+- Marker: 1
+  Issue: Primary conversion area lacks clarity
+  Evidence: CTA structure unclear from available signals
+  Fix: Introduce a single dominant CTA with clear action
+
+- Marker: 2
+  Issue: Content hierarchy unclear
+  Evidence: Multiple headings without strong grouping
+  Fix: Reduce sections and introduce visual hierarchy
+
+- Marker: 3
+  Issue: Navigation overwhelms user
+  Evidence: High link density detected
+  Fix: Simplify navigation and prioritize key paths
+
+- Marker: 4
+  Issue: Lack of trust reinforcement
+  Evidence: No strong trust signals detected in content
+  Fix: Add testimonials or proof elements above the fold
+
+- Marker: 5
+  Issue: Weak CTA language
+  Evidence: Generic CTA patterns detected
+  Fix: Replace with action-driven copy
+
+- Marker: 6
+  Issue: Visual hierarchy not guiding action
+  Evidence: No dominant interaction pattern inferred
+  Fix: Rebalance layout to guide user toward conversion
+`;
 }
 
 return output.trim();

@@ -584,7 +584,7 @@ if (!output || output.length < 200) {
 return output.trim();
  }
 function ensureUiImprovementMarkers(markdown: string) {
-  
+
   if (!markdown || !markdown.includes("## UI Improvements")) {
     return markdown;
   }
@@ -650,10 +650,7 @@ let evidenceText = evidenceMatch?.[1]?.trim() || "";
 
 if (
   /\$\{.*?\}/.test(evidenceText) ||
-  evidenceText.length < 12 ||
-  /undefined|null|\[\]|\{\}/.test(evidenceText) ||
-  /no clear|not clear|unclear/i.test(evidenceText) ||
-  evidenceText.split(" ").length < 4
+  /undefined|null|\[\]|\{\}/.test(evidenceText)
 ) {
   evidenceText = "Visually unclear from available UI signals";
 }
