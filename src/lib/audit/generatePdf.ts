@@ -8,6 +8,18 @@ function cleanText(input: string) {
     .replace(/\t/g, "  ")
     .trim();
 }
+export async function generateAuditMarkdown(payload: any): Promise<string> {
+  return `
+## Executive Summary
+Temporary audit output
+
+## UI Improvements
+- Marker: 1
+  Issue: Placeholder
+  Evidence: Placeholder
+  Fix: Replace with real generation
+`;
+}
 
 function splitIntoLines(text: string, maxChars = 95) {
   const paragraphs = cleanText(text).split("\n");

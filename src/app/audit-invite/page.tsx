@@ -404,7 +404,7 @@ export default function AuditInvitePage() {
             </h2>
 
             <p className="mt-3 text-sm text-black/60 leading-6">
-              We’re analyzing your product and preparing your report. This can take upto 2 minutes.
+              We’re analyzing your product and preparing your report. This can take upto 3 minutes.
             </p>
             <p> Do Not Close This Window </p>
             <div className="mt-6 overflow-hidden rounded-full border border-black/10 bg-black/[0.06]">

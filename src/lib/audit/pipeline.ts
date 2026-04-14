@@ -2,6 +2,7 @@ import chromium from "@sparticuz/chromium";
 import { chromium as playwright } from "playwright-core";
 import sharp from "sharp";
 import { uploadToR2 } from "../../lib/r2/upload";
+import { generateAuditMarkdown } from "../../lib/audit/generatePdf";
 
 type UiEvidence = {
   marker: number;
@@ -363,9 +364,7 @@ const raw = await page.screenshot({
   try {
     console.log("SCREENSHOT FALLBACK START", { url });
 
-    const fallbackEndpoint = `https://image.thum.io/get/fullpage/noanimate/${encodeURIComponent(
-      url
-    )}`;
+    const fallbackEndpoint = `https://image.thum.io/get/fullpage/noanimate/${encodeURIComponent(url)}`;
 
     const response = await fetch(fallbackEndpoint);
 
@@ -425,9 +424,7 @@ async function addScreenshotMarkers(
     const response = await fetch(imageUrl);
 
     if (!response.ok) {
-      console.error(
-        `Failed to fetch screenshot for markers: ${response.status}`
-      );
+      console.error(`Failed to fetch screenshot for markers: ${response.status}`);
       return result;
     }
 
@@ -490,558 +487,89 @@ async function fetchImageBuffer(imageUrl: string) {
   const arrayBuffer = await response.arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
-
-async function generateAuditMarkdown(payload: any) {
-  const s = payload?.signals || {};
-
-const productContext = {
-  type: s.featureSnippets?.length > 5 ? "technical platform" : "general product",
-  hasStrongCTA: (s.ctas?.length || 0) > 0,
-  complexity: (s.h2?.length || 0) > 6 ? "high" : "medium",
-  likelyIntent: (s.ctas || []).join(" ").toLowerCase().includes("demo")
-    ? "sales-led"
-    : (s.ctas || []).join(" ").toLowerCase().includes("buy")
-    ? "transactional"
-    : "informational",
-};
+ async function generateRestrictedAudit(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return `# Audit (AI not configured)
-
-We received your request for:
-
-- URL: ${payload?.signals?.url}
-
-**Next:** Add OPENAI_API_KEY to generate full audits automatically.`;
-  }
+  if (!apiKey) return "Restricted audit unavailable (AI not configured)";
 
   const model = process.env.OPENAI_MODEL || "gpt-4o";
 
-  const PIPELINE_VERSION = "v2.1-STRUCTURE-ENFORCED";
+  const system = `
+You are a senior product designer generating a RESTRICTED audit.
 
-console.log("AUDIT PIPELINE VERSION:", PIPELINE_VERSION);
-console.log("MODEL USED:", model);
+The page could not be fully accessed due to:
+- bot protection OR
+- dynamic rendering OR
+- blocked HTML signals
 
-    const system = `You are Elessen Labs' senior product designer and conversion strategist.
+You MUST:
+- Be transparent about limitations
+- Use ONLY available signals
+- Still produce valuable insight
 
-You are reviewing a real product for a founder who expects high-quality, commercially relevant insight — not generic UX feedback.
+DO NOT:
+- Hallucinate UI
+- Pretend you saw the full page
 
-This audit must feel like it was written by a senior human consultant who understands product, user behavior, and conversion — not an AI.
+FOCUS ON:
+- clarity risks
+- messaging gaps
+- likely conversion friction
+`;
 
-----------------------------------
-CORE EXPECTATION
-----------------------------------
-Every section must deliver:
-- Clear reasoning
-- Specific observations
-- Commercial relevance (why this matters for conversion, trust, or decision-making)
-
-Avoid surface-level commentary.
-
-----------------------------------
-NON-NEGOTIABLE RULES
-----------------------------------
-- Do NOT hallucinate features, data, or behavior
-- Do NOT assume traffic, analytics, or user intent
-- Do NOT claim something is missing unless signals support it
-- If uncertain, say:
-  "Visually unclear from available signals" or "Not clearly confirmed from extracted signals"
-
-----------------------------------
-ANTI-GENERIC RULES
-----------------------------------
-Never say:
-- "Improve UX"
-- "Enhance design"
-- "Optimize layout"
-- "Make CTA better"
-
-Every recommendation must describe a specific, implementable change.
-
-BAD:
-"Improve CTA visibility"
-
-GOOD:
-"Move the primary CTA directly below the value proposition and increase contrast so it becomes the dominant action in the hero section"
-
-----------------------------------
-THINK LIKE A PRODUCT CONSULTANT
-----------------------------------
-Continuously evaluate:
-
-1. CLARITY
-- Is the product immediately understandable?
-- Can a cold user explain what this does within 5 seconds?
-
-2. HIERARCHY
-- What draws attention first?
-- Is the visual flow guiding the user or creating friction?
-
-3. TRUST
-- Does the page reduce hesitation?
-- Are there signals that build or weaken credibility?
-
-4. DECISION FRICTION
-- What slows the user down?
-- What questions remain unanswered?
-
-5. ACTION MOMENT
-- Is it obvious what to do next?
-- Is the action compelling or easy to ignore?
-
-Audit Metadata:
-- Pipeline Version: ${PIPELINE_VERSION}
-- Model: ${model}
-
-----------------------------------
-SECTION QUALITY REQUIREMENTS
-----------------------------------
-
-## Executive Summary
-- Identify the 3–5 most important problems affecting clarity, trust, or conversion
-- Do NOT restate everything — prioritize
-- Each bullet should feel like a key insight, not a description
-
-## Critical Issues
-- Only include issues that materially impact:
-  - understanding
-  - trust
-  - conversion
-- Each issue must explain:
-  - what is wrong
-  - why it matters commercially
-  - what should change
-
-## Conversion Improvements
-- Focus on user journey friction
-- Think in terms of:
-  - hesitation
-  - drop-off risk
-  - unclear next steps
-- Prioritize high-impact changes
-
-## UI Improvements
-
-Generate 4–6 improvements based on importance.
-
-Prioritize:
-- clarity
-- hierarchy
-- visual dominance
-
-Do NOT force 6 if not justified.
-
-## Copy Improvements
-- Rewrite with intent
-- Make messaging sharper, clearer, and more outcome-driven
-- Avoid repeating criticism — improve it
-
-## SEO Quick Wins
-- Tactical only
-- No generic SEO advice
-
-## 7-Day Sprint Plan
-- Must feel executable
-- Each day should move the product forward meaningfully
-
-## Questions / Assumptions
-- Only include real uncertainties that limit confidence
-- Avoid filler questions
-
-----------------------------------
-ANTI-REPETITION RULES
-----------------------------------
-- Do NOT repeat the same issue across sections
-- Each section must add new value
-- If repeated, it must be from a different perspective
-
-----------------------------------
-EVIDENCE RULES
-----------------------------------
-- Ground observations in extracted signals
-- If visual certainty is weak, explicitly say so
-- Do NOT fabricate behavioral claims
-
-----------------------------------
-TONE
-----------------------------------
-- Direct
-- Senior
-- Insightful
-- Commercially aware
-- Implementation-ready
-
-----------------------------------
-OUTPUT RULES
-----------------------------------
-- Follow the required section structure exactly
-- Keep writing natural and professional
-- Avoid fluff
-- Avoid filler
-- Avoid generic phrasing
-
-----------------------------------
-ANTI-TEMPLATE ENFORCEMENT
-----------------------------------
-
-If your output contains phrases like:
-- "lacks hierarchy"
-- "causes cognitive overload"
-- "reducing conversion"
-- "improve UX"
-
-You MUST rewrite that section with more specific reasoning.
-
-Generic phrasing is considered a failure.
-- Do not output placeholders or template variables
-
-The final output should feel like:
-A real UX/product consultant reviewed this product and wrote a focused, high-value audit that a founder would take seriously.`;
-
-  const screenshotState = payload.screenshot_url
-    ? "Screenshot captured successfully and is available for visual review."
-    : "Screenshot not available.";
-
-  const user = `AUDIT REQUEST
-
-Audit Metadata:
-- Pipeline Version: ${PIPELINE_VERSION}
-- Model: ${model}
-
-----------------------------------
+  const user = `
+RESTRICTED AUDIT MODE
 
 URL: ${payload.product_url}
-FOCUS PAGE: ${payload.focus_page_url || "Not provided"}
-Notes: ${payload.notes || "—"}
 
-SCREENSHOT STATUS
-${screenshotState}
-
-EXTRACTED SIGNALS (from HTML)
+AVAILABLE SIGNALS:
 ${JSON.stringify(payload.signals, null, 2)}
 
-----------------------------------
-PRODUCT CONTEXT (DERIVED)
-----------------------------------
-${JSON.stringify(productContext, null, 2)}
+SCREENSHOT:
+${payload.screenshot_url ? "Available (may be partial)" : "Not available"}
 
-----------------------------------
-DERIVED STRUCTURE (HIGH SIGNAL)
-----------------------------------
-Hero:
-${JSON.stringify(payload.signals?.heroGuess, null, 2)}
+---
 
-Structure:
-${JSON.stringify(payload.signals?.structureHints, null, 2)}
-
-----------------------------------
-STEP 1 — INTERPRET THE PRODUCT FIRST
-----------------------------------
-
-Before writing the audit, you MUST internally determine:
-
-- What this product appears to do
-- Who it is likely for
-- What the user is trying to accomplish on this page
-- What action the page is trying (or failing) to drive
-
-Do NOT output this as a separate section, but USE it to inform all insights.
-
-If unclear, explicitly say:
-"Positioning is not clearly communicated from available signals"
-
-----------------------------------
-STEP 2 — IDENTIFY REAL BREAKDOWNS
-----------------------------------
-
-Focus on:
-
-- Where understanding breaks
-- Where trust is weakened
-- Where decision-making slows down
-- Where the user would hesitate or drop off
-
-Avoid surface-level observations.
-
-Every issue must answer:
-→ “Why does this actually hurt conversion or user confidence?”
-
-----------------------------------
-STEP 3 — WRITE LIKE A SENIOR REVIEWING A LIVE PRODUCT
-----------------------------------
-
-Assume:
-- This is a real company
-- This affects real revenue
-- The team could ship fixes this week
-
-Your tone should reflect:
-- Commercial awareness
-- Product thinking
-- UX depth
-- Clarity of reasoning
-
-----------------------------------
-STRICT RULES
-----------------------------------
-
-- DO NOT repeat the same issue across sections
-- DO NOT restate the same idea in different wording
-- EACH section must add new insight
-
-- DO NOT rely only on counts (e.g. "10 H2s")
-- ALWAYS interpret what that means for the user
-
-BAD:
-"Too many headings cause cognitive overload"
-
-GOOD:
-"Multiple peer-level headings compete for attention, making it unclear where the user should focus first or what step to take next"
-
-- DO NOT give generic fixes
-
-BAD:
-"Improve CTA"
-
-GOOD:
-"Replace 'Menu' with a primary action like 'Book a Consultation' and position it directly in the hero to create a clear next step"
-
-CRITICAL DIFFERENTIATION RULE:
-
-If the product appears highly technical or niche:
-- Avoid generic SaaS recommendations
-- Focus on:
-  - comprehension gap
-  - audience mismatch
-  - technical abstraction issues
-
-If the product appears enterprise or deep-tech:
-- Do NOT recommend generic UX improvements
-- Focus on:
-  - clarity of positioning
-  - explanation layers
-  - onboarding of understanding
-
-----------------------------------
-DIFFERENTIATION CHECK
-----------------------------------
-
-Evaluate whether the product feels:
-- generic
-- interchangeable
-- clearly differentiated
-
-If differentiation is weak, explicitly explain:
-- why it feels generic
-- how that impacts conversion
-
-----------------------------------
-MANDATORY INTERNAL REASONING (DO NOT SKIP)
-----------------------------------
-
-Before writing the audit:
-
-1. Reconstruct the page mentally using:
-   - title
-   - headings
-   - CTAs
-   - signals
-
-2. Determine:
-   - What the product is
-   - Who it's for
-   - What action is expected
-
-3. Identify:
-   - What is unclear within 5 seconds
-   - What weakens trust
-   - What slows decision-making
-
-4. Rank the top 5 issues by:
-   - impact on clarity
-   - impact on trust
-   - impact on conversion
-
-Only AFTER this, write the audit.
-
-DO NOT output this reasoning.
-
-----------------------------------
-OUTPUT FORMAT (MANDATORY)
-----------------------------------
+OUTPUT FORMAT:
 
 ## Executive Summary
-- Max 5 bullets
-- Each bullet = a high-level insight about:
-  - clarity
-  - trust
-  - conversion
-- No repetition
+Explain what could and could NOT be analyzed
 
-## Critical Issues
-For each issue:
+## What We Can Confirm
+Only facts from signals
 
-- Severity: Critical / High / Medium / Low
-  Issue: specific breakdown (NOT generic)
-  Evidence: what proves it (signals or visible structure)
-  Why it matters: explain user impact + conversion impact
-  Recommended fix: specific action
+## Likely Issues (Inference-Based)
+Clearly label assumptions
 
-ONLY include issues that materially affect conversion.
+## Conversion Risks
+Where users likely drop off
 
-## Conversion Improvements
-- Focus ONLY on user decision-making and funnel friction
-- Do NOT repeat Critical Issues
+## Priority Fixes
+Concrete actions despite limited visibility
 
-For each:
+## Limitations
+Explain what blocked analysis
 
-- Issue:
-- Evidence:
-- Fix:
-- Effort: Low / Medium / High
-- Impact: Low / Medium / High
-
-## UI Improvements
-
-You MUST generate EXACTLY 6 improvements.
-
-Each must be:
-- visual
-- layout-related
-- hierarchy-related
-- non-repetitive
-
-STRICT FORMAT:
-
-- Marker: 1
-  Issue:
-  Evidence:
-  Fix:
-
-- Marker: 2
-  Issue:
-  Evidence:
-  Fix:
-
-- Marker: 3
-  Issue:
-  Evidence:
-  Fix:
-
-- Marker: 4
-  Issue:
-  Evidence:
-  Fix:
-
-- Marker: 5
-  Issue:
-  Evidence:
-  Fix:
-
-- Marker: 6
-  Issue:
-  Evidence:
-  Fix:
-
-RULES:
-- Each marker must be unique
-- Each issue must describe a REAL UI problem
-- No vague language
-
-## Copy Improvements
-- Main headline rewrite:
-- Primary CTA rewrite:
-- Messaging improvement:
-- Messaging improvement:
-- Messaging improvement:
-
-Make rewrites sharper, clearer, and outcome-driven.
-
-## SEO Quick Wins
-- Only tactical recommendations
-- No generic SEO advice
-
-## 7-Day Sprint Plan
-- Each day must move the product forward meaningfully
-- No fluff tasks
-
-## Questions / Assumptions
-- Only include real uncertainties that limit confidence
-- Max 6 bullets
-
-----------------------------------
-FINAL CHECK BEFORE OUTPUT
-----------------------------------
-
-Before returning the audit, ensure:
-
-- It does NOT feel generic
-- It does NOT repeat itself
-- It reads like a human expert wrote it
-- It includes reasoning, not just observations
-
-If it feels templated, rewrite it.
-
-----------------------------------
-CRITICAL: PRODUCT CONTEXT HYPOTHESIS
-----------------------------------
-
-Before writing the audit, you MUST determine:
-
-- What type of product this is:
-  (SaaS / marketplace / enterprise / agency / e-commerce / informational)
-
-- What the likely conversion model is:
-  (self-serve / sales-led / lead generation / awareness)
-
-- Whether the page is intended to:
-  (convert immediately OR build trust OR educate)
-
-You MUST use this to guide your audit.
-
-If the page appears to be sales-led or enterprise:
-
-- Do NOT assume missing pricing is a problem
-- Do NOT assume lack of direct CTA is a flaw
-- Evaluate based on trust, clarity, and credibility instead
-
-If uncertain, explicitly state the uncertainty.
-
-RETURN FINAL MARKDOWN ONLY.`;
-
-  const temperature = payload?.retry ? 0.4 : 0.2;
+## Recommended Next Step
+`;
 
   const res = await fetch("https://api.openai.com/v1/responses", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-  model,
-  temperature,
-
-    input: [
-      {
-        role: "system",
-        content: system,
-      },
-      {
-        role: "user",
-        content: user,
-      },
-    ],
-  }),
-});
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    throw new Error(`OpenAI error: ${res.status} ${errText}`);
-  }
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.3,
+      input: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+  });
 
   const json = await res.json();
-  const content = json?.output_text || "";
-  return content.trim();
+  return json?.output_text?.trim() || "Restricted audit failed";
 }
 
 function ensureUiImprovementMarkers(markdown: string) {
@@ -1412,7 +940,7 @@ export async function runAuditPipeline(row: any) {
       let html = "";
       let signals: any = null;
 
-      try {
+            try {
         const htmlRes = await fetch(url, {
           redirect: "follow",
           headers: {
@@ -1434,312 +962,158 @@ export async function runAuditPipeline(row: any) {
         console.error("AUDIT HTML FETCH FAILED:", url, err);
         html = "";
         signals = extractSignals("", url);
+        signals.restricted_reason = "HTML blocked or inaccessible";
       }
 
-          let screenshotUrl: string | null = null;
+ // ✅ SCREENSHOT (DEFINE BEFORE ANY USAGE)
+const screenshotUrl: string | null = await (async () => {
+  try {
+    const shot = await captureScreenshot(url);
 
-      try {
-        screenshotUrl = await captureScreenshot(url);
+    console.log("AUDIT SCREENSHOT CAPTURE", {
+      url,
+      success: !!shot,
+    });
 
-        console.log("AUDIT SCREENSHOT CAPTURE", {
-          url,
-          success: !!screenshotUrl,
-        });
+    return shot;
+  } catch (err) {
+    console.error("SCREENSHOT ERROR", url, err);
+    return null;
+  }
+})();
 
-        if (!screenshotUrl) {
-          console.error(
-            "AUDIT STEP FAILED, continuing:",
-            `SCREENSHOT_FAILED for ${url}`
-          );
-        }
-      } catch (err) {
-        console.error("AUDIT STEP FAILED, continuing:", err);
-        screenshotUrl = null;
-      }
+// ✅ DEFINE ALL VARIABLES AFTER screenshot exists
+let restrictedMode = false;
+let auditMarkdown: string = "";
+let uiEvidence: UiEvidence[] = [];
+let markedScreenshotUrl: string | null = null;
+let markedScreenshotMap: Record<number, string> = {};
+let sections: any[] = [];
 
-      let auditMarkdown = "";
-      let uiEvidence: UiEvidence[] = [];
-      let markedScreenshotUrl: string | null = screenshotUrl;
-      let markedScreenshotMap: Record<number, string> = {};
-
-            try {
-        const auditPayload = {
-          product_url: row.product_url || url,
-          focus_page_url: row.focus_page_url || "",
-          notes: row.notes,
-          signals,
-          focus_signals: null,
-          screenshot_url: screenshotUrl,
-          focus_screenshot_url: null,
-        };
-
-        auditMarkdown = await generateAuditMarkdown(auditPayload);
-
-        if (!auditMarkdown || auditMarkdown.length < 1200) {
-  console.warn("⚠️ LLM OUTPUT WEAK — RETRYING");
-
-  auditMarkdown = await generateAuditMarkdown({
+try {
+  const auditPayload = {
     product_url: row.product_url || url,
     focus_page_url: row.focus_page_url || "",
     notes: row.notes,
     signals,
+    focus_signals: null,
     screenshot_url: screenshotUrl,
-    retry: true,
-  });
-}
-if (!auditMarkdown || auditMarkdown.length < 800) {
-  console.warn("⚠️ LLM OUTPUT STILL WEAK — USING SAFE FALLBACK");
+    focus_screenshot_url: null,
+  };
 
-  auditMarkdown = `
-## Executive Summary
-The system was unable to generate a full structured audit from the available page signals. This typically occurs when the page content is either minimal, highly dynamic, or not easily interpretable from static HTML extraction.
+  auditMarkdown = await generateAuditMarkdown(auditPayload);
 
-## Critical Issues
-- Severity: High  
-  Issue: Page content could not be reliably interpreted  
-  Evidence: Extracted signals were insufficient for structured analysis  
-  Why it matters: Without clear structure or readable content, users will also struggle to understand the product quickly  
-  Recommended fix: Ensure the page contains clear, accessible HTML structure including headings, readable text blocks, and visible CTAs
+  if (!auditMarkdown || auditMarkdown.length < 1200) {
+    auditMarkdown = await generateAuditMarkdown({
+      ...auditPayload,
+      retry: true,
+    });
+  }
 
-## Conversion Improvements
-- Issue: Weak or non-detectable conversion flow  
-  Evidence: No strong CTA or structured user journey detected  
-  Fix: Introduce a clear primary action above the fold with supporting context  
-  Effort: Medium  
-  Impact: High
+  if (!auditMarkdown || auditMarkdown.length < 800) {
+    restrictedMode = true;
 
-## UI Improvements
-- Marker: 1
-  Issue: Visual hierarchy cannot be clearly determined
-  Evidence: Page structure is not strongly defined in extracted signals
-  Fix: Establish a dominant headline, supporting subtext, and clear CTA grouping
+    auditMarkdown = await generateRestrictedAudit({
+      product_url: row.product_url || url,
+      signals,
+      screenshot_url: screenshotUrl,
+    });
+  }
 
-- Marker: 2
-  Issue: Navigation clarity is uncertain
-  Evidence: Limited navigation signal detection
-  Fix: Ensure top navigation clearly communicates key paths
-
-- Marker: 3
-  Issue: CTA visibility is weak or unclear
-  Evidence: No dominant action detected
-  Fix: Introduce a high-contrast primary CTA in hero
-
-- Marker: 4
-  Issue: Content structure lacks clear segmentation
-  Evidence: Weak heading hierarchy
-  Fix: Break content into scannable sections with clear headings
-
-- Marker: 5
-  Issue: Trust signals not strongly detected
-  Evidence: Limited references to users, testimonials, or proof
-  Fix: Add visible credibility indicators (logos, testimonials)
-
-- Marker: 6
-  Issue: Layout consistency unclear
-  Evidence: Signals do not indicate structured layout flow
-  Fix: Standardize spacing and grouping of sections
-
-## Copy Improvements
-- Main headline rewrite: Clarify what the product does in one sentence  
-- Primary CTA rewrite: Use action-oriented language tied to outcome  
-- Messaging improvement: Remove ambiguity and focus on user benefit  
-- Messaging improvement: Make the value proposition explicit  
-- Messaging improvement: Reduce generic phrasing
-
-## SEO Quick Wins
-- Ensure title tag clearly reflects product purpose  
-- Add meta description aligned with primary keyword intent  
-
-## 7-Day Sprint Plan
-Day 1: Define clear value proposition  
-Day 2: Fix hero structure and CTA  
-Day 3: Improve navigation clarity  
-Day 4: Add trust signals  
-Day 5: Refactor content hierarchy  
-Day 6: Improve CTA placements  
-Day 7: Review full user journey
-
-## Questions / Assumptions
-- Is this page intended for conversion or awareness?  
-- Is content dynamically loaded after initial render?  
-- Are key sections hidden behind scripts?  
-- Is this the primary landing page?  
-- Are there missing assets or blocked content?  
-- Should a specific page (pricing/product) be audited instead?
-`;
-}
-
-
-        console.log("🧠 NEW MARKDOWN GENERATED");
-        console.log("MARKDOWN LENGTH:", auditMarkdown.length);
-        console.log("MARKDOWN PREVIEW:", auditMarkdown.substring(0, 300));
-
-        auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
-
-        uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
-        
-        if (screenshotUrl && uiEvidence.length) {
-          try {
-            markedScreenshotMap = await addScreenshotMarkers(
-              screenshotUrl,
-              uiEvidence
-            );
-
-            const firstMarked = markedScreenshotMap[uiEvidence[0]?.marker];
-            markedScreenshotUrl = firstMarked || screenshotUrl;
-
-            console.log("AUDIT MARKER OVERLAY", {
-              url,
-              success: Object.keys(markedScreenshotMap).length > 0,
-              count: Object.keys(markedScreenshotMap).length,
-            });
-          } catch (err) {
-            console.error("AUDIT MARKER OVERLAY FAILED:", url, err);
-            markedScreenshotMap = {};
-            markedScreenshotUrl = screenshotUrl;
-          }
-        }
-
-        if (uiEvidence.length) {
-          const nextEvidence: UiEvidence[] = [];
-
-          for (const item of uiEvidence) {
-            const imageForThisIssue =
-              markedScreenshotMap[item.marker] || screenshotUrl;
-
-            if (imageForThisIssue) {
-              const cropped = await generateEvidenceCrops(imageForThisIssue, [item]);
-              nextEvidence.push(cropped[0]);
-            } else {
-              nextEvidence.push(item);
-            }
-          }
-
-          uiEvidence = nextEvidence;
-        }
-
-        console.log("AUDIT MARKDOWN GENERATED", {
-          url,
-          hasContent: !!auditMarkdown,
-          length: auditMarkdown?.length || 0,
-          uiEvidenceCount: uiEvidence.length,
-          cropCount: uiEvidence.filter((item) => !!item.crop_url).length,
-        });
-      } catch (err) {
+} catch (err) {
   console.error("AUDIT MARKDOWN FAILED:", url, err);
 
-  // ✅ DO NOT CRASH — fallback instead
   auditMarkdown = `
 ## Executive Summary
-The audit could not be fully generated due to a processing issue. A fallback audit has been created to ensure continuity.
-
-## Critical Issues
-- Severity: High  
-  Issue: Audit generation failed  
-  Evidence: LLM processing error  
-  Why it matters: Prevents structured insights from being delivered  
-  Recommended fix: Retry processing or verify upstream signals
-
-## Conversion Improvements
-- Issue: No structured conversion analysis available  
-  Evidence: Markdown generation failed  
-  Fix: Ensure page signals are valid and retry  
-  Effort: Low  
-  Impact: High
+Audit failed during processing.
 
 ## UI Improvements
 - Marker: 1
   Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-- Marker: 2
-  Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-- Marker: 3
-  Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-- Marker: 4
-  Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-- Marker: 5
-  Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-- Marker: 6
-  Issue: Unable to evaluate UI
-  Evidence: No rendered audit
-  Fix: Retry analysis
-
-## Copy Improvements
-- Main headline rewrite: Clarify product value  
-- Primary CTA rewrite: Add clear action  
-- Messaging improvement: Remove ambiguity  
-- Messaging improvement: Focus on user benefit  
-- Messaging improvement: Improve clarity
-
-## SEO Quick Wins
-- Ensure metadata is present  
-- Add structured headings  
-
-## 7-Day Sprint Plan
-Day 1: Fix data pipeline  
-Day 2: Retry audit generation  
-Day 3: Validate signals  
-Day 4: Improve fallback  
-Day 5: Test again  
-Day 6: Stabilize  
-Day 7: Final QA
-
-## Questions / Assumptions
-- Was the page reachable?
-- Did signals extract correctly?
-- Is the page dynamic?
-- Is content blocked?
-- Should another page be used?
-- Should retry logic increase?
+  Evidence: Processing failure
+  Fix: Retry audit
 `;
 }
 
-      const sections = auditMarkdown
-        .split(/(?=## )/g)
-        .map((section) => {
-          const match = section.match(/^##\s+(.*)/);
-          return {
-            title: match ? match[1].trim() : "Section",
-            content: section.replace(/^##\s+.*\n?/, "").trim(),
-          };
-        })
-        .filter((s) => s.content);
+// POST PROCESS
+auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
+uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
 
-      sections.unshift({
-        title: "Audit Build Info",
-        content: `Environment: ${process.env.VERCEL_ENV || "unknown"}
-      Pipeline Version: v2.1-STRUCTURE-ENFORCED
-      Model: ${process.env.OPENAI_MODEL || "gpt-4o"}
-      Generated At: ${new Date().toISOString()}`,
+// MARKERS
+if (screenshotUrl && uiEvidence.length) {
+  try {
+    markedScreenshotMap = await addScreenshotMarkers(
+      screenshotUrl,
+      uiEvidence
+    );
+
+    markedScreenshotUrl =
+      markedScreenshotMap[uiEvidence[0]?.marker] || screenshotUrl;
+
+  } catch {
+    markedScreenshotUrl = screenshotUrl;
+  }
+}
+
+// CROPS
+if (uiEvidence.length) {
+  const nextEvidence: UiEvidence[] = [];
+
+  for (const item of uiEvidence) {
+    const imageForThisIssue =
+      markedScreenshotMap[item.marker] || screenshotUrl;
+
+    if (imageForThisIssue) {
+      const cropped = await generateEvidenceCrops(imageForThisIssue, [item]);
+      nextEvidence.push(cropped[0]);
+    } else {
+      nextEvidence.push(item);
+    }
+  }
+
+  uiEvidence = nextEvidence;
+}
+
+// SECTIONS
+sections = auditMarkdown
+  .split(/(?=## )/g)
+  .map((section) => {
+    const match = section.match(/^##\s+(.*)/);
+    return {
+      title: match ? match[1].trim() : "Section",
+      content: section.replace(/^##\s+.*\n?/, "").trim(),
+    };
+  })
+  .filter((s) => s.content);
+
+// BUILD INFO
+sections.unshift({
+  title: "Audit Build Info",
+  content: `
+Environment: ${process.env.VERCEL_ENV || "unknown"}
+Model: ${process.env.OPENAI_MODEL || "gpt-4o"}
+Generated At: ${new Date().toISOString()}
+Mode: ${restrictedMode ? "Restricted" : "Full"}
+`,
 });
-console.log("✅ FINAL AUDIT LENGTH:", auditMarkdown.length);
 
-            console.log("AUDIT PAGE SUCCESS", {
-        url,
-        sectionCount: sections.length,
-      });
+// FINAL PUSH
+processedPages.push({
+  url,
+  screenshot_url: screenshotUrl,
+  marked_screenshot_url: markedScreenshotUrl,
+  sections,
+  evidence: uiEvidence,
+});
 
-      processedPages.push({
-        url,
-        screenshot_url: screenshotUrl,
-        marked_screenshot_url: markedScreenshotUrl,
-        sections,
-        evidence: uiEvidence,
-      });
+processedPages.push({
+  url,
+  screenshot_url: screenshotUrl,
+  marked_screenshot_url: markedScreenshotUrl,
+  sections,
+  evidence: uiEvidence,
+});
+      
     } catch (err) {
       console.error("PAGE AUDIT FAILED:", url, err);
 
@@ -1767,8 +1141,8 @@ console.log("✅ FINAL AUDIT LENGTH:", auditMarkdown.length);
           {
             title: "Failure Details",
             content: `- Failure reason: ${failureReason}
-          - Technical detail: ${failureMessage}
-          - Suggested next step: Check whether the page blocks automated access, redirects unusually, or is temporarily unavailable.`,
+            - Technical detail: ${failureMessage}
+            - Suggested next step: Check whether the page blocks automated access, redirects unusually, or is temporarily unavailable.`,
           },
         ],
         evidence: [],
