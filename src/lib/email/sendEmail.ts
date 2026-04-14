@@ -67,7 +67,7 @@ export async function sendAdminNotification({
   `;
 
   await resend.emails.send({
-    from: "Elessen <hello@elessenlabs.com>",
+    from: "Elessen Labs<hello@elessenlabs.com>",
     to: ["hello@elessenlabs.com", "tanya@elessenlabs.com"],
     subject: "New Audit Request Submitted",
     html: baseTemplate(content, siteUrl),
@@ -123,7 +123,7 @@ export async function sendAuditPaymentConfirmation({
   `;
 
   await resend.emails.send({
-    from: "Elessen <hello@elessenlabs.com>",
+    from: "Elessen Labs<hello@elessenlabs.com>",
     to: email,
     subject: "Payment received — your audit is in review",
     html: baseTemplate(content, siteUrl),
@@ -177,7 +177,7 @@ export async function sendInviteAuditAdminNotification({
   `;
 
   await resend.emails.send({
-    from: "Elessen <hello@elessenlabs.com>",
+    from: "Elessen Labs <hello@elessenlabs.com>",
     to: ["hello@elessenlabs.com", "tanya@elessenlabs.com"],
     subject: "New Invite Audit Submitted",
     html: baseTemplate(content, siteUrl),
@@ -216,7 +216,7 @@ export async function sendInviteAuditConfirmation({
   `;
 
   await resend.emails.send({
-    from: "Elessen <hello@elessenlabs.com>",
+    from: "Elessen Labs <hello@elessenlabs.com>",
     to: email,
     subject: "Your audit is in progress",
     html: baseTemplate(content, siteUrl),
@@ -295,7 +295,7 @@ export async function sendInviteAuditDelivery({
   `;
 
   await resend.emails.send({
-    from: "Elessen <hello@elessenlabs.com>",
+    from: "Elessen Labs <hello@elessenlabs.com>",
     to: email,
     cc: "hello@elessenlabs.com",
     subject: "Your Elessen Audit Report is Ready",
