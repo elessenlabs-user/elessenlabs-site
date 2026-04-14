@@ -574,6 +574,7 @@ const output =
   json?.output?.[0]?.content?.[0]?.text ||
   json?.output_text ||
   "";
+ 
 
 if (!output || output.length < 200) {
   console.error("LLM BAD RESPONSE:", JSON.stringify(json, null, 2));
@@ -581,8 +582,9 @@ if (!output || output.length < 200) {
 }
 
 return output.trim();
-
+ }
 function ensureUiImprovementMarkers(markdown: string) {
+  
   if (!markdown || !markdown.includes("## UI Improvements")) {
     return markdown;
   }
@@ -941,6 +943,7 @@ export async function runAuditPipeline(row: any) {
   const pageUrls = buildAuditPages(row);
   const processedPages = [];
 
+
   for (const url of pageUrls) {
     if (!url) continue;
 
@@ -957,6 +960,7 @@ export async function runAuditPipeline(row: any) {
             "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
             Accept: "text/html,*/*",
           },
+        
         });
 
         console.log("AUDIT HTML FETCH", {
