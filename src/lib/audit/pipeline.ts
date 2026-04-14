@@ -2,7 +2,7 @@ import chromium from "@sparticuz/chromium";
 import { chromium as playwright } from "playwright-core";
 import sharp from "sharp";
 import { uploadToR2 } from "../../lib/r2/upload";
-import { generateAuditMarkdown } from "../../lib/audit/generatePdf";
+import { generateAuditMarkdown } from "../../lib/audit/generateAudit";
 
 type UiEvidence = {
   marker: number;
@@ -1106,13 +1106,6 @@ processedPages.push({
   evidence: uiEvidence,
 });
 
-processedPages.push({
-  url,
-  screenshot_url: screenshotUrl,
-  marked_screenshot_url: markedScreenshotUrl,
-  sections,
-  evidence: uiEvidence,
-});
       
     } catch (err) {
       console.error("PAGE AUDIT FAILED:", url, err);
