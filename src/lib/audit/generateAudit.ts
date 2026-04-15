@@ -25,6 +25,15 @@ STRICT RULES:
 
 - You can infer from signals, but DO NOT hallucinate UI
 
+You are given computed UX scores.
+
+You MUST:
+- Use them to support your reasoning
+- If scores are low, explain why clearly
+- If scores are high, identify what works
+
+DO NOT ignore scores.
+
 PRIORITY:
 
 1. What this page is trying to do

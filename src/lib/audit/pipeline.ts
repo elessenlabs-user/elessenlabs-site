@@ -582,6 +582,8 @@ URL: ${payload.product_url}
 
 AVAILABLE SIGNALS:
 ${JSON.stringify(payload.signals, null, 2)}
+SCORES:
+${JSON.stringify(payload.scores, null, 2)}
 
 SCREENSHOT:
 ${payload.screenshot_url ? "Available (may be partial)" : "Not available"}
@@ -1038,7 +1040,7 @@ try {
     throw err;
   }
 }
-``
+
 
         console.log("AUDIT HTML FETCH", {
           url,
@@ -1073,6 +1075,47 @@ const screenshotUrl: string | null = await (async () => {
   }
 })();
 
+// ✅ PLAYWRIGHT HTML EXTRACTION (STRONGER THAN FETCH)
+if (screenshotUrl) {
+  try {
+    console.log("PLAYWRIGHT HTML EXTRACTION START", { url });
+
+    const browser = await playwright.launch({
+      args: chromium.args,
+      executablePath:
+        process.env.VERCEL
+          ? await chromium.executablePath()
+          : undefined,
+      headless: true,
+    });
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+      timeout: 45000,
+    });
+
+    await page.waitForTimeout(2000);
+
+    const renderedHtml = await page.content();
+
+    if (renderedHtml && renderedHtml.length > 1000) {
+      console.log("PLAYWRIGHT HTML SUCCESS — overriding fetch HTML");
+
+      html = renderedHtml;
+      signals = extractSignals(html, url);
+    } else {
+      console.log("PLAYWRIGHT HTML TOO WEAK — keeping fetch version");
+    }
+
+    await browser.close();
+  } catch (err) {
+    console.error("PLAYWRIGHT HTML FAILED — fallback to fetch", err);
+  }
+}
+
 // ✅ DEFINE ALL VARIABLES AFTER screenshot exists
 let restrictedMode = false;
 let auditMarkdown: string = "";
@@ -1082,11 +1125,13 @@ let markedScreenshotMap: Record<number, string> = {};
 let sections: any[] = [];
 
 try {
+  const scores = computeAuditScores(signals);
   const auditPayload = {
     product_url: row.product_url || url,
     focus_page_url: row.focus_page_url || "",
     notes: row.notes,
     signals,
+    scores,
     focus_signals: null,
     screenshot_url: screenshotUrl,
     focus_screenshot_url: null,
@@ -1107,8 +1152,9 @@ try {
     auditMarkdown = await generateRestrictedAudit({
       product_url: row.product_url || url,
       signals,
+      scores,
       screenshot_url: screenshotUrl,
-    });
+});
   }
 
 } catch (err) {
