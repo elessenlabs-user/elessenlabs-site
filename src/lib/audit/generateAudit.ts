@@ -64,7 +64,17 @@ ${payload.screenshot_url ? payload.screenshot_url : "NOT AVAILABLE"}
 
 IMPORTANT:
 
-You MUST use the screenshot to describe what is visible.
+You MUST ONLY describe UI elements that are clearly visible in the screenshot.
+
+If visibility is limited:
+- state uncertainty clearly
+- do NOT fabricate UI labels, badges, or elements
+
+Each UI claim must be grounded in:
+- screenshot OR
+- extracted signals
+
+If unsure → say "appears to" or "likely based on structure"
 
 Do NOT say "unclear", "not visible", or "cannot determine".
 
@@ -73,6 +83,16 @@ If a screenshot exists:
 - reference layout, hierarchy, or UI elements
 
 ---
+You MUST explicitly reference scores in your reasoning:
+
+- If Clarity < 6 → explain messaging confusion
+- If Trust < 6 → explain missing proof
+- If Conversion < 6 → explain CTA or flow issues
+- If UX < 6 → explain navigation or usability issues
+
+Do NOT ignore scores.
+Do NOT give generic advice.
+Tie every major issue to a score.
 
 You are auditing this as if a founder asked:
 
@@ -96,7 +116,14 @@ OUTPUT FORMAT:
 
 For each issue:
 
-- Severity: Critical / High / Medium
+Priority Level:
+- Requires Attention
+- Worth Improving
+- Observation
+
+Each must include:
+- Evidence Source: (Screenshot / HTML / Inference)
+- Confidence: High / Medium / Low
 - Issue: (clear, direct statement)
 - Evidence: (from signals only)
 - Why it matters: (tie to conversion or user drop-off)

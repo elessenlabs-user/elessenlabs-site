@@ -993,6 +993,33 @@ function buildAuditPages(row: any): string[] {
 
   return Array.from(new Set(candidates.filter(Boolean)));
 }
+async function getMarketContext(url: string) {
+  try {
+    const domain = new URL(url).hostname;
+
+    // BASIC GOOGLE SEARCH FOR COMPETITORS
+    const searchRes = await fetch(
+      `https://serpapi.com/search.json?q=${domain}+alternatives&api_key=${process.env.SERP_API_KEY}`
+    );
+
+    const searchJson = await searchRes.json();
+
+    const competitors =
+      searchJson?.organic_results?.slice(0, 5).map((r: any) => ({
+        title: r.title,
+        link: r.link,
+      })) || [];
+
+    return {
+      domain,
+      competitors,
+      traffic_estimate: "unknown", // placeholder for now
+    };
+  } catch (err) {
+    console.error("MARKET CONTEXT FAILED", err);
+    return null;
+  }
+}
 
 export async function runAuditPipeline(row: any) {
   console.log("🚨 PIPELINE EXECUTION STARTED 🚨");
@@ -1123,9 +1150,10 @@ let uiEvidence: UiEvidence[] = [];
 let markedScreenshotUrl: string | null = null;
 let markedScreenshotMap: Record<number, string> = {};
 let sections: any[] = [];
+let scores: ReturnType<typeof computeAuditScores> | null = null;
 
 try {
-  const scores = computeAuditScores(signals);
+  scores = computeAuditScores(signals);
   const auditPayload = {
     product_url: row.product_url || url,
     focus_page_url: row.focus_page_url || "",
@@ -1136,6 +1164,7 @@ try {
     screenshot_url: screenshotUrl,
     focus_screenshot_url: null,
   };
+
 
   auditMarkdown = await generateAuditMarkdown(auditPayload);
 
@@ -1241,6 +1270,7 @@ processedPages.push({
   marked_screenshot_url: markedScreenshotUrl,
   sections,
   evidence: uiEvidence,
+  scores,
 });
 
       

@@ -24,6 +24,13 @@ type PageGroup = {
   processing_failed: boolean;
   failure_reason: string | null;
   failure_detail: string | null;
+  scores?: {
+  clarity: number;
+  trust: number;
+  conversion: number;
+  ux: number;
+  marketing: number;
+} | null;
 };
 
 function splitSections(markdown: string | null | undefined) {
@@ -424,10 +431,12 @@ export default async function AuditResultPage({
         marked_screenshot_url: page.marked_screenshot_url || null,
         sections: Array.isArray(page.sections) ? page.sections : [],
         evidence: Array.isArray(page.evidence) ? page.evidence : [],
+        scores: page.scores || null,
         processing_failed: !!page.processing_failed,
         failure_reason: page.failure_reason || null,
         failure_detail: page.failure_detail || null,
       }))
+      
         : [
         {
           id: "page-1",
@@ -437,11 +446,15 @@ export default async function AuditResultPage({
           marked_screenshot_url: data.marked_screenshot_url || null,
           sections: splitSections(finalAuditContent),
           evidence: [],
+          scores: null,
           processing_failed: false,
           failure_reason: null,
           failure_detail: null,
         },
       ];
+
+const firstPage = pageGroups?.[0];
+const scores = firstPage?.scores || null;  
 
 const auditScore = computeAuditScore(finalAuditContent || "");
 
@@ -555,42 +568,46 @@ const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlab
           <PrintActions />
         </div>
 
-        <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
-            <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
-            <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
-          </div>
+        <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
 
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Audit Type</div>
-            <div className="mt-2 text-lg font-semibold">UX Conversion Audit</div>
-          </div>
+  {/* EXISTING AUDIT SCORE */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Audit Score</div>
+    <div className="mt-2 text-3xl font-semibold">{auditScore.score}</div>
+    <div className="mt-1 text-sm text-black/55">{auditScore.label}</div>
+  </div>
 
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Status</div>
-            <div className="mt-2 text-lg font-semibold">
-            
-            {data.status === "preview_ready"
-              ? "Preview Ready"
-              : data.status === "paid_pending_review" ||
-              data.status === "paid_in_review" ||
-              data.status === "ready_for_review" ||
-              data.status === "review_ready" ||
-              data.status === "in_review"
-              ? "Pending Review"
-              : data.status === "delivered"
-              ? "Delivered"
-              : data.status}
-          </div>
-          </div>
+  {/* ✅ NEW: CLARITY */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Clarity</div>
+    <div className="mt-2 text-2xl font-semibold">{scores?.clarity ?? "-"}</div>
+  </div>
 
-          <div className="rounded-2xl border border-black/10 p-5">
-            <div className="text-xs uppercase tracking-wide text-black/45">Report Format</div>
-            <div className="mt-2 text-lg font-semibold">Structured Review</div>
-          </div>
-        </div>
+  {/* ✅ NEW: TRUST */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Trust</div>
+    <div className="mt-2 text-2xl font-semibold">{scores?.trust ?? "-"}</div>
+  </div>
 
+  {/* ✅ NEW: CONVERSION */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Conversion</div>
+    <div className="mt-2 text-2xl font-semibold">{scores?.conversion ?? "-"}</div>
+  </div>
+
+  {/* ✅ NEW: UX */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">UX</div>
+    <div className="mt-2 text-2xl font-semibold">{scores?.ux ?? "-"}</div>
+  </div>
+
+  {/* ✅ NEW: MARKETING */}
+  <div className="rounded-2xl border border-black/10 p-5">
+    <div className="text-xs uppercase tracking-wide text-black/45">Marketing</div>
+    <div className="mt-2 text-2xl font-semibold">{scores?.marketing ?? "-"}</div>
+  </div>
+
+</div>
 
        {pageGroups.map((page) => (
   <div key={page.id} className="mb-12 print:mb-16 break-before-page">
