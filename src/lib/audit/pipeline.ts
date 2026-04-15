@@ -156,9 +156,42 @@ const uxAnalysis = {
     noNav: navLabels.length === 0,
   },
 };
+// ===== NEW METRICS LAYER (DO NOT TOUCH EXISTING UX BLOCK) =====
 
+const metrics = {
+  wordCount: clean(text).split(" ").length,
+  ctaCount: ctas.length,
+  navCount: navLabels.length,
+  trustCount: trustSignals.length,
+  headingCount: h1.length + h2.length,
+  paragraphCount: paragraphs.length,
+
+  hasSingleCTA: ctas.length === 1,
+  hasTooManyCTAs: ctas.length > 5,
+
+  contentToCTAImbalance:
+    paragraphs.length > 8 && ctas.length < 2,
+
+  trustDeficit: trustSignals.length === 0,
+
+  weakStructure:
+    h1.length === 0 || paragraphs.length < 2,
+
+  conversionReadinessScore: (() => {
+    let score = 0;
+
+    if (ctas.length > 0) score += 2;
+    if (ctas.length === 1) score += 2;
+    if (trustSignals.length > 0) score += 2;
+    if (paragraphs.length > 3) score += 2;
+    if (navLabels.length > 0) score += 2;
+
+    return score;
+  })(),
+};
   return {
   uxAnalysis,
+  metrics, 
   url,
   title,
   metaDescription,
@@ -178,6 +211,9 @@ const uxAnalysis = {
 };
 }
 function computeAuditScores(signals: any) {
+  const metrics = signals?.metrics || {};
+  const ux = signals?.uxAnalysis || {};
+
   let score = {
     clarity: 0,
     trust: 0,
@@ -186,31 +222,52 @@ function computeAuditScores(signals: any) {
     marketing: 0,
   };
 
+  // ======================
   // CLARITY
+  // ======================
   if (signals.h1?.length) score.clarity += 2;
   if (signals.heroGuess?.headline) score.clarity += 2;
-  if (signals.heroGuess?.primaryCTA) score.clarity += 1;
-  if (signals.paragraphs?.length > 3) score.clarity += 1;
+  if (signals.paragraphs?.length > 3) score.clarity += 2;
+  if (metrics.wordCount > 80) score.clarity += 2;
+  if (!metrics.weakStructure) score.clarity += 2;
 
+  // ======================
   // TRUST
-  if (signals.trustSignals?.length > 0) score.trust += 3;
-  if (signals.links?.length > 10) score.trust += 1;
+  // ======================
+  if (metrics.trustCount > 0) score.trust += 4;
+  if (metrics.trustCount > 3) score.trust += 2;
+  if (signals.links?.length > 10) score.trust += 2;
+  if (!metrics.trustDeficit) score.trust += 2;
 
+  // ======================
   // CONVERSION
-  if (signals.ctas?.length > 0) score.conversion += 3;
+  // ======================
+  if (metrics.ctaCount > 0) score.conversion += 3;
+  if (metrics.hasSingleCTA) score.conversion += 3;
+  if (!metrics.contentToCTAImbalance) score.conversion += 2;
   if (signals.flags?.hasEmailCapture) score.conversion += 2;
-  if (signals.flags?.hasCheckout) score.conversion += 2;
 
+  // ======================
   // UX
-  if (signals.navLabels?.length > 0) score.ux += 2;
+  // ======================
+  if (metrics.navCount > 0) score.ux += 2;
   if (signals.counts?.formCount > 0) score.ux += 2;
+  if (!ux.frictionIndicators?.noNav) score.ux += 2;
+  if (!ux.frictionIndicators?.thinContent) score.ux += 2;
+  if (!ux.frictionIndicators?.noCTA) score.ux += 2;
 
+  // ======================
   // MARKETING
-  if (signals.metaDescription) score.marketing += 2;
+  // ======================
+  if (signals.metaDescription) score.marketing += 3;
+  if (metrics.headingCount > 3) score.marketing += 2;
   if (signals.pricingSignals?.length > 0) score.marketing += 2;
+  if (metrics.wordCount > 120) score.marketing += 3;
 
-  // Normalize to /10
-  const normalize = (v: number) => Math.min(10, v * 2);
+  // ======================
+  // NORMALIZE (/10)
+  // ======================
+  const normalize = (v: number) => Math.min(10, Math.round(v));
 
   return {
     clarity: normalize(score.clarity),
@@ -1154,12 +1211,14 @@ let scores: ReturnType<typeof computeAuditScores> | null = null;
 
 try {
   scores = computeAuditScores(signals);
+  const marketContext = await getMarketContext(url);
   const auditPayload = {
     product_url: row.product_url || url,
     focus_page_url: row.focus_page_url || "",
     notes: row.notes,
     signals,
     scores,
+    marketContext,
     focus_signals: null,
     screenshot_url: screenshotUrl,
     focus_screenshot_url: null,

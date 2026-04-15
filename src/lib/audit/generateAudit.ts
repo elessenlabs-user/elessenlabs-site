@@ -7,13 +7,14 @@ export async function generateAuditMarkdown(payload: any) {
   const system = `
 You are a senior product strategist, UX reviewer, and conversion analyst.
 
-You are producing a product teardown based only on evidence supplied to you.
+You are producing a PRODUCT TEARDOWN based only on supplied evidence.
 
 Your job is to identify:
-- what the page is trying to do
+- what the page appears to be trying to do
 - what supports conversion
 - what weakens conversion
 - what should change first
+- how the product appears positioned against alternatives when marketContext exists
 
 NON-NEGOTIABLE EVIDENCE RULES
 
@@ -35,87 +36,97 @@ NON-NEGOTIABLE EVIDENCE RULES
 - navigation items
 - UI states
 
-3. If a claim is based on screenshot only, label it:
-- Evidence Source: Screenshot
+3. Every finding MUST include:
+- Evidence Source
+- Confidence
 
-4. If a claim is based on extracted HTML only, label it:
-- Evidence Source: HTML
+4. Evidence Source must be one of:
+- Screenshot
+- HTML
+- Inference
 
-5. If a claim is reasoned from weak or partial evidence, label it:
-- Evidence Source: Inference
-- Confidence: Low or Medium
+5. Confidence must be one of:
+- High
+- Medium
+- Low
 
-6. Do NOT present inference as fact.
+6. If a claim depends on weak evidence:
+- mark as Inference
+- reduce confidence
 
-7. Do NOT use the word "Critical" unless the evidence clearly shows a severe conversion blocker.
-Preferred priority labels are:
+7. Do NOT present inference as fact
+
+PRIORITY RULES
+
+Use ONLY:
 - Requires Attention
 - Worth Improving
 - Observation
 
-8. This is a PRODUCT TEARDOWN, not a compliance audit.
-Use practical, commercially grounded language.
+DO NOT use:
+- Critical
+- Severe
+- Major blocker
 
 SCORING RULES
 
-You are given computed scores for:
+Use the scores provided:
 - clarity
 - trust
 - conversion
 - ux
 - marketing
 
-You MUST use these scores in the reasoning.
-
 If a score is low:
-- explain what likely drives that weakness
-- tie it to available evidence
+- explain why based on evidence
 
 If a score is high:
-- explain what appears to be working
+- explain what is working
 
-Do not ignore the scores.
+Do not ignore scores.
 
 ANTI-HALLUCINATION RULES
 
-Never say:
-- clearly visible
-- obvious
-- prominent
-- strong hierarchy
-- weak hierarchy
-- cluttered
-- distracting
-unless that is directly supported by evidence.
+Never claim UI elements that are not visible or extractable.
 
-Do not mention any UI element that is not present in the screenshot or extracted signals.
-
-If screenshot fidelity is limited, say:
-- "Based on the available screenshot..."
-- "From the extracted structure..."
+If uncertain, say:
+- "Based on available screenshot..."
+- "From extracted structure..."
 - "This appears to..."
 
-OUTPUT GOAL
+Reduce confidence when unsure.
 
-The output must feel:
-- specific
-- commercially useful
-- evidence-led
-- safe from hallucination
-- fit for founder review
+STYLE
 
-If evidence is weak, reduce certainty.
-Do not fill gaps with invented detail.
+- Direct
+- Evidence-led
+- No fluff
+- No generic UX jargon
 `;
 
-const user = `
+  const user = `
 URL: ${payload.product_url}
 
 SCORES:
 ${JSON.stringify(payload.scores, null, 2)}
 
-SIGNALS:
-${JSON.stringify(payload.signals, null, 2)}
+CORE SIGNALS:
+- H1: ${payload.signals.h1?.join(" | ") || "none"}
+- Primary CTA: ${payload.signals.heroGuess?.primaryCTA || "none"}
+- CTA Count: ${payload.signals.metrics?.ctaCount || 0}
+- Trust Signals: ${payload.signals.metrics?.trustCount || 0}
+- Paragraph Count: ${payload.signals.metrics?.paragraphCount || 0}
+- Word Count: ${payload.signals.metrics?.wordCount || 0}
+- Navigation Labels: ${payload.signals.navLabels?.join(", ") || "none"}
+
+UX DIAGNOSTICS:
+${JSON.stringify(payload.signals.uxAnalysis, null, 2)}
+
+METRICS:
+${JSON.stringify(payload.signals.metrics, null, 2)}
+
+MARKET CONTEXT:
+${JSON.stringify(payload.marketContext, null, 2)}
 
 SCREENSHOT:
 ${payload.screenshot_url ? payload.screenshot_url : "NOT AVAILABLE"}
@@ -124,72 +135,112 @@ TASK
 
 Produce an evidence-led product teardown.
 
-You must assess:
-- positioning
-- clarity
-- trust
-- conversion readiness
-- UX friction
-- marketing effectiveness
-
-IMPORTANT EVIDENCE BEHAVIOR
-
-- Do not invent screenshot details
-- Do not invent labels or badges
-- Do not invent navigation items
-- Do not claim exact UI elements unless supported
-- Use "appears to" when certainty is not high
-- If evidence is partial, reduce confidence
-
-PRIORITY LABELS
-
-Use only:
-- Requires Attention
-- Worth Improving
-- Observation
-
-Do NOT use:
-- Critical
-unless the evidence clearly proves a severe blocker.
-
 OUTPUT FORMAT
 
 ## Executive Summary
 - What this page appears to be trying to do
-- What most likely weakens performance
+- What weakens performance
 - What seems strongest
 - What should be fixed first
 
-## Priority Findings
-For each finding include:
-- Priority Level:
+## Score Interpretation
+Explain each:
+- Clarity
+- Trust
+- Conversion
+- UX
+- Marketing
+
+Tie explanation to evidence.
+
+## Priority Findings (RANKED — EXECUTION ORDER)
+
+You MUST rank findings in order of execution priority.
+
+Each finding must include:
+
+- Priority Rank: (1 = highest impact)
+- Priority Level: Requires Attention / Worth Improving / Observation
 - Evidence Source: Screenshot / HTML / Inference
 - Confidence: High / Medium / Low
 - Issue:
 - Evidence:
 - Why it matters:
 - Fix:
+- Expected Impact: (High / Medium / Low)
+
+STRICT RULES:
+
+1. Rank based on:
+   - conversion impact
+   - severity of friction
+   - presence of measurable signals (CTA, trust, content)
+
+2. Highest priority issues MUST be:
+   - missing CTA
+   - no trust signals
+   - weak or missing headline
+   - broken conversion path
+
+3. DO NOT:
+   - list randomly
+   - mix severity without ranking
+   - repeat similar issues
+
+4. Each finding must clearly justify its rank.
+
+EXAMPLE:
+
+- Priority Rank: 1
+  Priority Level: Requires Attention
+  Issue: No primary CTA detected (ctaCount = 0)
+  Expected Impact: High
 
 ## Conversion Breakdown
 Explain:
-- what a first-time user likely sees first
-- what they likely understand quickly
-- where hesitation likely begins
-- what action the page seems to want
+- first impression
+- what user understands
+- where hesitation starts
+- expected action
 
-Tie this to scores where relevant.
+## UI Improvements (STRICT — NO GENERIC OUTPUT)
 
-## UI Improvements
-Provide EXACTLY 6 markers.
+You MUST generate EXACTLY 6 markers.
 
-Rules:
-- each marker must refer to a different page area
-- each marker must be grounded in screenshot or HTML evidence
-- do not invent labels
-- do not invent badges
-- do not claim certainty where there is none
+Each marker must be tied to REAL evidence from:
+- screenshot OR
+- extracted signals OR
+- computed metrics
 
-Format:
+STRICT RULES:
+
+1. Each marker MUST reference something concrete:
+   - CTA count
+   - missing CTA
+   - weak headline (if no H1 or empty heroGuess)
+   - lack of trust signals (if trustCount = 0)
+   - low paragraphCount (thin content)
+   - too many CTAs (ctaCount > 5)
+   - no navigation (navCount = 0)
+
+2. DO NOT say:
+- improve UX
+- improve hierarchy
+- make clearer
+- enhance design
+- optimize layout
+
+3. Each issue MUST include a measurable or observable problem
+
+BAD:
+"Issue: Layout is unclear"
+
+GOOD:
+"Issue: No primary CTA detected (ctaCount = 0)"
+
+---
+
+FORMAT (MANDATORY):
 
 - Marker: 1
   Evidence Source:
@@ -198,138 +249,200 @@ Format:
   Evidence:
   Fix:
 
-- Marker: 2
-  Evidence Source:
-  Confidence:
-  Issue:
-  Evidence:
-  Fix:
+---
 
-- Marker: 3
-  Evidence Source:
-  Confidence:
-  Issue:
-  Evidence:
-  Fix:
+Each marker must:
+- reference a DIFFERENT problem
+- NOT repeat the same issue in different words
+- NOT overlap with another marker
 
-- Marker: 4
-  Evidence Source:
-  Confidence:
-  Issue:
-  Evidence:
-  Fix:
+---
 
-- Marker: 5
-  Evidence Source:
-  Confidence:
-  Issue:
-  Evidence:
-  Fix:
+If signals are weak:
+- reduce confidence
+- but still tie issue to metrics
 
-- Marker: 6
-  Evidence Source:
-  Confidence:
-  Issue:
-  Evidence:
-  Fix:
+---
+
+EXAMPLES OF VALID ISSUES:
+
+- "CTA count is 0 → no conversion path"
+- "Trust signals count is 0 → no credibility support"
+- "Paragraph count < 3 → insufficient explanation"
+- "Multiple CTAs (>5) → decision friction"
+- "No navigation labels detected → weak structure"
+
+---
+
+FINAL RULE:
+If the issue cannot be tied to a signal or metric → DO NOT INCLUDE IT
 
 ## Copy Improvements
-Rewrite:
-- headline
-- primary CTA
-- 2 to 3 supporting value statements
-
-Only do this if enough evidence exists.
-If not, say the copy rewrite is constrained by limited evidence.
+Rewrite only if evidence supports it.
 
 ## SEO / Structure Wins
-Only include improvements supported by signals.
+Only include evidence-backed improvements.
 
 ## 7-Day Sprint Plan
-Give a practical day-by-day plan.
+Concrete daily actions.
+
+## Market & Competitive Insight
+
+If marketContext is available:
+
+- Identify how this product likely compares to competitors
+- Highlight positioning gaps
+- Identify missed differentiation opportunities
+
+If not available:
+- Skip this section
+
+## What To Fix First (Action Plan)
+
+Provide a short, decisive execution plan:
+
+- Top 3 fixes only
+- Must be tied to highest priority findings
+- Must be specific (not generic UX advice)
+
+Format:
+
+1. Fix:
+   Why:
+   Expected Impact:
+
+2. Fix:
+   Why:
+   Expected Impact:
+
+3. Fix:
+   Why:
+   Expected Impact:
 
 ## Strategic Insight
-State the underlying positioning or conversion problem.
+Core positioning or conversion issue.
 
 FINAL RULE
-If you are not sure, lower confidence.
+If unsure → lower confidence.
 Do not hallucinate.
 `;
 
   const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      temperature: payload?.retry ? 0.4 : 0.3,
-      max_output_tokens: 2000,
-      input: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-    }),
-  });
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model,
+    temperature: payload?.retry ? 0.35 : 0.25,
+    max_output_tokens: 2200,
+    input: [
+      {
+        role: "system",
+        content: [{ type: "text", text: system }],
+      },
+      {
+        role: "user",
+        content: [{ type: "text", text: user }],
+      },
+    ],
+  }),
+});
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OPENAI FAILED: ${text}`);
-  }
+if (!res.ok) {
+  const text = await res.text();
+  throw new Error(`OPENAI FAILED: ${text}`);
+}
 
-  const json = await res.json();
+const json = await res.json();
 
-  const output =
+const output =
   json?.output?.[0]?.content?.[0]?.text ||
   json?.output_text ||
   "";
 
-if (!output || output.length < 500) {
-  console.error("❌ LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
+if (!output || output.length < 700) {
+  console.error("LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
 
   return `
 ## Executive Summary
-The audit partially failed due to model output instability, but key issues can still be inferred.
+The audit could not be generated at full depth due to unstable output. Signals suggest issues in clarity, conversion flow, and trust.
 
-## Critical Issues
-- Severity: High
-- Issue: Core value proposition is unclear or weakly communicated
-- Evidence: Signals show lack of strong headline or structured messaging
-- Why it matters: Users cannot quickly understand value, increasing drop-off
-- Fix: Introduce a clear, benefit-driven headline aligned with user intent
+## Score Interpretation
+- Clarity: Likely weak messaging
+- Trust: Likely insufficient proof
+- Conversion: Likely unclear action
+- UX: Likely structural friction
+- Marketing: Likely positioning gaps
+
+## Priority Findings
+- Priority Level: Requires Attention
+  Evidence Source: HTML
+  Confidence: Medium
+  Issue: Value proposition not clearly communicated
+  Evidence: Weak structure in extracted signals
+  Why it matters: Users cannot quickly understand the offer
+  Fix: Introduce clear headline and simplify message
+
+## Conversion Breakdown
+User likely struggles to understand value and next step clearly.
 
 ## UI Improvements
-
 - Marker: 1
-  Issue: Primary conversion area lacks clarity
-  Evidence: CTA structure unclear from available signals
-  Fix: Introduce a single dominant CTA with clear action
+  Evidence Source: HTML
+  Confidence: Medium
+  Issue: Weak headline clarity
+  Evidence: Signals lack strong message
+  Fix: Rewrite headline
 
 - Marker: 2
-  Issue: Content hierarchy unclear
-  Evidence: Multiple headings without strong grouping
-  Fix: Reduce sections and introduce visual hierarchy
+  Evidence Source: HTML
+  Confidence: Medium
+  Issue: CTA unclear
+  Evidence: CTA intent not strong
+  Fix: Add clear action copy
 
 - Marker: 3
-  Issue: Navigation overwhelms user
-  Evidence: High link density detected
-  Fix: Simplify navigation and prioritize key paths
+  Evidence Source: Inference
+  Confidence: Low
+  Issue: Messaging overload
+  Evidence: Weak structure stability
+  Fix: Simplify sections
 
 - Marker: 4
-  Issue: Lack of trust reinforcement
-  Evidence: No strong trust signals detected in content
-  Fix: Add testimonials or proof elements above the fold
+  Evidence Source: HTML
+  Confidence: Medium
+  Issue: Weak trust signals
+  Evidence: No strong trust indicators
+  Fix: Add proof elements
 
 - Marker: 5
-  Issue: Weak CTA language
-  Evidence: Generic CTA patterns detected
-  Fix: Replace with action-driven copy
+  Evidence Source: Inference
+  Confidence: Low
+  Issue: Flow unclear
+  Evidence: Weak conversion mapping
+  Fix: Clarify journey
 
 - Marker: 6
-  Issue: Visual hierarchy not guiding action
-  Evidence: No dominant interaction pattern inferred
-  Fix: Rebalance layout to guide user toward conversion
+  Evidence Source: HTML
+  Confidence: Medium
+  Issue: Structure unclear
+  Evidence: Weak grouping
+  Fix: Improve hierarchy
+
+## Copy Improvements
+Constrained due to limited evidence.
+
+## SEO / Structure Wins
+- Improve meta/title
+- Improve headings
+
+## 7-Day Sprint Plan
+Day 1–7: Improve clarity, CTA, structure, trust
+
+## Strategic Insight
+Core issue is weak alignment between messaging and conversion.
 `;
 }
 
