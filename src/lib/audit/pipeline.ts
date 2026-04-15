@@ -140,8 +140,25 @@ const structureHints = {
   hasTrustSignals: trustSignals.length > 0,
   hasClearNav: navLabels.length > 0,
 };
+// ===== UX / CONVERSION ANALYSIS LAYER =====
+
+const uxAnalysis = {
+  clarityScore: h1.length > 0 ? 1 : 0,
+  hasCTA: ctas.length > 0,
+  ctaStrength: ctas.length > 2 ? "strong" : ctas.length > 0 ? "weak" : "none",
+  trustScore: trustSignals.length,
+  contentDepth: paragraphs.length,
+  navClarity: navLabels.length > 0,
+  frictionIndicators: {
+    noCTA: ctas.length === 0,
+    noTrust: trustSignals.length === 0,
+    thinContent: paragraphs.length < 3,
+    noNav: navLabels.length === 0,
+  },
+};
 
   return {
+  uxAnalysis,
   url,
   title,
   metaDescription,
@@ -160,7 +177,49 @@ const structureHints = {
   counts: { inputCount, formCount },
 };
 }
+function computeAuditScores(signals: any) {
+  let score = {
+    clarity: 0,
+    trust: 0,
+    conversion: 0,
+    ux: 0,
+    marketing: 0,
+  };
 
+  // CLARITY
+  if (signals.h1?.length) score.clarity += 2;
+  if (signals.heroGuess?.headline) score.clarity += 2;
+  if (signals.heroGuess?.primaryCTA) score.clarity += 1;
+  if (signals.paragraphs?.length > 3) score.clarity += 1;
+
+  // TRUST
+  if (signals.trustSignals?.length > 0) score.trust += 3;
+  if (signals.links?.length > 10) score.trust += 1;
+
+  // CONVERSION
+  if (signals.ctas?.length > 0) score.conversion += 3;
+  if (signals.flags?.hasEmailCapture) score.conversion += 2;
+  if (signals.flags?.hasCheckout) score.conversion += 2;
+
+  // UX
+  if (signals.navLabels?.length > 0) score.ux += 2;
+  if (signals.counts?.formCount > 0) score.ux += 2;
+
+  // MARKETING
+  if (signals.metaDescription) score.marketing += 2;
+  if (signals.pricingSignals?.length > 0) score.marketing += 2;
+
+  // Normalize to /10
+  const normalize = (v: number) => Math.min(10, v * 2);
+
+  return {
+    clarity: normalize(score.clarity),
+    trust: normalize(score.trust),
+    conversion: normalize(score.conversion),
+    ux: normalize(score.ux),
+    marketing: normalize(score.marketing),
+  };
+}
 
 async function handleCookieBanner(page: any) {
   const candidates = [
@@ -951,14 +1010,35 @@ export async function runAuditPipeline(row: any) {
       let signals: any = null;
 
             try {
-        const htmlRes = await fetch(url, {
-          redirect: "follow",
-          headers: {
-            "User-Agent": "ElessenLabsAuditBot/1.0 (+https://elessenlabs.com)",
-            Accept: "text/html,*/*",
-          },
-        
-        });
+       let htmlRes;
+
+try {
+  htmlRes = await fetch(url, {
+    redirect: "follow",
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml",
+      "Accept-Language": "en-US,en;q=0.9",
+      Connection: "keep-alive",
+    },
+  });
+} catch (err) {
+  console.error("FETCH PRIMARY FAILED — retrying without https", err);
+
+  try {
+    htmlRes = await fetch(`http://${new URL(url).hostname}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+      },
+    });
+  } catch (err2) {
+    console.error("FETCH FALLBACK FAILED", err2);
+    throw err;
+  }
+}
+``
 
         console.log("AUDIT HTML FETCH", {
           url,
