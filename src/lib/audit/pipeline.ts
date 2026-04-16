@@ -212,69 +212,86 @@ const metrics = {
 }
 function computeAuditScores(signals: any) {
   const metrics = signals?.metrics || {};
-  const ux = signals?.uxAnalysis || {};
+  const uxAnalysis = signals?.uxAnalysis || {};
+  const flags = signals?.flags || {};
 
-  let score = {
-    clarity: 0,
-    trust: 0,
-    conversion: 0,
-    ux: 0,
-    marketing: 0,
-  };
+  let clarity = 6;
+  let trust = 6;
+  let conversion = 6;
+  let ux = 6;
+  let marketing = 6;
 
-  // ======================
-  // CLARITY
-  // ======================
-  if (signals.h1?.length) score.clarity += 2;
-  if (signals.heroGuess?.headline) score.clarity += 2;
-  if (signals.paragraphs?.length > 3) score.clarity += 2;
-  if (metrics.wordCount > 80) score.clarity += 2;
-  if (!metrics.weakStructure) score.clarity += 2;
+  // ---------- CLARITY ----------
+  const paragraphCount =
+    metrics.paragraphCount || signals?.paragraphs?.length || 0;
+  const wordCount = metrics.wordCount || 0;
 
-  // ======================
-  // TRUST
-  // ======================
-  if (metrics.trustCount > 0) score.trust += 4;
-  if (metrics.trustCount > 3) score.trust += 2;
-  if (signals.links?.length > 10) score.trust += 2;
-  if (!metrics.trustDeficit) score.trust += 2;
+  if (!signals?.h1?.length) clarity -= 3;
+  if (!signals?.heroGuess?.headline) clarity -= 2;
+  if (paragraphCount < 3) clarity -= 2;
+  if (wordCount < 120) clarity -= 1;
+  if (uxAnalysis?.frictionIndicators?.thinContent) clarity -= 1;
 
-  // ======================
-  // CONVERSION
-  // ======================
-  if (metrics.ctaCount > 0) score.conversion += 3;
-  if (metrics.hasSingleCTA) score.conversion += 3;
-  if (!metrics.contentToCTAImbalance) score.conversion += 2;
-  if (signals.flags?.hasEmailCapture) score.conversion += 2;
+  if (signals?.h1?.length) clarity += 1;
+  if (signals?.heroGuess?.headline) clarity += 1;
+  if (paragraphCount >= 5) clarity += 1;
 
-  // ======================
-  // UX
-  // ======================
-  if (metrics.navCount > 0) score.ux += 2;
-  if (signals.counts?.formCount > 0) score.ux += 2;
-  if (!ux.frictionIndicators?.noNav) score.ux += 2;
-  if (!ux.frictionIndicators?.thinContent) score.ux += 2;
-  if (!ux.frictionIndicators?.noCTA) score.ux += 2;
+  // ---------- TRUST ----------
+  const trustCount = metrics.trustCount || signals?.trustSignals?.length || 0;
 
-  // ======================
-  // MARKETING
-  // ======================
-  if (signals.metaDescription) score.marketing += 3;
-  if (metrics.headingCount > 3) score.marketing += 2;
-  if (signals.pricingSignals?.length > 0) score.marketing += 2;
-  if (metrics.wordCount > 120) score.marketing += 3;
+  if (trustCount === 0) trust -= 4;
+  if ((signals?.links?.length || 0) < 5) trust -= 1;
+  if (uxAnalysis?.frictionIndicators?.noTrust) trust -= 1;
 
-  // ======================
-  // NORMALIZE (/10)
-  // ======================
-  const normalize = (v: number) => Math.min(10, Math.round(v));
+  if (trustCount >= 2) trust += 2;
+  if (trustCount >= 5) trust += 1;
+
+  // ---------- CONVERSION ----------
+  const ctaCount = metrics.ctaCount || signals?.ctas?.length || 0;
+
+  if (ctaCount === 0) conversion -= 5;
+  else if (ctaCount === 1) conversion += 1;
+  else if (ctaCount >= 2 && ctaCount <= 4) conversion += 2;
+  else if (ctaCount > 6) conversion -= 2;
+
+  if (!signals?.heroGuess?.primaryCTA) conversion -= 2;
+  if (uxAnalysis?.frictionIndicators?.noCTA) conversion -= 1;
+  if (flags?.hasEmailCapture) conversion += 2;
+  if (flags?.hasCheckout) conversion += 2;
+  if (flags?.hasPricing) conversion += 1;
+
+  // ---------- UX ----------
+  const navCount = metrics.navCount || signals?.navLabels?.length || 0;
+  const formCount = signals?.counts?.formCount || 0;
+  const inputCount = signals?.counts?.inputCount || 0;
+
+  if (navCount === 0) ux -= 3;
+  else if (navCount >= 1 && navCount <= 8) ux += 1;
+  else if (navCount > 12) ux -= 1;
+
+  if (formCount > 0 && inputCount > 0) ux += 1;
+  if (uxAnalysis?.navClarity) ux += 1;
+  if (uxAnalysis?.frictionIndicators?.noNav) ux -= 1;
+
+  // ---------- MARKETING ----------
+  if (!signals?.metaDescription) marketing -= 2;
+  if (!signals?.title) marketing -= 2;
+  if (wordCount < 120) marketing -= 1;
+
+  if ((signals?.pricingSignals?.length || 0) > 0) marketing += 1;
+  if (flags?.hasPricing) marketing += 1;
+  if (signals?.metaDescription) marketing += 1;
+  if (signals?.title) marketing += 1;
+
+  // ---------- CLAMP ----------
+  const clamp = (v: number) => Math.max(0, Math.min(10, Math.round(v)));
 
   return {
-    clarity: normalize(score.clarity),
-    trust: normalize(score.trust),
-    conversion: normalize(score.conversion),
-    ux: normalize(score.ux),
-    marketing: normalize(score.marketing),
+    clarity: clamp(clarity),
+    trust: clamp(trust),
+    conversion: clamp(conversion),
+    ux: clamp(ux),
+    marketing: clamp(marketing),
   };
 }
 
