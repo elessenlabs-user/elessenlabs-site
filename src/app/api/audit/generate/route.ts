@@ -133,14 +133,48 @@ export async function POST(req: Request) {
 
   try {
     const { processedPages } = await runAuditPipeline(row);
-    
-    console.log("GENERATE ROUTE processedPages:", JSON.stringify(processedPages, null, 2));
 
-    if (!processedPages?.length) {
-      throw new Error("Pipeline returned no processed pages.");
-    }
+console.log("GENERATE ROUTE processedPages:", JSON.stringify(processedPages, null, 2));
 
-    const firstPage = processedPages[0];
+if (!processedPages?.length) {
+  throw new Error("Pipeline returned no processed pages.");
+}
+
+// ✅ ENFORCE SCORES STRUCTURE (CRITICAL FIX)
+const normalizedPages = (processedPages || []).map((page: any) => {
+  const scores = page?.scores || {};
+
+  return {
+    ...page,
+    scores: {
+      clarity: typeof scores.clarity === "number" ? scores.clarity : 0,
+      trust: typeof scores.trust === "number" ? scores.trust : 0,
+      conversion: typeof scores.conversion === "number" ? scores.conversion : 0,
+      ux: typeof scores.ux === "number" ? scores.ux : 0,
+      marketing: typeof scores.marketing === "number" ? scores.marketing : 0,
+    },
+  };
+});
+
+// ✅ FORCE STRICT SCORING (NO OVERLY NICE AUDITS)
+normalizedPages.forEach((page: any) => {
+  const s = page.scores;
+
+  const avg =
+    (s.clarity + s.trust + s.conversion + s.ux + s.marketing) / 5;
+
+  if (avg > 7) {
+    page.scores = {
+      clarity: Math.min(s.clarity, 7),
+      trust: Math.min(s.trust, 7),
+      conversion: Math.min(s.conversion, 7),
+      ux: Math.min(s.ux, 7),
+      marketing: Math.min(s.marketing, 7),
+    };
+  }
+});
+
+    const firstPage = normalizedPages[0];
     const nextStatus = getNextStatus(row.status);
 
     const auditContent = clip(
@@ -154,7 +188,7 @@ export async function POST(req: Request) {
 ---
 
 ` +
-    processedPages
+    normalizedPages
       .map((page: any) =>
         (page.sections || [])
           .map((section: any) => `## ${section.title}\n${section.content}`)
@@ -181,7 +215,7 @@ console.log(auditContent.substring(0, 500));
     const { error: saveErr } = await supabaseAdmin
       .from("audit_requests")
       .update({
-        pages: processedPages,
+        pages: normalizedPages,
         screenshot_url: firstPage?.screenshot_url || null,
         marked_screenshot_url: firstPage?.marked_screenshot_url || null,
         audit_content: auditContent,

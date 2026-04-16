@@ -120,22 +120,7 @@ function badgeColor(value: string) {
   return "bg-gray-50 text-gray-700 ring-gray-200";
 }
 
-function computeAuditScore(auditContent: string) {
-  let score = 78;
 
-  if (/no email capture|no forms|no input/i.test(auditContent)) score -= 10;
-  if (/no pricing|unclear pricing/i.test(auditContent)) score -= 10;
-  if (/weak cta|vague cta|not prominent/i.test(auditContent)) score -= 8;
-  if (/poor navigation|minimal links|no sticky nav/i.test(auditContent)) score -= 6;
-  if (/no trust signals|no testimonials|no social proof/i.test(auditContent)) score -= 8;
-
-  if (score < 35) score = 35;
-  if (score > 95) score = 95;
-
-  if (score >= 75) return { score, label: "Strong base" };
-  if (score >= 60) return { score, label: "Needs improvement" };
-  return { score, label: "High priority fixes" };
-}
 function getSectionNavTone(title: string) {
   const t = title.toLowerCase();
 
@@ -454,9 +439,35 @@ export default async function AuditResultPage({
       ];
 
 const firstPage = pageGroups?.[0];
-const scores = firstPage?.scores || null;  
+const scores = firstPage?.scores || null;
 
-const auditScore = computeAuditScore(finalAuditContent || "");
+const auditScore = scores
+  ? (() => {
+      const values = [
+        scores.clarity,
+        scores.trust,
+        scores.conversion,
+        scores.ux,
+        scores.marketing,
+      ].filter((v) => typeof v === "number");
+
+      if (!values.length) {
+        return { score: "-", label: "" };
+      }
+
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+
+      return {
+        score: Math.round(avg * 10),
+        label:
+          avg >= 7
+            ? "Strong base"
+            : avg >= 5
+            ? "Needs improvement"
+            : "High priority fixes",
+      };
+    })()
+  : { score: "-", label: "" };
 
 const isPreviewOnly = data.status === "preview_ready";
 
@@ -580,31 +591,31 @@ const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlab
   {/* ✅ NEW: CLARITY */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Clarity</div>
-    <div className="mt-2 text-2xl font-semibold">{scores?.clarity ?? "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.clarity === "number" ? scores.clarity : "-"}</div>
   </div>
 
   {/* ✅ NEW: TRUST */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Trust</div>
-    <div className="mt-2 text-2xl font-semibold">{scores?.trust ?? "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.trust === "number" ? scores.trust : "-"}</div>
   </div>
 
   {/* ✅ NEW: CONVERSION */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Conversion</div>
-    <div className="mt-2 text-2xl font-semibold">{scores?.conversion ?? "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.conversion === "number" ? scores.conversion : "-"}</div>
   </div>
 
   {/* ✅ NEW: UX */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">UX</div>
-    <div className="mt-2 text-2xl font-semibold">{scores?.ux ?? "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.ux === "number" ? scores.ux : "-"}</div>
   </div>
 
   {/* ✅ NEW: MARKETING */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Marketing</div>
-    <div className="mt-2 text-2xl font-semibold">{scores?.marketing ?? "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.marketing === "number" ? scores.marketing : "-"}</div>
   </div>
 
 </div>
