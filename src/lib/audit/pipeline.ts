@@ -156,6 +156,7 @@ const uxAnalysis = {
     noNav: navLabels.length === 0,
   },
 };
+
 // ===== NEW METRICS LAYER (DO NOT TOUCH EXISTING UX BLOCK) =====
 
 const metrics = {
