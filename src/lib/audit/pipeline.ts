@@ -213,86 +213,77 @@ const metrics = {
 }
 function computeAuditScores(signals: any) {
   const metrics = signals?.metrics || {};
-  const uxAnalysis = signals?.uxAnalysis || {};
   const flags = signals?.flags || {};
+  const paragraphs = signals?.paragraphs || [];
+  const h1 = signals?.h1 || [];
+  const trustSignals = signals?.trustSignals || [];
+  const navLabels = signals?.navLabels || [];
+  const heroGuess = signals?.heroGuess || {};
 
-  let clarity = 6;
-  let trust = 6;
-  let conversion = 6;
-  let ux = 6;
-  let marketing = 6;
+  const hasCTA =
+    (metrics.ctaCount || 0) > 0 || !!heroGuess.primaryCTA;
 
-  // ---------- CLARITY ----------
-  const paragraphCount =
-    metrics.paragraphCount || signals?.paragraphs?.length || 0;
-  const wordCount = metrics.wordCount || 0;
+  const hasTrust =
+    (metrics.trustCount || 0) > 0 || trustSignals.length > 0;
 
-  if (!signals?.h1?.length) clarity -= 3;
-  if (!signals?.heroGuess?.headline) clarity -= 2;
-  if (paragraphCount < 3) clarity -= 2;
-  if (wordCount < 120) clarity -= 1;
-  if (uxAnalysis?.frictionIndicators?.thinContent) clarity -= 1;
+  const hasClearHeadline =
+    h1.length > 0 &&
+    typeof heroGuess.headline === "string" &&
+    heroGuess.headline.trim().length >= 8;
 
-  if (signals?.h1?.length) clarity += 1;
-  if (signals?.heroGuess?.headline) clarity += 1;
-  if (paragraphCount >= 5) clarity += 1;
+  let score = {
+    clarity: 6,
+    trust: 6,
+    conversion: 6,
+    ux: 6,
+    marketing: 6,
+  };
 
-  // ---------- TRUST ----------
-  const trustCount = metrics.trustCount || signals?.trustSignals?.length || 0;
+  // clarity
+  if (!hasClearHeadline) score.clarity -= 2;
+  if ((metrics.paragraphCount || paragraphs.length || 0) < 3) score.clarity -= 1;
+  if ((metrics.wordCount || 0) < 120) score.clarity -= 1;
+  if (h1.length > 0) score.clarity += 1;
+  if ((metrics.paragraphCount || paragraphs.length || 0) >= 5) score.clarity += 1;
 
-  if (trustCount === 0) trust -= 4;
-  if ((signals?.links?.length || 0) < 5) trust -= 1;
-  if (uxAnalysis?.frictionIndicators?.noTrust) trust -= 1;
+  // trust
+  if (!hasTrust) score.trust -= 2;
+  if ((signals?.links?.length || 0) < 5) score.trust -= 1;
+  if ((metrics.trustCount || trustSignals.length || 0) >= 2) score.trust += 1;
+  if ((metrics.trustCount || trustSignals.length || 0) >= 5) score.trust += 1;
 
-  if (trustCount >= 2) trust += 2;
-  if (trustCount >= 5) trust += 1;
+  // conversion
+  if (!hasCTA) score.conversion -= 2;
+  if ((metrics.ctaCount || 0) === 0) score.conversion -= 1;
+  if ((metrics.ctaCount || 0) > 5) score.conversion -= 1;
+  if (flags?.hasEmailCapture) score.conversion += 1;
+  if (flags?.hasCheckout) score.conversion += 1;
+  if (flags?.hasPricing) score.conversion += 1;
 
-  // ---------- CONVERSION ----------
-  const ctaCount = metrics.ctaCount || signals?.ctas?.length || 0;
+  // ux
+  if ((metrics.navCount || navLabels.length || 0) === 0) score.ux -= 2;
+  if ((metrics.navCount || navLabels.length || 0) >= 1) score.ux += 1;
+  if ((signals?.counts?.formCount || 0) > 0 && (signals?.counts?.inputCount || 0) > 0) {
+    score.ux += 1;
+  }
 
-  if (ctaCount === 0) conversion -= 5;
-  else if (ctaCount === 1) conversion += 1;
-  else if (ctaCount >= 2 && ctaCount <= 4) conversion += 2;
-  else if (ctaCount > 6) conversion -= 2;
+  // marketing
+  if (!signals?.metaDescription) score.marketing -= 1;
+  if (!signals?.title) score.marketing -= 1;
+  if ((metrics.wordCount || 0) < 120) score.marketing -= 1;
+  if (flags?.hasPricing) score.marketing += 1;
+  if ((signals?.pricingSignals?.length || 0) > 0) score.marketing += 1;
+  if (signals?.metaDescription) score.marketing += 1;
+  if (signals?.title) score.marketing += 1;
 
-  if (!signals?.heroGuess?.primaryCTA) conversion -= 2;
-  if (uxAnalysis?.frictionIndicators?.noCTA) conversion -= 1;
-  if (flags?.hasEmailCapture) conversion += 2;
-  if (flags?.hasCheckout) conversion += 2;
-  if (flags?.hasPricing) conversion += 1;
-
-  // ---------- UX ----------
-  const navCount = metrics.navCount || signals?.navLabels?.length || 0;
-  const formCount = signals?.counts?.formCount || 0;
-  const inputCount = signals?.counts?.inputCount || 0;
-
-  if (navCount === 0) ux -= 3;
-  else if (navCount >= 1 && navCount <= 8) ux += 1;
-  else if (navCount > 12) ux -= 1;
-
-  if (formCount > 0 && inputCount > 0) ux += 1;
-  if (uxAnalysis?.navClarity) ux += 1;
-  if (uxAnalysis?.frictionIndicators?.noNav) ux -= 1;
-
-  // ---------- MARKETING ----------
-  if (!signals?.metaDescription) marketing -= 2;
-  if (!signals?.title) marketing -= 2;
-  if (wordCount < 120) marketing -= 1;
-
-  if ((signals?.pricingSignals?.length || 0) > 0) marketing += 1;
-  if (flags?.hasPricing) marketing += 1;
-  if (signals?.metaDescription) marketing += 1;
-  if (signals?.title) marketing += 1;
-
-  // ---------- CLAMP ----------
   const clamp = (v: number) => Math.max(0, Math.min(10, Math.round(v)));
 
   return {
-    clarity: clamp(clarity),
-    trust: clamp(trust),
-    conversion: clamp(conversion),
-    ux: clamp(ux),
-    marketing: clamp(marketing),
+    clarity: clamp(score.clarity),
+    trust: clamp(score.trust),
+    conversion: clamp(score.conversion),
+    ux: clamp(score.ux),
+    marketing: clamp(score.marketing),
   };
 }
 
@@ -720,41 +711,9 @@ if (!output || output.length < 200) {
 return output.trim();
  }
 function ensureUiImprovementMarkers(markdown: string) {
-
-  if (!markdown || !markdown.includes("## UI Improvements")) {
-    return markdown;
-  }
-
-  const parts = markdown.split("## UI Improvements");
-  if (parts.length < 2) return markdown;
-
-  const before = parts[0];
-  const after = parts[1];
-
-  const nextHeadingMatch = after.match(/\n##\s+/);
-  const uiBody = nextHeadingMatch
-    ? after.slice(0, nextHeadingMatch.index)
-    : after;
-
-  const rest = nextHeadingMatch ? after.slice(nextHeadingMatch.index) : "";
-
-  let normalized = uiBody;
-
-  for (let i = 1; i <= 6; i++) {
-    const hasMarker = new RegExp(`Marker:\\s*${i}\\b`, "i").test(normalized);
-
-    if (!hasMarker) {
-      normalized += `
-
-- Marker: ${i}
-  Issue: Visual review required for this marker area
-  Evidence: The current output did not generate a specific marker entry for this location
-  Fix: Review this section manually and add a precise UI recommendation`;
-    }
-  }
-
-  return `${before}## UI Improvements${normalized}${rest}`;
+  return markdown;
 }
+
 
 function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
   if (!markdown.includes("## UI Improvements")) return [];
@@ -781,14 +740,23 @@ function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
 
     if (!marker) continue;
 
-    const issueText = issueMatch?.[1]?.trim() || "";
+   const issueText = issueMatch?.[1]?.trim() || "";
 let evidenceText = evidenceMatch?.[1]?.trim() || "";
 
+const weakEvidencePattern =
+  /\$\{.*?\}|undefined|null|\[\]|\{\}|visually unclear|not visible|unable to determine|no indication of/i;
+
+if (weakEvidencePattern.test(evidenceText)) {
+  evidenceText = "";
+}
+
+const combinedText = `${issueText} ${evidenceText}`.toLowerCase();
+
 if (
-  /\$\{.*?\}/.test(evidenceText) ||
-  /undefined|null|\[\]|\{\}/.test(evidenceText)
+  !issueText ||
+  /visually unclear|not visible|unable to determine|visual review required/.test(combinedText)
 ) {
-  evidenceText = "Visually unclear from available UI signals";
+  continue;
 }
 
 const region = getEvidenceRegion(issueText, evidenceText);
@@ -802,7 +770,7 @@ results.push({
   region_label: region.region_label,
   region_confidence: region.region_confidence,
   position: getEvidencePosition(marker, issueText, evidenceText),
-  });
+});
 }
 
   return results.slice(0, 6);
@@ -1270,11 +1238,11 @@ try {
 ## Executive Summary
 Audit failed during processing.
 
-## UI Improvements
-- Marker: 1
-  Issue: Unable to evaluate UI
-  Evidence: Processing failure
-  Fix: Retry audit
+## Processing Status
+This page could not be fully analyzed during the automated run.
+
+## Recommended Next Step
+Retry the audit after confirming the page is reachable and does not block automated access.
 `;
 }
 

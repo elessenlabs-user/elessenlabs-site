@@ -156,24 +156,6 @@ const normalizedPages = (processedPages || []).map((page: any) => {
   };
 });
 
-// ✅ FORCE STRICT SCORING (NO OVERLY NICE AUDITS)
-normalizedPages.forEach((page: any) => {
-  const s = page.scores;
-
-  const avg =
-    (s.clarity + s.trust + s.conversion + s.ux + s.marketing) / 5;
-
-  if (avg > 7) {
-    page.scores = {
-      clarity: Math.min(s.clarity, 7),
-      trust: Math.min(s.trust, 7),
-      conversion: Math.min(s.conversion, 7),
-      ux: Math.min(s.ux, 7),
-      marketing: Math.min(s.marketing, 7),
-    };
-  }
-});
-
     const firstPage = normalizedPages[0];
     const nextStatus = getNextStatus(row.status);
 

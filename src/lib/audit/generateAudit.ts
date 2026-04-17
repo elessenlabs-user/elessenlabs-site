@@ -87,6 +87,13 @@ Do not ignore scores.
 
 ANTI-HALLUCINATION RULES
 
+Never use phrases like:
+- visually unclear
+- not visible
+- unable to determine
+- no indication of styling
+unless the limitation itself is the finding, and even then prefer omitting the UI item.
+
 Never claim UI elements that are not visible or extractable.
 
 If uncertain, say:
@@ -205,7 +212,11 @@ Explain:
 
 ## UI Improvements (STRICT — NO GENERIC OUTPUT)
 
-You MUST generate EXACTLY 6 markers.
+If fewer than 6 evidence-backed UI issues exist, output fewer than 6.
+Do not invent filler markers.
+
+Generate up to 6 markers.
+Only include markers that are supported by real evidence.
 
 Each marker must be tied to REAL evidence from:
 - screenshot OR
@@ -365,84 +376,54 @@ const output =
 if (!output || output.length < 700) {
   console.error("LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
 
-  return `
+ return `
 ## Executive Summary
-The audit could not be generated at full depth due to unstable output. Signals suggest issues in clarity, conversion flow, and trust.
+The audit could not be generated at full depth due to unstable model output. The available signals still indicate likely issues in clarity, trust, and conversion flow.
 
 ## Score Interpretation
-- Clarity: Likely weak messaging
-- Trust: Likely insufficient proof
-- Conversion: Likely unclear action
-- UX: Likely structural friction
-- Marketing: Likely positioning gaps
+- Clarity: Review headline strength, message specificity, and content depth based on extracted structure.
+- Trust: Review the presence of proof elements, supporting detail, and credibility signals.
+- Conversion: Review whether a clear primary action is visible and specific.
+- UX: Review navigation clarity, form structure, and path to action.
+- Marketing: Review title, meta description, and positioning strength.
 
 ## Priority Findings
-- Priority Level: Requires Attention
+- Priority Rank: 1
+  Priority Level: Requires Attention
   Evidence Source: HTML
   Confidence: Medium
-  Issue: Value proposition not clearly communicated
-  Evidence: Weak structure in extracted signals
-  Why it matters: Users cannot quickly understand the offer
-  Fix: Introduce clear headline and simplify message
+  Issue: Value proposition is not clearly supported by extracted structure
+  Evidence: Available signals were insufficient to confirm a strong headline-to-CTA path
+  Why it matters: Users may not quickly understand the offer or next step
+  Fix: Rewrite the hero message around product value and pair it with a specific CTA
+  Expected Impact: High
 
 ## Conversion Breakdown
-User likely struggles to understand value and next step clearly.
+Based on extracted structure, the likely friction is understanding the offer quickly and identifying the primary next step.
 
 ## UI Improvements
 - Marker: 1
   Evidence Source: HTML
   Confidence: Medium
-  Issue: Weak headline clarity
-  Evidence: Signals lack strong message
-  Fix: Rewrite headline
-
-- Marker: 2
-  Evidence Source: HTML
-  Confidence: Medium
-  Issue: CTA unclear
-  Evidence: CTA intent not strong
-  Fix: Add clear action copy
-
-- Marker: 3
-  Evidence Source: Inference
-  Confidence: Low
-  Issue: Messaging overload
-  Evidence: Weak structure stability
-  Fix: Simplify sections
-
-- Marker: 4
-  Evidence Source: HTML
-  Confidence: Medium
-  Issue: Weak trust signals
-  Evidence: No strong trust indicators
-  Fix: Add proof elements
-
-- Marker: 5
-  Evidence Source: Inference
-  Confidence: Low
-  Issue: Flow unclear
-  Evidence: Weak conversion mapping
-  Fix: Clarify journey
-
-- Marker: 6
-  Evidence Source: HTML
-  Confidence: Medium
-  Issue: Structure unclear
-  Evidence: Weak grouping
-  Fix: Improve hierarchy
-
-## Copy Improvements
-Constrained due to limited evidence.
+  Issue: Primary conversion path needs manual review
+  Evidence: Available structure did not confirm a reliable headline-to-CTA relationship
+  Fix: Verify the hero section contains one clear headline, one supporting line, and one explicit CTA
 
 ## SEO / Structure Wins
-- Improve meta/title
-- Improve headings
+- Review page title and meta description for specificity
+- Review heading structure for clear hierarchy
 
 ## 7-Day Sprint Plan
-Day 1–7: Improve clarity, CTA, structure, trust
+Day 1: Verify headline and CTA clarity
+Day 2: Review trust signals and proof placement
+Day 3: Review conversion path
+Day 4: Improve structure and hierarchy
+Day 5: Improve metadata and headings
+Day 6: QA screenshots and rendered content
+Day 7: Re-run audit and validate output consistency
 
 ## Strategic Insight
-Core issue is weak alignment between messaging and conversion.
+The main risk is weak alignment between message clarity and the primary action.
 `;
 }
 

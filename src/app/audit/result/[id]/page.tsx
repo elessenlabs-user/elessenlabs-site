@@ -105,9 +105,9 @@ function parseBulletCards(content: string) {
 function badgeColor(value: string) {
   const v = value.toLowerCase();
 
-  if (v === "critical" || v === "high") {
-    return "bg-red-50 text-red-700 ring-red-200";
-  }
+  if (v === "requires attention" || v === "high") {
+  return "bg-orange-50 text-orange-700 ring-orange-200";
+}
 
   if (v === "medium") {
     return "bg-yellow-50 text-yellow-700 ring-yellow-200";
@@ -125,7 +125,9 @@ function getSectionNavTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "border-orange-300 bg-orange-50";
-  if (t.includes("critical")) return "border-red-300 bg-red-50";
+  if (t.includes("requires attention") || t.includes("critical")) {
+  return "border-orange-300 bg-orange-50";
+}
   if (t.includes("conversion")) return "border-amber-300 bg-amber-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-300 bg-purple-50";
   if (t.includes("copy")) return "border-blue-300 bg-blue-50";
@@ -150,7 +152,8 @@ function Section({
 }) {
 
   const lowerTitle = title.toLowerCase();
-  const isCritical = lowerTitle.includes("critical");
+  const isRequiresAttention =
+  lowerTitle.includes("requires attention") || lowerTitle.includes("critical");
   const isUi = lowerTitle.includes("ui");
   const isUiSection =
     lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
@@ -163,15 +166,15 @@ function Section({
             <section
       id={id}
       className={`mb-6 scroll-mt-24 rounded-2xl border bg-white p-6 shadow-sm ${
-        isCritical ? "border-red-200 ring-1 ring-red-100" : "border-black/10"
-      }`}
+  isRequiresAttention ? "border-orange-200 ring-1 ring-orange-100" : "border-black/10"
+}`}
     >
       <div className="mb-4 flex items-center gap-3 text-lg font-semibold">
-        {isCritical && (
-          <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
-            Priority
-          </span>
-        )}
+        {isRequiresAttention && (
+  <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 ring-1 ring-orange-200">
+    Requires Attention
+  </span>
+)}
         <span>{title}</span>
       </div>
 
@@ -244,7 +247,7 @@ function Section({
                       ? card.icon
                       : isUi
                       ? "🎨"
-                      : isCritical
+                      : isRequiresAttention
                       ? "🚨"
                       : "📌"}
                   </div>
@@ -403,26 +406,38 @@ export default async function AuditResultPage({
   }
     const pageGroups: PageGroup[] =
   Array.isArray(data.pages) && data.pages.length > 0
-    ? data.pages.map((page: any, pageIndex: number) => ({
-        id: `page-${pageIndex + 1}`,
-        title:
-          pageIndex === 0
-            ? "Main Page"
-            : page.url
-            ? `Additional Page ${pageIndex}: ${page.url}`
-            : `Additional Page ${pageIndex}`,
-        url: page.url || "",
-        screenshot_url: page.screenshot_url || null,
-        marked_screenshot_url: page.marked_screenshot_url || null,
-        sections: Array.isArray(page.sections) ? page.sections : [],
-        evidence: Array.isArray(page.evidence) ? page.evidence : [],
-        scores: page.scores || null,
-        processing_failed: !!page.processing_failed,
-        failure_reason: page.failure_reason || null,
-        failure_detail: page.failure_detail || null,
-      }))
-      
-        : [
+    ? data.pages.map((page: any, pageIndex: number) => {
+        const hasValidSections =
+          Array.isArray(page.sections) &&
+          page.sections.length > 1 &&
+          !page.sections.every(
+            (s: any) =>
+              typeof s?.title === "string" &&
+              s.title.toLowerCase().includes("audit build info")
+          );
+
+        return {
+          id: `page-${pageIndex + 1}`,
+          title:
+            pageIndex === 0
+              ? "Main Page"
+              : page.url
+              ? `Additional Page ${pageIndex}: ${page.url}`
+              : `Additional Page ${pageIndex}`,
+          url: page.url || "",
+          screenshot_url: page.screenshot_url || null,
+          marked_screenshot_url: page.marked_screenshot_url || null,
+          sections: hasValidSections
+            ? page.sections
+            : splitSections(finalAuditContent),
+          evidence: Array.isArray(page.evidence) ? page.evidence : [],
+          scores: page.scores || null,
+          processing_failed: !!page.processing_failed,
+          failure_reason: page.failure_reason || null,
+          failure_detail: page.failure_detail || null,
+        };
+      })
+    : [
         {
           id: "page-1",
           title: "Main Page",
@@ -437,7 +452,6 @@ export default async function AuditResultPage({
           failure_detail: null,
         },
       ];
-
 const firstPage = pageGroups?.[0];
 const scores = firstPage?.scores || null;
 
@@ -591,31 +605,31 @@ const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlab
   {/* ✅ NEW: CLARITY */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Clarity</div>
-    <div className="mt-2 text-2xl font-semibold">{typeof scores?.clarity === "number" ? scores.clarity : "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.clarity === "number" ? scores.clarity : 0}</div>
   </div>
 
   {/* ✅ NEW: TRUST */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Trust</div>
-    <div className="mt-2 text-2xl font-semibold">{typeof scores?.trust === "number" ? scores.trust : "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.trust === "number" ? scores.trust : 0}</div>
   </div>
 
   {/* ✅ NEW: CONVERSION */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Conversion</div>
-    <div className="mt-2 text-2xl font-semibold">{typeof scores?.conversion === "number" ? scores.conversion : "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.conversion === "number" ? scores.conversion : 0}</div>
   </div>
 
   {/* ✅ NEW: UX */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">UX</div>
-    <div className="mt-2 text-2xl font-semibold">{typeof scores?.ux === "number" ? scores.ux : "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.ux === "number" ? scores.ux : 0}</div>
   </div>
 
   {/* ✅ NEW: MARKETING */}
   <div className="rounded-2xl border border-black/10 p-5">
     <div className="text-xs uppercase tracking-wide text-black/45">Marketing</div>
-    <div className="mt-2 text-2xl font-semibold">{typeof scores?.marketing === "number" ? scores.marketing : "-"}</div>
+    <div className="mt-2 text-2xl font-semibold">{typeof scores?.marketing === "number" ? scores.marketing : 0}</div>
   </div>
 
 </div>

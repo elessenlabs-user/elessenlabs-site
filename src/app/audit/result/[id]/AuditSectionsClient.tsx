@@ -24,7 +24,9 @@ function getSectionNavTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "border-orange-300 bg-orange-50";
-  if (t.includes("critical")) return "border-red-300 bg-red-50";
+  if (t.includes("requires attention") || t.includes("critical")) {
+  return "border-orange-300 bg-orange-50";
+}
   if (t.includes("conversion")) return "border-amber-300 bg-amber-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-300 bg-purple-50";
   if (t.includes("copy")) return "border-blue-300 bg-blue-50";
@@ -54,7 +56,9 @@ function getSectionPanelTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "border-orange-200 bg-orange-50";
-  if (t.includes("critical")) return "border-red-200 bg-red-50";
+  if (t.includes("requires attention") || t.includes("critical")) {
+  return "border-orange-200 bg-orange-50";
+}
   if (t.includes("conversion")) return "border-yellow-200 bg-yellow-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-200 bg-purple-50";
   if (t.includes("copy")) return "border-blue-200 bg-blue-50";
@@ -77,6 +81,9 @@ function parseBulletCards(content: string) {
     const severityMatch = clean.match(
       /Severity:\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
     );
+    const priorityLevelMatch = clean.match(
+      /Priority Level:\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+    );
     const issueMatch = clean.match(
       /Issue:\s*(.*?)(?=\n|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
     );
@@ -97,7 +104,7 @@ function parseBulletCards(content: string) {
 
     return {
       raw: clean,
-      severity: severityMatch?.[1]?.trim() || "",
+      severity: priorityLevelMatch?.[1]?.trim() || severityMatch?.[1]?.trim() || "",
       issue: issueMatch?.[1]?.trim() || "",
       evidence: evidenceMatch?.[1]?.trim() || "",
       why: whyMatch?.[1]?.trim() || "",
@@ -119,9 +126,9 @@ function parseExecutiveBullets(content: string) {
 function badgeColor(value: string) {
   const v = value.toLowerCase();
 
-  if (v === "critical" || v === "high") {
-    return "bg-red-50 text-red-700 ring-red-200";
-  }
+  if (v === "requires attention" || v === "high" || v === "critical") {
+  return "bg-orange-50 text-orange-700 ring-orange-200";
+}
 
   if (v === "medium") {
     return "bg-yellow-50 text-yellow-700 ring-yellow-200";
@@ -136,7 +143,7 @@ function badgeColor(value: string) {
 
 function isUnlockedSection(title: string) {
   const t = title.toLowerCase();
-  return t.includes("executive") || t.includes("critical");
+  return t.includes("executive") || t.includes("requires attention") || t.includes("critical");
 }
 
 function LockedSection({
@@ -212,8 +219,8 @@ function LockedSection({
 
             <p className="mt-3 text-sm leading-6 text-black/60">
               {isReviewState
-                ? "Your payment has been received. Executive Summary and Critical Issues remain visible while the rest of the report is finalized for delivery."
-                : "Executive Summary and Critical Issues are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report."}
+                ? "Your payment has been received. Executive Summary and Requires Attention sections remain visible while the rest of the report is finalized for delivery."
+                : "Executive Summary and Requires Attention sections are visible in preview. Proceed to unlock the full Elessen Audit Engine™ report."}
           </p>
 
             <p className="mt-2 text-xs leading-5 text-black/50">
@@ -252,6 +259,22 @@ function LockedSection({
   );
 }
 
+function filterUiEvidence(items?: UiEvidenceItem[] | null) {
+  if (!Array.isArray(items)) return [];
+
+  return items.filter((item) => {
+    const text = `${item.issue || ""} ${item.evidence || ""}`.toLowerCase();
+
+    return !(
+      text.includes("visually unclear") ||
+      text.includes("not visible") ||
+      text.includes("unable to determine") ||
+      text.includes("no indication of") ||
+      text.includes("visual review required")
+    );
+  });
+}
+
 function SectionContent({
   title,
   content,
@@ -273,15 +296,17 @@ function SectionContent({
 }) {
 
   const lowerTitle = title.toLowerCase();
-  const isCritical = lowerTitle.includes("critical");
-  const isExecutive = lowerTitle.includes("executive");
-  const isUiSection =
-    lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
-  const panelTone = getSectionPanelTone(title);
-  const isCardSection =
-    /conversion|critical|ui|copy|seo|sprint|question/i.test(title);
-  const cards = parseBulletCards(content);
-  const executiveBullets = parseExecutiveBullets(content);
+const isRequiresAttention =
+  lowerTitle.includes("requires attention") || lowerTitle.includes("critical");
+const isExecutive = lowerTitle.includes("executive");
+const isUiSection =
+  lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
+const panelTone = getSectionPanelTone(title);
+const isCardSection =
+  /conversion|requires attention|critical|ui|copy|seo|sprint|question/i.test(title);
+const cards = parseBulletCards(content);
+const executiveBullets = parseExecutiveBullets(content);
+const filteredEvidence = filterUiEvidence(uiEvidence);
 
   if (locked) {
     return (
@@ -296,29 +321,29 @@ function SectionContent({
   return (
     <section
       className={`rounded-2xl border p-6 shadow-sm ${panelTone} ${
-        isCritical ? "ring-1 ring-red-100" : ""
-      }`}
+  isRequiresAttention ? "ring-1 ring-orange-100" : ""
+}`}
     >
       <div className="mb-4 flex items-center gap-3 text-lg font-semibold">
-        {isCritical && (
-          <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 ring-1 ring-red-200">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
-            </span>
-            Priority
+        {isRequiresAttention && (
+          <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-700 ring-1 ring-orange-200">
+          <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500"></span>
+          </span>
+          Requires Attention
           </span>
         )}
         <span>{title}</span>
       </div>
-    {isUiSection && uiEvidence?.length ? (
+   {isUiSection && filteredEvidence.length ? (
       <div className="grid gap-6">
 
         {/* ⚠️ Screenshot disclaimer */}
         <div className="rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs leading-5 text-black/60">
           Screenshots are automatically captured during analysis. In some cases, elements may appear slightly misaligned or differ due to dynamic content, cookies, or environment variations.
         </div>
-          {uiEvidence.map((item, index) => (
+          {filteredEvidence.map((item, index) => (
             <div
               key={index}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
@@ -543,7 +568,9 @@ export default function AuditSectionsClient({
             const tone = getSectionNavTone(section.title);
             const hoverTone = getSectionNavHoverTone(section.title);
             const isActive = activeId === section.id;
-            const isCriticalTab = section.title.toLowerCase().includes("critical");
+            const isRequiresAttentionTab =
+              section.title.toLowerCase().includes("requires attention") ||
+              section.title.toLowerCase().includes("critical");
             const locked = previewMode && !isUnlockedSection(section.title);
 
             return (
@@ -553,13 +580,13 @@ export default function AuditSectionsClient({
                 onClick={() => setActiveId(section.id)}
                 className={`block w-full rounded-xl border px-4 py-3 text-left text-sm font-medium text-black transition break-words ${
                   isActive ? tone : `border-black/10 bg-white ${hoverTone}`
-                  } ${isCriticalTab ? "relative" : ""}`}
+                  } ${isRequiresAttentionTab ? "relative" : ""}`}
           >
                 <span className="relative inline-flex items-center gap-2">
-                  {isCriticalTab && (
+                  {isRequiresAttentionTab && (
                     <span className="relative flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500"></span>
                     </span>
                   )}
 
