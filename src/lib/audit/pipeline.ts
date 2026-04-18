@@ -27,10 +27,12 @@ function extractSignals(html: string, url: string) {
   const text = html || "";
 
   const clean = (str: string) =>
-    str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    (str || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
   const uniq = (arr: string[]) =>
     Array.from(new Set(arr.map((x) => x.trim()).filter(Boolean)));
+
+  const clipText = (arr: string[], max = 20) => uniq(arr).slice(0, max);
 
   const title = (text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "")
     .replace(/\s+/g, " ")
@@ -42,175 +44,256 @@ function extractSignals(html: string, url: string) {
     )?.[1] || ""
   ).trim();
 
-  const h1 = uniq(
+  const h1 = clipText(
     Array.from(text.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)).map((m) =>
       clean(m[1])
-    )
-  ).slice(0, 5);
+    ),
+    5
+  );
 
-  const h2 = uniq(
+  const h2 = clipText(
     Array.from(text.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)).map((m) =>
       clean(m[1])
-    )
-  ).slice(0, 12);
+    ),
+    12
+  );
 
-  const paragraphs = uniq(
+  const h3 = clipText(
+    Array.from(text.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>/gi)).map((m) =>
+      clean(m[1])
+    ),
+    16
+  );
+
+  const paragraphs = clipText(
     Array.from(text.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)).map((m) =>
       clean(m[1])
-    )
-  )
-    .filter((p) => p.length > 40)
-    .slice(0, 20);
+    ).filter((p) => p.length > 40),
+    24
+  );
 
-  const buttons = uniq(
+  const listItems = clipText(
+    Array.from(text.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)).map((m) =>
+      clean(m[1])
+    ).filter((item) => item.length > 8),
+    30
+  );
+
+  const buttons = clipText(
     Array.from(text.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/gi)).map((m) =>
       clean(m[1])
-    )
-  )
-    .filter((x) => x.length <= 60)
-    .slice(0, 20);
+    ).filter((x) => x.length > 0 && x.length <= 80),
+    24
+  );
 
-  const links = uniq(
+  const linksDetailed = clipText(
     Array.from(
       text.matchAll(
         /<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi
       )
-    ).map((m) => clean(m[2]))
-  )
-    .filter((x) => x.length > 0 && x.length < 80)
-    .slice(0, 40);
+    )
+      .map((m) => {
+        const href = (m[1] || "").trim();
+        const label = clean(m[2]);
+        if (!label || label.length > 100) return "";
+        return `${label} -> ${href}`;
+      })
+      .filter(Boolean),
+    50
+  );
 
-  const navLabels = links
-    .filter((l) =>
-      /home|product|features|pricing|about|contact|login|sign|dashboard/i.test(
+  const links = clipText(
+    linksDetailed.map((item) => item.split(" -> ")[0]).filter(Boolean),
+    40
+  );
+
+  const imageAltText = clipText(
+    Array.from(
+      text.matchAll(/<img[^>]*alt=["']([^"']+)["'][^>]*>/gi)
+    ).map((m) => clean(m[1])).filter((x) => x.length > 2),
+    20
+  );
+
+  const inputPlaceholders = clipText(
+    Array.from(
+      text.matchAll(/<input[^>]*placeholder=["']([^"']+)["'][^>]*>/gi)
+    ).map((m) => clean(m[1])).filter((x) => x.length > 1),
+    20
+  );
+
+  const ariaLabels = clipText(
+    Array.from(
+      text.matchAll(
+        /<(?:button|a|input)[^>]*aria-label=["']([^"']+)["'][^>]*>/gi
+      )
+    ).map((m) => clean(m[1])).filter((x) => x.length > 1),
+    20
+  );
+
+  const formLabels = clipText(
+    Array.from(text.matchAll(/<label[^>]*>([\s\S]*?)<\/label>/gi)).map((m) =>
+      clean(m[1])
+    ).filter((x) => x.length > 1),
+    20
+  );
+
+  const navLabels = clipText(
+    [...links, ...ariaLabels].filter((l) =>
+      /home|product|products|features|solutions|pricing|about|contact|login|log in|sign in|sign up|dashboard|docs|documentation|resources|blog|book|demo|get started/i.test(
         l
       )
-    )
-    .slice(0, 10);
+    ),
+    12
+  );
 
-  const ctas = [...buttons, ...links]
-    .filter((x) =>
-      /start|book|get|try|download|sign up|signup|join|request|demo|contact/i.test(
+  const ctas = clipText(
+    [...buttons, ...links, ...ariaLabels].filter((x) =>
+      /start|get started|get demo|book|buy|shop|try|download|sign up|signup|sign in|join|request|demo|contact|talk to sales|contact sales|schedule|apply|subscribe|claim|launch|explore/i.test(
         x.toLowerCase()
       )
-    )
-    .slice(0, 15);
+    ),
+    20
+  );
 
-  const trustSignals = paragraphs
-    .filter((p) =>
-      /trusted|customers|companies|users|reviews|testimonials|rated|used by|clients/i.test(
+  const trustSignals = clipText(
+    [...paragraphs, ...listItems, ...h2, ...h3].filter((p) =>
+      /trusted|customers|companies|businesses|teams|reviews|testimonials|rated|used by|clients|case stud|partner|partners|featured in|as seen in|secure|compliance|gdpr|soc 2|iso|money-back|guarantee/i.test(
         p.toLowerCase()
       )
-    )
-    .slice(0, 10);
+    ),
+    16
+  );
 
-  const pricingSignals = paragraphs
-    .filter((p) =>
-      /price|pricing|plan|plans|per month|subscription|free|trial|cost/i.test(
+  const pricingSignals = clipText(
+    [...paragraphs, ...listItems, ...h2, ...links].filter((p) =>
+      /price|pricing|plan|plans|per month|subscription|free|trial|cost|billing|enterprise|starter|pro/i.test(
         p.toLowerCase()
       )
-    )
-    .slice(0, 10);
+    ),
+    16
+  );
 
-  const featureSnippets = [...h2, ...paragraphs]
-    .filter((t) =>
-      /feature|tool|platform|solution|service|manage|track|build|create|automate/i.test(
+  const featureSnippets = clipText(
+    [...h2, ...h3, ...paragraphs, ...listItems].filter((t) =>
+      /feature|tool|platform|solution|service|manage|track|build|create|automate|workflow|analytics|dashboard|reporting|integration|integrations|secure|custom/i.test(
         t.toLowerCase()
       )
-    )
-    .slice(0, 12);
+    ),
+    16
+  );
+
+  const headlineCandidates = clipText([...h1, ...h2], 8);
+
+  const heroGuess = {
+    headline: h1[0] || h2[0] || title || "",
+    subhead:
+      paragraphs[0] ||
+      listItems[0] ||
+      metaDescription ||
+      "",
+    primaryCTA: ctas[0] || buttons[0] || "",
+  };
 
   const inputCount = (text.match(/<input\b/gi) || []).length;
   const formCount = (text.match(/<form\b/gi) || []).length;
+  const imageCount = (text.match(/<img\b/gi) || []).length;
+  const buttonCount = (text.match(/<button\b/gi) || []).length;
+  const linkCount = (text.match(/<a\b/gi) || []).length;
 
-  const hasPricing = /pricing|price|plan|plans/i.test(text);
-  const hasCheckout = /checkout|pay|payment|stripe/i.test(text);
-  const hasEmailCapture = /type=["']email["']|newsletter|subscribe/i.test(text);
+  const hasPricing = /pricing|price|plan|plans|billing/i.test(text);
+  const hasCheckout = /checkout|pay|payment|stripe|paddle/i.test(text);
+  const hasEmailCapture =
+    /type=["']email["']|newsletter|subscribe|join our list|get updates/i.test(
+      text
+    );
 
-  // ADD THIS RIGHT BEFORE return
-const heroGuess = {
-  headline: h1[0] || "",
-  subhead: paragraphs[0] || "",
-  primaryCTA: ctas[0] || "",
-};
+  const structureHints = {
+    hasMultipleCTAs: ctas.length > 3,
+    hasWeakCTA: ctas.length === 0,
+    hasTrustSignals: trustSignals.length > 0,
+    hasClearNav: navLabels.length > 0,
+    hasLists: listItems.length > 0,
+    hasForms: formCount > 0,
+    hasImages: imageCount > 0,
+    hasFeatureDepth: featureSnippets.length >= 3,
+  };
 
-const structureHints = {
-  hasMultipleCTAs: ctas.length > 3,
-  hasWeakCTA: ctas.length === 0,
-  hasTrustSignals: trustSignals.length > 0,
-  hasClearNav: navLabels.length > 0,
-};
-// ===== UX / CONVERSION ANALYSIS LAYER =====
+  const uxAnalysis = {
+    clarityScore: h1.length > 0 ? 1 : 0,
+    hasCTA: ctas.length > 0,
+    ctaStrength: ctas.length > 2 ? "strong" : ctas.length > 0 ? "weak" : "none",
+    trustScore: trustSignals.length,
+    contentDepth: paragraphs.length + listItems.length,
+    navClarity: navLabels.length > 0,
+    frictionIndicators: {
+      noCTA: ctas.length === 0,
+      noTrust: trustSignals.length === 0,
+      thinContent: paragraphs.length + listItems.length < 4,
+      noNav: navLabels.length === 0,
+    },
+  };
 
-const uxAnalysis = {
-  clarityScore: h1.length > 0 ? 1 : 0,
-  hasCTA: ctas.length > 0,
-  ctaStrength: ctas.length > 2 ? "strong" : ctas.length > 0 ? "weak" : "none",
-  trustScore: trustSignals.length,
-  contentDepth: paragraphs.length,
-  navClarity: navLabels.length > 0,
-  frictionIndicators: {
-    noCTA: ctas.length === 0,
-    noTrust: trustSignals.length === 0,
-    thinContent: paragraphs.length < 3,
-    noNav: navLabels.length === 0,
-  },
-};
+  const metrics = {
+    wordCount: clean(text).split(" ").filter(Boolean).length,
+    ctaCount: ctas.length,
+    navCount: navLabels.length,
+    trustCount: trustSignals.length,
+    headingCount: h1.length + h2.length + h3.length,
+    paragraphCount: paragraphs.length,
+    listItemCount: listItems.length,
+    imageCount,
+    buttonCount,
+    linkCount,
+    formLabelCount: formLabels.length,
+    imageAltCount: imageAltText.length,
 
-// ===== NEW METRICS LAYER (DO NOT TOUCH EXISTING UX BLOCK) =====
+    hasSingleCTA: ctas.length === 1,
+    hasTooManyCTAs: ctas.length > 5,
+    contentToCTAImbalance: paragraphs.length + listItems.length > 8 && ctas.length < 2,
+    trustDeficit: trustSignals.length === 0,
+    weakStructure: h1.length === 0 || paragraphs.length + listItems.length < 2,
 
-const metrics = {
-  wordCount: clean(text).split(" ").length,
-  ctaCount: ctas.length,
-  navCount: navLabels.length,
-  trustCount: trustSignals.length,
-  headingCount: h1.length + h2.length,
-  paragraphCount: paragraphs.length,
+    conversionReadinessScore: (() => {
+      let score = 0;
+      if (ctas.length > 0) score += 2;
+      if (ctas.length === 1) score += 2;
+      if (trustSignals.length > 0) score += 2;
+      if (paragraphs.length + listItems.length > 3) score += 2;
+      if (navLabels.length > 0) score += 2;
+      return score;
+    })(),
+  };
 
-  hasSingleCTA: ctas.length === 1,
-  hasTooManyCTAs: ctas.length > 5,
-
-  contentToCTAImbalance:
-    paragraphs.length > 8 && ctas.length < 2,
-
-  trustDeficit: trustSignals.length === 0,
-
-  weakStructure:
-    h1.length === 0 || paragraphs.length < 2,
-
-  conversionReadinessScore: (() => {
-    let score = 0;
-
-    if (ctas.length > 0) score += 2;
-    if (ctas.length === 1) score += 2;
-    if (trustSignals.length > 0) score += 2;
-    if (paragraphs.length > 3) score += 2;
-    if (navLabels.length > 0) score += 2;
-
-    return score;
-  })(),
-};
   return {
-  uxAnalysis,
-  metrics, 
-  url,
-  title,
-  metaDescription,
-  h1,
-  h2,
-  paragraphs,
-  navLabels,
-  ctas,
-  trustSignals,
-  pricingSignals,
-  featureSnippets,
-  links,
-  heroGuess,
-  structureHints,
-  flags: { hasPricing, hasCheckout, hasEmailCapture },
-  counts: { inputCount, formCount },
-};
+    uxAnalysis,
+    metrics,
+    url,
+    title,
+    metaDescription,
+    h1,
+    h2,
+    h3,
+    paragraphs,
+    listItems,
+    navLabels,
+    ctas,
+    trustSignals,
+    pricingSignals,
+    featureSnippets,
+    links,
+    linksDetailed,
+    imageAltText,
+    inputPlaceholders,
+    ariaLabels,
+    formLabels,
+    headlineCandidates,
+    heroGuess,
+    structureHints,
+    flags: { hasPricing, hasCheckout, hasEmailCapture },
+    counts: { inputCount, formCount },
+  };
 }
+
 function computeAuditScores(signals: any) {
   const metrics = signals?.metrics || {};
   const flags = signals?.flags || {};
@@ -732,49 +815,91 @@ function extractUiEvidenceFromMarkdown(markdown: string): UiEvidence[] {
 
   for (const block of blocks) {
     const markerMatch = block.match(/Marker:\s*(\d+)/i);
-    const issueMatch = block.match(/Issue:\s*([\s\S]*?)(?=\n|Evidence:|$)/i);
-    const evidenceMatch = block.match(/Evidence:\s*([\s\S]*?)(?=\n|Fix:|$)/i);
+    const issueMatch = block.match(/Issue:\s*([\s\S]*?)(?=\n(?:Evidence Source|Confidence|Evidence|Fix):|$)/i);
+    const evidenceMatch = block.match(/Evidence:\s*([\s\S]*?)(?=\n(?:Fix|$):|$)/i);
     const fixMatch = block.match(/Fix:\s*([\s\S]*?)$/i);
 
     const marker = markerMatch ? parseInt(markerMatch[1], 10) : undefined;
-
     if (!marker) continue;
 
-   const issueText = issueMatch?.[1]?.trim() || "";
-let evidenceText = evidenceMatch?.[1]?.trim() || "";
+    const issueText = issueMatch?.[1]?.trim() || "";
+    let evidenceText = evidenceMatch?.[1]?.trim() || "";
+    const fixText = fixMatch?.[1]?.trim() || "";
 
-const weakEvidencePattern =
-  /\$\{.*?\}|undefined|null|\[\]|\{\}|visually unclear|not visible|unable to determine|no indication of/i;
+    const weakEvidencePattern =
+      /\$\{.*?\}|undefined|null|\[\]|\{\}|visually unclear|not visible|unable to determine|no indication of|manual review|needs manual review|review required|similar styling|visual differentiation|equal visual weight|appears as standard text links/i;
 
-if (weakEvidencePattern.test(evidenceText)) {
-  evidenceText = "";
-}
+    const weakIssuePattern =
+      /manual review|needs manual review|review required|improve ux|enhance design|optimize layout|make clearer|improve hierarchy/i;
 
-const combinedText = `${issueText} ${evidenceText}`.toLowerCase();
+    if (weakEvidencePattern.test(evidenceText)) {
+      evidenceText = "";
+    }
 
-if (
-  !issueText ||
-  /visually unclear|not visible|unable to determine|visual review required/.test(combinedText)
-) {
-  continue;
-}
+    const combinedText = `${issueText} ${evidenceText}`.toLowerCase();
 
-const region = getEvidenceRegion(issueText, evidenceText);
+    if (!issueText || weakIssuePattern.test(issueText) || !fixText) {
+      continue;
+    }
 
-results.push({
-  marker,
-  issue: issueText,
-  evidence: evidenceText,
-  fix: fixMatch?.[1]?.trim() || "",
-  crop_url: null,
-  region_label: region.region_label,
-  region_confidence: region.region_confidence,
-  position: getEvidencePosition(marker, issueText, evidenceText),
-});
-}
+    if (
+      /visually unclear|not visible|unable to determine|visual review required|manual review/.test(
+        combinedText
+      )
+    ) {
+      continue;
+    }
+
+    const region = getEvidenceRegion(issueText, evidenceText);
+
+    results.push({
+      marker,
+      issue: issueText,
+      evidence: evidenceText,
+      fix: fixText,
+      crop_url: null,
+      region_label: region.region_label,
+      region_confidence: region.region_confidence,
+      position: getEvidencePosition(marker, issueText, evidenceText),
+    });
+  }
 
   return results.slice(0, 6);
 }
+
+function dedupeUiEvidence(items: UiEvidence[]): UiEvidence[] {
+  const seen = new Set<string>();
+  const results: UiEvidence[] = [];
+
+  for (const item of items) {
+    const region = item.region_label || "unknown";
+
+    const normalizedIssue = (item.issue || "")
+      .toLowerCase()
+      .replace(/["“”]/g, "")
+      .replace(/\b(primary|secondary|main|visual|clear|clearer|more|prominent|stronger)\b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const normalizedFix = (item.fix || "")
+      .toLowerCase()
+      .replace(/["“”]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const key = `${region}::${normalizedIssue}::${normalizedFix}`;
+
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    results.push(item);
+
+    if (results.length >= 6) break;
+  }
+
+  return results;
+}
+
 function getEvidenceRegion(issue: string, evidence: string) {
   const text = `${issue} ${evidence}`.toLowerCase();
 
@@ -1064,6 +1189,17 @@ async function getMarketContext(url: string) {
   }
 }
 
+function normalizeLegacyAuditLanguage(markdown: string) {
+  if (!markdown) return markdown;
+
+  return markdown
+    .replace(/^##\s*Critical Issues\b/gim, "## Requires Attention")
+    .replace(/\bSeverity:\s*Critical\b/gim, "Priority Level: Requires Attention")
+    .replace(/\bSeverity:\s*High\b/gim, "Priority Level: Requires Attention")
+    .replace(/\bSeverity:\s*Medium\b/gim, "Priority Level: Worth Improving")
+    .replace(/\bSeverity:\s*Low\b/gim, "Priority Level: Observation");
+}
+
 export async function runAuditPipeline(row: any) {
   console.log("🚨 PIPELINE EXECUTION STARTED 🚨");
   console.log("ROW ID:", row?.id);
@@ -1146,11 +1282,14 @@ const screenshotUrl: string | null = await (async () => {
 })();
 
 // ✅ PLAYWRIGHT HTML EXTRACTION (STRONGER THAN FETCH)
-if (screenshotUrl) {
-  try {
-    console.log("PLAYWRIGHT HTML EXTRACTION START", { url });
+// Run this even if screenshot capture failed.
+try {
+  console.log("PLAYWRIGHT HTML EXTRACTION START", { url });
 
-    const browser = await playwright.launch({
+  let htmlBrowser: any = null;
+
+  try {
+    htmlBrowser = await playwright.launch({
       args: chromium.args,
       executablePath:
         process.env.VERCEL
@@ -1159,7 +1298,13 @@ if (screenshotUrl) {
       headless: true,
     });
 
-    const context = await browser.newContext();
+    const context = await htmlBrowser.newContext({
+      viewport: { width: 1440, height: 1600 },
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      ignoreHTTPSErrors: true,
+    });
+
     const page = await context.newPage();
 
     await page.goto(url, {
@@ -1167,23 +1312,43 @@ if (screenshotUrl) {
       timeout: 45000,
     });
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1800);
+
+    try {
+      await page.waitForLoadState("load", { timeout: 8000 });
+    } catch {
+      console.log("PLAYWRIGHT HTML LOAD STATE TIMEOUT - continuing", { url });
+    }
+
+    try {
+      await handleCookieBanner(page);
+    } catch {
+      console.log("PLAYWRIGHT HTML COOKIE HANDLER SKIPPED", { url });
+    }
 
     const renderedHtml = await page.content();
 
     if (renderedHtml && renderedHtml.length > 1000) {
-      console.log("PLAYWRIGHT HTML SUCCESS — overriding fetch HTML");
+      console.log("PLAYWRIGHT HTML SUCCESS — overriding fetch HTML", {
+        url,
+        length: renderedHtml.length,
+      });
 
       html = renderedHtml;
       signals = extractSignals(html, url);
     } else {
-      console.log("PLAYWRIGHT HTML TOO WEAK — keeping fetch version");
+      console.log("PLAYWRIGHT HTML TOO WEAK — keeping existing version", {
+        url,
+        length: renderedHtml?.length || 0,
+      });
     }
-
-    await browser.close();
-  } catch (err) {
-    console.error("PLAYWRIGHT HTML FAILED — fallback to fetch", err);
+  } finally {
+    if (htmlBrowser) {
+      await htmlBrowser.close();
+    }
   }
+} catch (err) {
+  console.error("PLAYWRIGHT HTML FAILED — fallback to fetch", err);
 }
 
 // ✅ DEFINE ALL VARIABLES AFTER screenshot exists
@@ -1220,6 +1385,8 @@ try {
     });
   }
 
+  auditMarkdown = normalizeLegacyAuditLanguage(auditMarkdown);
+
   if (!auditMarkdown || auditMarkdown.length < 800) {
     restrictedMode = true;
 
@@ -1230,6 +1397,8 @@ try {
       screenshot_url: screenshotUrl,
 });
   }
+
+  auditMarkdown = normalizeLegacyAuditLanguage(auditMarkdown);
 
 } catch (err) {
   console.error("AUDIT MARKDOWN FAILED:", url, err);
@@ -1248,7 +1417,14 @@ Retry the audit after confirming the page is reachable and does not block automa
 
 // POST PROCESS
 auditMarkdown = ensureUiImprovementMarkers(auditMarkdown);
-uiEvidence = extractUiEvidenceFromMarkdown(auditMarkdown);
+uiEvidence = dedupeUiEvidence(
+  extractUiEvidenceFromMarkdown(auditMarkdown)
+);
+
+// If the model produced weak UI evidence, do not force filler.
+if (uiEvidence.length === 0) {
+  console.log("NO STRONG UI EVIDENCE EXTRACTED", { url });
+}
 
 // MARKERS
 if (screenshotUrl && uiEvidence.length) {
