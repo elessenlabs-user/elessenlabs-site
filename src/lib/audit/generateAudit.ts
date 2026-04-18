@@ -1,3 +1,15 @@
+function normalizeAuditOutput(markdown: string) {
+  if (!markdown) return markdown;
+
+  return markdown
+    .replace(/^##\s*Critical Issues\b/gim, "## Requires Attention")
+    .replace(/\bSeverity:\s*Critical\b/gim, "Priority Level: Requires Attention")
+    .replace(/\bSeverity:\s*High\b/gim, "Priority Level: Requires Attention")
+    .replace(/\bSeverity:\s*Medium\b/gim, "Priority Level: Worth Improving")
+    .replace(/\bSeverity:\s*Low\b/gim, "Priority Level: Observation")
+    .replace(/\bSeverity:/gim, "Priority Level:");
+}
+
 export async function generateAuditMarkdown(payload: any) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY missing");
@@ -7,7 +19,7 @@ export async function generateAuditMarkdown(payload: any) {
   const system = `
 You are a senior product strategist, UX reviewer, and conversion analyst.
 
-You are producing a PRODUCT TEARDOWN based only on supplied evidence.
+You are producing a premium PRODUCT TEARDOWN based only on supplied evidence.
 
 Your job is to identify:
 - what the page appears to be trying to do
@@ -67,6 +79,10 @@ DO NOT use:
 - Critical
 - Severe
 - Major blocker
+- Critical Issues
+- Severity
+
+If you use "Critical Issues" or "Severity", the response is invalid.
 
 SCORING RULES
 
@@ -92,6 +108,7 @@ Never use phrases like:
 - not visible
 - unable to determine
 - no indication of styling
+
 unless the limitation itself is the finding, and even then prefer omitting the UI item.
 
 Never claim UI elements that are not visible or extractable.
@@ -103,6 +120,15 @@ If uncertain, say:
 
 Reduce confidence when unsure.
 
+QUALITY BAR
+
+- Be specific, not generic
+- Prefer concrete observations over broad advice
+- Prefer 3-5 strong findings over many repetitive ones
+- UI Improvements should feel premium and visual, not templated
+- Copy Improvements should sound like real conversion copy, not placeholders
+- Do not repeat the same problem in multiple sections unless the angle is clearly different
+
 STYLE
 
 - Direct
@@ -111,32 +137,29 @@ STYLE
 - No generic UX jargon
 `;
 
-  const user = `
+  const userText = `
 URL: ${payload.product_url}
 
 SCORES:
 ${JSON.stringify(payload.scores, null, 2)}
 
 CORE SIGNALS:
-- H1: ${payload.signals.h1?.join(" | ") || "none"}
-- Primary CTA: ${payload.signals.heroGuess?.primaryCTA || "none"}
-- CTA Count: ${payload.signals.metrics?.ctaCount || 0}
-- Trust Signals: ${payload.signals.metrics?.trustCount || 0}
-- Paragraph Count: ${payload.signals.metrics?.paragraphCount || 0}
-- Word Count: ${payload.signals.metrics?.wordCount || 0}
-- Navigation Labels: ${payload.signals.navLabels?.join(", ") || "none"}
+- H1: ${payload.signals?.h1?.join(" | ") || "none"}
+- Primary CTA: ${payload.signals?.heroGuess?.primaryCTA || "none"}
+- CTA Count: ${payload.signals?.metrics?.ctaCount || 0}
+- Trust Signals: ${payload.signals?.metrics?.trustCount || 0}
+- Paragraph Count: ${payload.signals?.metrics?.paragraphCount || 0}
+- Word Count: ${payload.signals?.metrics?.wordCount || 0}
+- Navigation Labels: ${payload.signals?.navLabels?.join(", ") || "none"}
 
 UX DIAGNOSTICS:
-${JSON.stringify(payload.signals.uxAnalysis, null, 2)}
+${JSON.stringify(payload.signals?.uxAnalysis || {}, null, 2)}
 
 METRICS:
-${JSON.stringify(payload.signals.metrics, null, 2)}
+${JSON.stringify(payload.signals?.metrics || {}, null, 2)}
 
 MARKET CONTEXT:
 ${JSON.stringify(payload.marketContext, null, 2)}
-
-SCREENSHOT:
-${payload.screenshot_url ? payload.screenshot_url : "NOT AVAILABLE"}
 
 TASK
 
@@ -144,11 +167,38 @@ Produce an evidence-led product teardown.
 
 OUTPUT FORMAT
 
+Use these exact headings in this exact order:
+
 ## Executive Summary
-- What this page appears to be trying to do
-- What weakens performance
-- What seems strongest
-- What should be fixed first
+
+## Score Interpretation
+
+## Requires Attention
+
+## Conversion Breakdown
+
+## UI Improvements
+
+## Copy Improvements
+
+## SEO / Structure Wins
+
+## 7-Day Sprint Plan
+
+## Market & Competitive Insight
+Include only if marketContext is available and useful. Otherwise omit this section.
+
+## What To Fix First (Action Plan)
+
+## Strategic Insight
+
+SECTION RULES
+
+## Executive Summary
+- Max 5 bullets
+- Explain what the page appears to be doing
+- Explain what weakens performance
+- Explain what should be fixed first
 
 ## Score Interpretation
 Explain each:
@@ -158,13 +208,13 @@ Explain each:
 - UX
 - Marketing
 
-Tie explanation to evidence.
+Tie every explanation to evidence.
 
-## Priority Findings (RANKED — EXECUTION ORDER)
+## Requires Attention
 
-You MUST rank findings in order of execution priority.
+List findings in execution order.
 
-Each finding must include:
+Each finding MUST use this exact format:
 
 - Priority Rank: (1 = highest impact)
 - Priority Level: Requires Attention / Worth Improving / Observation
@@ -174,34 +224,19 @@ Each finding must include:
 - Evidence:
 - Why it matters:
 - Fix:
-- Expected Impact: (High / Medium / Low)
+- Expected Impact: High / Medium / Low
 
 STRICT RULES:
-
-1. Rank based on:
-   - conversion impact
-   - severity of friction
-   - presence of measurable signals (CTA, trust, content)
-
-2. Highest priority issues MUST be:
+1. Rank findings by conversion impact and evidence strength.
+2. Highest priority findings should focus on:
    - missing CTA
-   - no trust signals
+   - missing trust support
    - weak or missing headline
-   - broken conversion path
-
-3. DO NOT:
-   - list randomly
-   - mix severity without ranking
-   - repeat similar issues
-
-4. Each finding must clearly justify its rank.
-
-EXAMPLE:
-
-- Priority Rank: 1
-  Priority Level: Requires Attention
-  Issue: No primary CTA detected (ctaCount = 0)
-  Expected Impact: High
+   - broken or unclear conversion path
+3. Never use the heading "Critical Issues".
+4. Never use the label "Severity:".
+5. Never use "Critical", "High", "Medium", or "Low" as severity labels by themselves.
+6. Use ONLY "Priority Level: Requires Attention / Worth Improving / Observation".
 
 ## Conversion Breakdown
 Explain:
@@ -210,113 +245,67 @@ Explain:
 - where hesitation starts
 - expected action
 
-## UI Improvements (STRICT — NO GENERIC OUTPUT)
-
-If fewer than 6 evidence-backed UI issues exist, output fewer than 6.
-Do not invent filler markers.
+## UI Improvements
 
 Generate up to 6 markers.
-Only include markers that are supported by real evidence.
+Only include markers supported by real evidence.
+Do not invent filler markers.
 
-Each marker must be tied to REAL evidence from:
-- screenshot OR
-- extracted signals OR
-- computed metrics
-
-STRICT RULES:
-
-1. Each marker MUST reference something concrete:
-   - CTA count
-   - missing CTA
-   - weak headline (if no H1 or empty heroGuess)
-   - lack of trust signals (if trustCount = 0)
-   - low paragraphCount (thin content)
-   - too many CTAs (ctaCount > 5)
-   - no navigation (navCount = 0)
-
-2. DO NOT say:
-- improve UX
-- improve hierarchy
-- make clearer
-- enhance design
-- optimize layout
-
-3. Each issue MUST include a measurable or observable problem
-
-BAD:
-"Issue: Layout is unclear"
-
-GOOD:
-"Issue: No primary CTA detected (ctaCount = 0)"
-
----
-
-FORMAT (MANDATORY):
+Each marker MUST use this exact format:
 
 - Marker: 1
-  Evidence Source:
-  Confidence:
+  Evidence Source: Screenshot / HTML / Inference
+  Confidence: High / Medium / Low
   Issue:
   Evidence:
   Fix:
 
----
-
-Each marker must:
-- reference a DIFFERENT problem
-- NOT repeat the same issue in different words
-- NOT overlap with another marker
-
----
-
-If signals are weak:
-- reduce confidence
-- but still tie issue to metrics
-
----
-
-EXAMPLES OF VALID ISSUES:
-
-- "CTA count is 0 → no conversion path"
-- "Trust signals count is 0 → no credibility support"
-- "Paragraph count < 3 → insufficient explanation"
-- "Multiple CTAs (>5) → decision friction"
-- "No navigation labels detected → weak structure"
-
----
-
-FINAL RULE:
-If the issue cannot be tied to a signal or metric → DO NOT INCLUDE IT
+STRICT RULES:
+1. Every issue must be tied to a concrete signal or visible screenshot evidence.
+2. Prefer screenshot-backed issues when a screenshot is available.
+3. Do not use vague claims like:
+   - improve UX
+   - improve hierarchy
+   - make clearer
+   - enhance design
+   - optimize layout
+4. If fewer than 6 evidence-backed UI issues exist, output fewer than 6.
+5. If the issue cannot be tied to a signal, metric, or visible screenshot evidence, do not include it.
+6. Do not repeat the same issue in different words.
+7. Markers should point to distinct parts of the page when possible.
 
 ## Copy Improvements
 Rewrite only if evidence supports it.
+
+Use this exact structure:
+- Main headline rewrite:
+- Primary CTA rewrite:
+- Messaging improvement:
+- Messaging improvement:
+- Messaging improvement:
 
 ## SEO / Structure Wins
 Only include evidence-backed improvements.
 
 ## 7-Day Sprint Plan
-Concrete daily actions.
+One line per day.
+
+Use exactly:
+- Day 1: ...
+- Day 2: ...
+- Day 3: ...
+- Day 4: ...
+- Day 5: ...
+- Day 6: ...
+- Day 7: ...
 
 ## Market & Competitive Insight
-
-If marketContext is available:
-
-- Identify how this product likely compares to competitors
-- Highlight positioning gaps
-- Identify missed differentiation opportunities
-
-If not available:
-- Skip this section
+Only include if marketContext is available and supports useful comparison.
 
 ## What To Fix First (Action Plan)
+Top 3 fixes only.
 
-Provide a short, decisive execution plan:
-
-- Top 3 fixes only
-- Must be tied to highest priority findings
-- Must be specific (not generic UX advice)
-
-Format:
+Use exactly:
 
 1. Fix:
    Why:
@@ -331,52 +320,76 @@ Format:
    Expected Impact:
 
 ## Strategic Insight
-Core positioning or conversion issue.
+Summarize the core positioning or conversion issue.
 
-FINAL RULE
-If unsure → lower confidence.
-Do not hallucinate.
+FINAL RULES
+- If unsure, lower confidence.
+- Do not hallucinate.
+- Never use "Critical Issues".
+- Never use "Severity:".
 `;
 
+  const content: Array<any> = [
+    {
+      type: "input_text",
+      text: userText,
+    },
+  ];
+
+  if (payload?.screenshot_url) {
+    content.push({
+      type: "input_image",
+      image_url: payload.screenshot_url,
+      detail: "high",
+    });
+  }
+
   const res = await fetch("https://api.openai.com/v1/responses", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    model,
-    temperature: payload?.retry ? 0.35 : 0.25,
-    max_output_tokens: 2200,
-    input: [
-      {
-        role: "system",
-        content: [{ type: "text", text: system }],
-      },
-      {
-        role: "user",
-        content: [{ type: "text", text: user }],
-      },
-    ],
-  }),
-});
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: payload?.retry ? 0.3 : 0.2,
+      max_output_tokens: 2600,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: system,
+            },
+          ],
+        },
+        {
+          role: "user",
+          content,
+        },
+      ],
+    }),
+  });
 
-if (!res.ok) {
-  const text = await res.text();
-  throw new Error(`OPENAI FAILED: ${text}`);
-}
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`OPENAI FAILED: ${text}`);
+  }
 
-const json = await res.json();
+  const json = await res.json();
 
-const output =
-  json?.output?.[0]?.content?.[0]?.text ||
-  json?.output_text ||
-  "";
+  const rawOutput =
+    json?.output?.[0]?.content?.[0]?.text ||
+    json?.output_text ||
+    "";
 
-if (!output || output.length < 700) {
-  console.error("LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
+  const output = normalizeAuditOutput(rawOutput);
 
- return `
+  if (!output || output.length < 700) {
+    console.error("LLM WEAK RESPONSE:", JSON.stringify(json, null, 2));
+
+    return normalizeAuditOutput(`
 ## Executive Summary
 The audit could not be generated at full depth due to unstable model output. The available signals still indicate likely issues in clarity, trust, and conversion flow.
 
@@ -387,7 +400,7 @@ The audit could not be generated at full depth due to unstable model output. The
 - UX: Review navigation clarity, form structure, and path to action.
 - Marketing: Review title, meta description, and positioning strength.
 
-## Priority Findings
+## Requires Attention
 - Priority Rank: 1
   Priority Level: Requires Attention
   Evidence Source: HTML
@@ -405,27 +418,47 @@ Based on extracted structure, the likely friction is understanding the offer qui
 - Marker: 1
   Evidence Source: HTML
   Confidence: Medium
-  Issue: Primary conversion path needs manual review
+  Issue: Primary conversion path needs strengthening
   Evidence: Available structure did not confirm a reliable headline-to-CTA relationship
-  Fix: Verify the hero section contains one clear headline, one supporting line, and one explicit CTA
+  Fix: Ensure the hero section contains one clear headline, one supporting line, and one explicit CTA
+
+## Copy Improvements
+- Main headline rewrite: Clarify the core value proposition in the first line
+- Primary CTA rewrite: Use one explicit action-led CTA
+- Messaging improvement: Reinforce why this offer is credible
+- Messaging improvement: Reduce ambiguity around the next step
+- Messaging improvement: Align supporting copy with the main user goal
 
 ## SEO / Structure Wins
 - Review page title and meta description for specificity
 - Review heading structure for clear hierarchy
 
 ## 7-Day Sprint Plan
-Day 1: Verify headline and CTA clarity
-Day 2: Review trust signals and proof placement
-Day 3: Review conversion path
-Day 4: Improve structure and hierarchy
-Day 5: Improve metadata and headings
-Day 6: QA screenshots and rendered content
-Day 7: Re-run audit and validate output consistency
+- Day 1: Verify headline and CTA clarity
+- Day 2: Review trust signals and proof placement
+- Day 3: Review conversion path
+- Day 4: Improve structure and hierarchy
+- Day 5: Improve metadata and headings
+- Day 6: QA screenshots and rendered content
+- Day 7: Re-run audit and validate output consistency
+
+## What To Fix First (Action Plan)
+1. Fix: Clarify the main value proposition
+   Why: Users need to understand the offer immediately
+   Expected Impact: High
+
+2. Fix: Add one clear primary CTA
+   Why: A missing next step blocks conversion
+   Expected Impact: High
+
+3. Fix: Strengthen trust support
+   Why: Users need reassurance before taking action
+   Expected Impact: Medium
 
 ## Strategic Insight
 The main risk is weak alignment between message clarity and the primary action.
-`;
-}
+`);
+  }
 
-return output.trim();
+  return output.trim();
 }

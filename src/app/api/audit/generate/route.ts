@@ -140,19 +140,28 @@ if (!processedPages?.length) {
   throw new Error("Pipeline returned no processed pages.");
 }
 
-// ✅ ENFORCE SCORES STRUCTURE (CRITICAL FIX)
+console.log(
+  "RAW PAGE SCORES",
+  (processedPages || []).map((page: any) => ({
+    url: page?.url,
+    scores: page?.scores,
+  }))
+);
+
 const normalizedPages = (processedPages || []).map((page: any) => {
-  const scores = page?.scores || {};
+  const scores = page?.scores;
 
   return {
     ...page,
-    scores: {
-      clarity: typeof scores.clarity === "number" ? scores.clarity : 0,
-      trust: typeof scores.trust === "number" ? scores.trust : 0,
-      conversion: typeof scores.conversion === "number" ? scores.conversion : 0,
-      ux: typeof scores.ux === "number" ? scores.ux : 0,
-      marketing: typeof scores.marketing === "number" ? scores.marketing : 0,
-    },
+    scores:
+      scores &&
+      typeof scores.clarity === "number" &&
+      typeof scores.trust === "number" &&
+      typeof scores.conversion === "number" &&
+      typeof scores.ux === "number" &&
+      typeof scores.marketing === "number"
+        ? scores
+        : null,
   };
 });
 
@@ -186,6 +195,7 @@ console.log("FINAL AUDIT BUILD INFO", {
   model: process.env.OPENAI_MODEL,
   rowId: row.id,
 });
+
 
 console.log("🚨 FINAL AUDIT CONTENT PREVIEW:");
 console.log(auditContent.substring(0, 500));

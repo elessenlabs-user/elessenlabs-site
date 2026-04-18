@@ -24,9 +24,7 @@ function getSectionNavTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "border-orange-300 bg-orange-50";
-  if (t.includes("requires attention") || t.includes("critical")) {
-  return "border-orange-300 bg-orange-50";
-}
+  if (t.includes("requires attention")) return "border-orange-300 bg-orange-50";
   if (t.includes("conversion")) return "border-amber-300 bg-amber-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-300 bg-purple-50";
   if (t.includes("copy")) return "border-blue-300 bg-blue-50";
@@ -41,7 +39,7 @@ function getSectionNavHoverTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "hover:border-orange-300 hover:bg-orange-50";
-  if (t.includes("critical")) return "hover:border-red-300 hover:bg-red-50";
+  if (t.includes("requires attention")) return "hover:border-orange-300 hover:bg-orange-50";
   if (t.includes("conversion")) return "hover:border-amber-300 hover:bg-amber-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "hover:border-purple-300 hover:bg-purple-50";
   if (t.includes("copy")) return "hover:border-blue-300 hover:bg-blue-50";
@@ -56,9 +54,7 @@ function getSectionPanelTone(title: string) {
   const t = title.toLowerCase();
 
   if (t.includes("executive")) return "border-orange-200 bg-orange-50";
-  if (t.includes("requires attention") || t.includes("critical")) {
-  return "border-orange-200 bg-orange-50";
-}
+  if (t.includes("requires attention")) return "border-orange-200 bg-orange-50";
   if (t.includes("conversion")) return "border-yellow-200 bg-yellow-50";
   if (t === "ui improvements" || t.includes("ui improvements")) return "border-purple-200 bg-purple-50";
   if (t.includes("copy")) return "border-blue-200 bg-blue-50";
@@ -79,8 +75,8 @@ function parseBulletCards(content: string) {
     const clean = block.replace(/^- /, "").trim();
 
     const severityMatch = clean.match(
-      /Severity:\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
-    );
+  /(?:Severity|Priority Level):\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
+);
     const priorityLevelMatch = clean.match(
       /Priority Level:\s*(.*?)(?=\n|Issue:|Evidence:|Why it matters:|Recommended fix:|Fix:|Effort:|Impact:|Expected Impact:|$)/i
     );
@@ -124,11 +120,23 @@ function parseExecutiveBullets(content: string) {
 }
 
 function badgeColor(value: string) {
-  const v = value.toLowerCase();
+  const v = value.toLowerCase().trim();
 
-  if (v === "requires attention" || v === "high" || v === "critical") {
-  return "bg-orange-50 text-orange-700 ring-orange-200";
-}
+  if (v === "requires attention") {
+    return "bg-orange-50 text-orange-700 ring-orange-200";
+  }
+
+  if (v === "worth improving") {
+    return "bg-yellow-50 text-yellow-700 ring-yellow-200";
+  }
+
+  if (v === "observation") {
+    return "bg-green-50 text-green-700 ring-green-200";
+  }
+
+  if (v === "high") {
+    return "bg-orange-50 text-orange-700 ring-orange-200";
+  }
 
   if (v === "medium") {
     return "bg-yellow-50 text-yellow-700 ring-yellow-200";
@@ -143,7 +151,7 @@ function badgeColor(value: string) {
 
 function isUnlockedSection(title: string) {
   const t = title.toLowerCase();
-  return t.includes("executive") || t.includes("requires attention") || t.includes("critical");
+  return t.includes("executive") || t.includes("requires attention");
 }
 
 function LockedSection({
@@ -295,15 +303,14 @@ function SectionContent({
   currentStatus?: string;
 }) {
 
-  const lowerTitle = title.toLowerCase();
-const isRequiresAttention =
-  lowerTitle.includes("requires attention") || lowerTitle.includes("critical");
+const lowerTitle = title.toLowerCase();
+const isRequiresAttention = lowerTitle.includes("requires attention");
 const isExecutive = lowerTitle.includes("executive");
 const isUiSection =
   lowerTitle === "ui improvements" || lowerTitle.includes("ui improvements");
 const panelTone = getSectionPanelTone(title);
 const isCardSection =
-  /conversion|requires attention|critical|ui|copy|seo|sprint|question/i.test(title);
+  /conversion|requires attention|ui|copy|seo|sprint|question/i.test(title);
 const cards = parseBulletCards(content);
 const executiveBullets = parseExecutiveBullets(content);
 const filteredEvidence = filterUiEvidence(uiEvidence);
@@ -336,41 +343,43 @@ const filteredEvidence = filterUiEvidence(uiEvidence);
         )}
         <span>{title}</span>
       </div>
-   {isUiSection && filteredEvidence.length ? (
-      <div className="grid gap-6">
+      {isUiSection ? (
+      filteredEvidence.length ? (
+        <div className="grid gap-6">
+          <div className="rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs leading-5 text-black/60">
+            Screenshots are automatically captured during analysis. In some cases, elements may appear slightly misaligned or differ due to dynamic content, cookies, or environment variations.
+          </div>
 
-        {/* ⚠️ Screenshot disclaimer */}
-        <div className="rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3 text-xs leading-5 text-black/60">
-          Screenshots are automatically captured during analysis. In some cases, elements may appear slightly misaligned or differ due to dynamic content, cookies, or environment variations.
-        </div>
           {filteredEvidence.map((item, index) => (
             <div
               key={index}
               className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm"
             >
-        {(item.crop_url || uiReferenceScreenshot) ? (
-          <button
-            type="button"
-            onClick={() => onOpenImage?.(item.crop_url || uiReferenceScreenshot || "")}
-            className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
-          >
-          <div className="relative bg-white p-3">
-            <img
-              src={item.crop_url || uiReferenceScreenshot || ""}
-              alt={`UI issue ${item.marker || index + 1}`}
-              className="block h-[160px] w-full rounded-xl object-cover object-top sm:h-[180px]"
-            />
+              {(item.crop_url || uiReferenceScreenshot) ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenImage?.(item.crop_url || uiReferenceScreenshot || "")
+                  }
+                  className="mb-4 block w-full overflow-hidden rounded-2xl border border-black/10 bg-white text-left transition hover:shadow-sm"
+                >
+                  <div className="relative bg-white p-3">
+                    <img
+                      src={item.crop_url || uiReferenceScreenshot || ""}
+                      alt={`UI issue ${item.marker || index + 1}`}
+                      className="block h-[160px] w-full rounded-xl object-cover object-top sm:h-[180px]"
+                    />
 
-          <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
-            {item.marker || index + 1}
-          </div>
-        </div>
+                    <div className="absolute left-5 top-5 inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white shadow-lg ring-2 ring-white">
+                      {item.marker || index + 1}
+                    </div>
+                  </div>
 
-        <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
-          Click to enlarge evidence
-        </div>
-      </button>
-    ) : null}
+                  <div className="border-t border-black/10 bg-black/[0.02] px-3 py-2 text-[11px] text-black/55">
+                    Click to enlarge evidence
+                  </div>
+                </button>
+              ) : null}
 
               <div className="mb-3 flex items-center gap-2">
                 <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-red-600 px-2 text-sm font-bold text-white">
@@ -410,6 +419,11 @@ const filteredEvidence = filterUiEvidence(uiEvidence);
             </div>
           ))}
         </div>
+      ) : (
+        <div className="rounded-2xl border border-black/10 bg-black/[0.02] px-4 py-4 text-sm leading-6 text-black/65">
+          No evidence-backed UI issues were detected for this page in the current audit run.
+        </div>
+      )
       ) : isCardSection ? (
         <div className="grid gap-4">
           {cards.map((card, index) => (
@@ -425,7 +439,7 @@ const filteredEvidence = filterUiEvidence(uiEvidence);
                         card.severity
                       )}`}
                     >
-                      Severity: {card.severity}
+                     Priority: {card.severity}
                     </span>
                   )}
 
@@ -569,8 +583,7 @@ export default function AuditSectionsClient({
             const hoverTone = getSectionNavHoverTone(section.title);
             const isActive = activeId === section.id;
             const isRequiresAttentionTab =
-              section.title.toLowerCase().includes("requires attention") ||
-              section.title.toLowerCase().includes("critical");
+              section.title.toLowerCase().includes("requires attention");
             const locked = previewMode && !isUnlockedSection(section.title);
 
             return (
