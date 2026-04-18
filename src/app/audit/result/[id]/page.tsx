@@ -192,7 +192,12 @@ const isUnlocked =
   data.status === "delivered" || searchUnlock;
 
 const previewMode = !isUnlocked;
-const reportUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlabs.com"}/audit/result/${id}`;
+const baseUrl =
+  process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NEXT_PUBLIC_SITE_URL || "https://www.elessenlabs.com";
+
+const reportUrl = `${baseUrl}/audit/result/${id}`;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-10 lg:py-16">
