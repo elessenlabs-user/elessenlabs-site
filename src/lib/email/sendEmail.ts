@@ -302,3 +302,111 @@ export async function sendInviteAuditDelivery({
     html: baseTemplate(content, siteUrl),
   });
 }
+export async function sendStartFlowRecommendationEmail({
+  email,
+  name,
+  recommendationTitle,
+  recommendationSubtitle,
+  recommendationWhy,
+  recommendationNext,
+  bookingUrl,
+}: {
+  email: string;
+  name?: string;
+  recommendationTitle: string;
+  recommendationSubtitle: string;
+  recommendationWhy: string[];
+  recommendationNext: string[];
+  bookingUrl: string;
+}) {
+  const resend = getResendClient();
+  if (!resend) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const content = `
+    <div style="text-align:center; margin-bottom:18px;">
+      <span style="
+        display:inline-block;
+        font-size:11px;
+        letter-spacing:0.18em;
+        color:#FF7A00;
+        border:1px solid rgba(255,122,0,0.25);
+        padding:6px 14px;
+        border-radius:999px;
+        background:#FFF7F1;
+        font-weight:600;
+      ">
+        PRODUCT CLARITY RECOMMENDATION
+      </span>
+    </div>
+
+    <h2 style="text-align:center; margin-bottom:12px; font-size:28px; color:#111;">
+      ${recommendationTitle}
+    </h2>
+
+    <p style="text-align:center; color:#555; line-height:1.7; font-size:15px; margin:0 0 24px;">
+      Hi ${name || "there"},<br/><br/>
+      Here’s the recommendation based on what you shared.
+    </p>
+
+    <div style="
+      background:#FAFAFA;
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius:16px;
+      padding:18px;
+      margin-bottom:22px;
+    ">
+      <div style="font-size:15px; color:#222; line-height:1.7;">
+        ${recommendationSubtitle}
+      </div>
+    </div>
+
+    <div style="margin-bottom:22px;">
+      <div style="font-weight:600; color:#111; margin-bottom:10px;">Why this fits</div>
+      <ul style="padding-left:18px; margin:0; color:#555; line-height:1.8; font-size:14px;">
+        ${recommendationWhy.map((item) => `<li>${item}</li>`).join("")}
+      </ul>
+    </div>
+
+    <div style="margin-bottom:28px;">
+      <div style="font-weight:600; color:#111; margin-bottom:10px;">What happens next</div>
+      <ul style="padding-left:18px; margin:0; color:#555; line-height:1.8; font-size:14px;">
+        ${recommendationNext.map((item) => `<li>${item}</li>`).join("")}
+      </ul>
+    </div>
+
+    <div style="text-align:center; margin:30px 0 12px;">
+      <a href="${bookingUrl}" style="
+        background:#FF7A00;
+        color:#000;
+        padding:16px 30px;
+        border-radius:12px;
+        text-decoration:none;
+        font-weight:600;
+        display:inline-block;
+        box-shadow:0 6px 16px rgba(255,122,0,0.25);
+      ">
+        Book Product Clarity Call
+      </a>
+    </div>
+
+    <p style="text-align:center; font-size:13px; color:#777; line-height:1.6; margin-top:16px;">
+      Save this email and come back to it anytime. Your recommendation and booking link will be here when you're ready.
+    </p>
+
+    <div style="height:1px; background:#EFEFEF; margin:28px 0;"></div>
+
+    <div style="text-align:center; font-size:13px; color:#888; line-height:1.6;">
+      <div style="margin-bottom:6px;">Tanya Emma</div>
+      <div style="font-weight:600; color:#222;">Founder, Elessen Labs</div>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: "Elessen Labs <hello@elessenlabs.com>",
+    to: email,
+    subject: `Your recommendation: ${recommendationTitle}`,
+    html: baseTemplate(content, siteUrl),
+  });
+}
