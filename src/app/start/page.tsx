@@ -41,7 +41,7 @@ type FormData = {
 type FieldKey = keyof FormData;
 type LeadIntent = "book" | "maybe_later";
 
-const CALENDLY_URL = "https://calendly.com/elessenlabs/product_clarity_call";
+const CALENDLY_URL = "https://calendly.com/elessen_labs/15_min_clarity_call";
 
 const STEPS = 6;
 

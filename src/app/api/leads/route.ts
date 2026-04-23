@@ -5,7 +5,7 @@ import { sendStartFlowRecommendationEmail } from "../../../lib/email/sendEmail";
 export const runtime = "nodejs";
 
 const DEFAULT_BOOKING_URL =
-  "https://calendly.com/elessenlabs/product_clarity_call";
+  "https://calendly.com/elessen_labs/15_min_clarity_call";
 
 export async function POST(req: Request) {
   try {
