@@ -235,25 +235,17 @@ export default function StartPage() {
 
   // Calendly booked event listener
   useEffect(() => {
-    function handleCalendlyEvent(e: MessageEvent) {
-      if (!e.data?.event || !String(e.data.event).startsWith("calendly.")) return;
+  function handleCalendlyEvent(e: MessageEvent) {
+    if (!e.data?.event || !String(e.data.event).startsWith("calendly.")) return;
 
-      if (e.data.event === "calendly.event_scheduled") {
-        fetch("/api/calendly/booked", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: data.email,
-            name: data.fullName,
-            event: "scheduled",
-          }),
-        });
-      }
+    if (e.data.event === "calendly.event_scheduled") {
+      console.log("Calendly booking confirmed");
     }
+  }
 
-    window.addEventListener("message", handleCalendlyEvent);
-    return () => window.removeEventListener("message", handleCalendlyEvent);
-  }, [data.email, data.fullName]);
+  window.addEventListener("message", handleCalendlyEvent);
+  return () => window.removeEventListener("message", handleCalendlyEvent);
+}, []);
 
   const progressPct = Math.round((step / STEPS) * 100);
   const barColor =
@@ -353,26 +345,32 @@ export default function StartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name: data.fullName,
-          email: data.email,
-          company: data.company,
-          budget_range: data.budget || "",
-          message: [
-            `Product type: ${data.productType || "—"}`,
-            `Stage: ${data.stage || "—"}`,
-            `Timeline: ${data.timeline || "—"}`,
-            `Goal: ${data.goal || "—"}`,
-            `Details: ${data.details || "—"}`,
-            `Recommendation: ${recommendation.title}`,
-            `CTA intent: ${intent}`,
-          ].join("\n"),
+  full_name: data.fullName,
+  email: data.email,
+  company: data.company,
+  budget_range: data.budget || "",
+  message: [
+    `Product type: ${data.productType || "—"}`,
+    `Stage: ${data.stage || "—"}`,
+    `Timeline: ${data.timeline || "—"}`,
+    `Goal: ${data.goal || "—"}`,
+    `Details: ${data.details || "—"}`,
+    `Recommendation: ${recommendation.title}`,
+    `CTA intent: ${intent}`,
+  ].join("\n"),
 
-          intent,
-          page: "/start",
-          utm_source: params.get("utm_source") ?? "",
-          utm_medium: params.get("utm_medium") ?? "",
-          utm_campaign: params.get("utm_campaign") ?? "",
-        }),
+  intent,
+  page: "/start",
+  utm_source: params.get("utm_source") ?? "",
+  utm_medium: params.get("utm_medium") ?? "",
+  utm_campaign: params.get("utm_campaign") ?? "",
+
+  recommendation_title: recommendation.title,
+  recommendation_subtitle: recommendation.subtitle,
+  recommendation_why: recommendation.why,
+  recommendation_next: recommendation.next,
+  booking_url: CALENDLY_URL,
+}),
       });
 
       const payload = await res.json().catch(() => ({}));
