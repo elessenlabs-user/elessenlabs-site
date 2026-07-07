@@ -32,11 +32,11 @@ export default function AppShell({
                   <Image
                     src="/logo.png"
                     alt="Elessen Labs"
-                    width={320}
-                    height={120}
+                    width={480}
+                    height={180}
                     priority
-                    className="relative h-14 w-auto md:h-16 object-contain"
-                />
+                    className="relative h-20 w-auto md:h-24 object-contain"
+              />
                 </span>
               </Link>
 
