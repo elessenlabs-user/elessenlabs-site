@@ -1,74 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { trackEvent } from "../lib/analytics";
 
-function RotatingHeadline() {
-  const messages = [
-    "Not sure what’s hurting your conversion?",
-    "Landing page not converting?",
-    "App store page underperforming?",
-    "Users dropping off after signup?",
-  ];
 
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % messages.length);
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="text-lg md:text-xl font-semibold text-black transition-opacity duration-500">
-      {messages[index]}
-    </div>
-  );
-}
 
 export default function Home() {
-  const SHOW_AUDIT_BANNER = true;
+  
 
   return (
     <div className="space-y-20">
 
-  {SHOW_AUDIT_BANNER && (
-    <div className="relative overflow-hidden rounded-2xl px-6 py-4 banner-pulse" style={{ backgroundColor: "#1bd5e3" }}>
-      <div className="pointer-events-none absolute inset-0 opacity-25 text-[10px] text-white space-y-1 animate-banner-scroll">
-        <div>Analyzing landing page...</div>
-        <div>Detecting drop-off points...</div>
-        <div>Evaluating CTA strength...</div>
-        <div>Scanning UX patterns...</div>
-        <div>Generating recommendations...</div>
-      </div>
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center md:text-left">
-      
-      <div className="flex flex-col gap-3 max-w-2xl">
-        <RotatingHeadline />
-
-        <div className="text-sm md:text-base text-black/80 max-w-xl">
-          Get your Elessen Audit Engine™ report in 24 hours.
-          Human-guided. AI-powered. Built to convert.
-        </div>
-</div>
-      
-      <Link
-        href="/audit"
-        onClick={() =>
-          trackEvent("audit_cta_clicked", {
-          location: "banner",
-          page: "home",
-         })
-        }
-    className="btn-primary"
->
-      Get Elessen Audit Report →
-      </Link>
-    </div>
-  </div>
-  )}
+  
 
  
       {/* Hero */}
@@ -79,18 +20,18 @@ export default function Home() {
         <div className="relative grid gap-10 md:grid-cols-2 md:items-center">
           {/* Left: headline + CTA */}
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs font-medium text-black/70 backdrop-blur">
-              Founder-led studio • Product-first delivery
-            </div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#FE5E04]/20 bg-[#FE5E04]/10 px-3 py-1 text-xs font-semibold text-[#FE5E04] backdrop-blur">
+              Human-Centred Design • Product Strategy • Digital Delivery
+          </div>
 
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 md:text-6xl">
-              Product design and MVP delivery for teams building real software.
-            </h1>
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-[#4E5964] md:text-6xl">
+            Bringing clarity to complex digital products, services and transformation initiatives.
+        </h1>
 
-            <p className="mt-5 text-base leading-relaxed opacity-80 md:text-lg">
-              Elessen Labs helps founders and organizations clarify scope, design end-to-end flows,
-              and ship launch-ready interfaces—fast, structured, and execution-ready.
-            </p>
+        <p className="mt-6 max-w-xl text-lg leading-8 text-[#4E5964]/80">
+          We help governments, enterprises and founders simplify complexity, align stakeholders,
+          and deliver digital experiences that people actually use.
+        </p>
 
             {/* CTAs (you had removed these accidentally) */}
             <div className="mt-7 flex flex-wrap gap-3">
