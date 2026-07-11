@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="420" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="6" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+
+  <linearGradient id="flow" x1="560" y1="210" x2="1120" y2="210">
+    <stop offset="0%" stop-color="#FE5E04"/>
+    <stop offset="100%" stop-color="#FE5E04" stop-opacity="0"/>
+  </linearGradient>
+
+  <style>
+    .packet{
+      animation: move 2.8s linear infinite;
+    }
+    @keyframes move{
+      to{transform:translateX(280px);}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .packet{animation:none;}
+    }
+  </style>
+</defs>
+
+<rect width="1200" height="420" fill="none"/>
+
+<!-- Engine output -->
+<circle cx="220" cy="210" r="18" fill="#FE5E04" filter="url(#glow)"/>
+
+<!-- Main output rail -->
+<path d="M220 210 H1120" stroke="#D8DDE3" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M220 210 H1120" stroke="url(#flow)" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+<!-- Branches -->
+<g stroke="#D8DDE3" stroke-width="3" fill="none" stroke-linecap="round">
+<path d="M620 210 C700 210 720 170 820 170 H1120"/>
+<path d="M620 210 C700 210 720 250 820 250 H1120"/>
+<path d="M720 210 C790 210 820 330 900 330 H1120"/>
+<path d="M720 210 C790 210 820 90 900 90 H1120"/>
+</g>
+
+<!-- Animated packets -->
+<g fill="#FE5E04" filter="url(#glow)">
+<circle class="packet" cx="260" cy="210" r="5"/>
+<circle class="packet" cx="310" cy="210" r="5" style="animation-delay:.3s"/>
+<circle class="packet" cx="360" cy="210" r="5" style="animation-delay:.6s"/>
+<circle class="packet" cx="410" cy="210" r="5" style="animation-delay:.9s"/>
+</g>
+
+<!-- Outputs -->
+<g font-family="Geist, Inter, Arial, sans-serif" fill="#4E5964">
+<text x="1140" y="96" font-size="20" font-weight="700">Digital Services</text>
+<text x="1140" y="176" font-size="20" font-weight="700">Products</text>
+<text x="1140" y="256" font-size="20" font-weight="700">Platforms</text>
+<text x="1140" y="336" font-size="20" font-weight="700">Experiences</text>
+</g>
+</svg>

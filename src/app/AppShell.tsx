@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import { usePathname } from "next/navigation";
 
 export default function AppShell({
@@ -13,61 +12,93 @@ export default function AppShell({
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
 
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
   return (
     <>
-      <Script
-        src="https://assets.calendly.com/assets/external/widget.js"
-        strategy="afterInteractive"
-      />
+      {/* Navigation */}
 
-      {isAdmin ? (
-        <>{children}</>
-      ) : (
-        <>
-          <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 backdrop-blur-md">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-              <Link href="/" className="flex items-center group shrink-0">
-                <span className="relative inline-flex items-center">
-                  <span className="absolute -inset-4 rounded-3xl logo-glow opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
-                  <Image
-                    src="/logo.png"
-                    alt="Elessen Labs"
-                    width={480}
-                    height={180}
-                    priority
-                    className="relative h-20 w-auto md:h-24 object-contain"
-              />
-                </span>
-              </Link>
+      <header className="fixed left-0 right-0 top-0 z-50">
+        <div className="mx-auto mt-5 flex max-w-7xl items-center justify-between rounded-2xl border border-[#4E5964]/10 bg-white/75 px-8 py-4 shadow-[0_20px_60px_rgba(0,0,0,0.06)] backdrop-blur-xl">
 
-              <div className="flex items-center gap-3">
-                
+          {/* Logo */}
 
-                <nav className="flex items-center gap-6">
-                  {/* Hidden until ready */}
-                  <Link
-                    href="/start"
-                    className="rounded-xl border border-black/20 px-4 py-2 font-semibold transition-all duration-200 hover:border-black hover:-translate-y-[1px] hover:shadow-md"
-                  >
-                    Start your product
-                  </Link>
-                </nav>
-              </div>
-            </div>
-          </header>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="Elessen Labs"
+              width={240}
+              height={90}
+              priority
+              className="h-12 w-auto object-contain"
+            />
+          </Link>
 
-          <main className="mx-auto max-w-5xl px-6 py-8 md:py-12">{children}</main>
+          {/* Navigation */}
 
-          <footer className="border-t border-black/10">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6 md:py-3">
-              <div>© {new Date().getFullYear()} Elessen Labs</div>
-              <div className="opacity-70">
-                Product design • MVP delivery • Platform strategy
-              </div>
-            </div>
-          </footer>
-        </>
-      )}
+          <nav className="hidden items-center gap-10 text-[15px] font-medium text-[#4E5964] lg:flex">
+
+            <Link
+              href="/experience"
+              className="transition hover:text-[#FE5E04]"
+            >
+              Work
+            </Link>
+
+            <Link
+              href="/how-we-help"
+              className="transition hover:text-[#FE5E04]"
+            >
+              Services
+            </Link>
+
+            <Link
+              href="/government"
+              className="transition hover:text-[#FE5E04]"
+            >
+              Government
+            </Link>
+
+            <Link
+              href="/insights"
+              className="transition hover:text-[#FE5E04]"
+            >
+              Insights
+            </Link>
+
+          </nav>
+
+          {/* CTA */}
+
+          <Link
+            href="#contact"
+            className="rounded-xl bg-[#FE5E04] px-5 py-3 font-semibold text-white transition hover:bg-[#E95404]"
+          >
+            Let's Talk
+          </Link>
+
+        </div>
+      </header>
+
+      <main className="pt-32">
+        {children}
+      </main>
+
+      <footer className="border-t border-[#4E5964]/10 py-10">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 text-sm text-[#4E5964]/70">
+
+          <div>
+            © {new Date().getFullYear()} Elessen Labs
+          </div>
+
+          <div>
+            Human-Centred Design • Product Strategy • Digital Delivery
+          </div>
+
+        </div>
+      </footer>
     </>
   );
 }

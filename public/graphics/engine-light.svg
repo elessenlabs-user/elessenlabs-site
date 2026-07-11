@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: none;
+      }
+
+      .cls-4, .cls-5 {
+        fill: #fe5e04;
+      }
+
+      .cls-2 {
+        stroke: #d4d9df;
+        stroke-linecap: round;
+      }
+
+      .cls-2, .cls-6 {
+        stroke-width: 3px;
+      }
+
+      .cls-7 {
+        letter-spacing: .14em;
+      }
+
+      .cls-8 {
+        letter-spacing: .14em;
+      }
+
+      .cls-6 {
+        fill: url(#linear-gradient);
+        stroke: #e2e7ec;
+      }
+
+      .cls-9 {
+        fill: #fff;
+      }
+
+      .cls-5 {
+        font-size: 28px;
+      }
+
+      .cls-5, .cls-10 {
+        font-family: ArialMT, Arial;
+        isolation: isolate;
+      }
+
+      .cls-11, .cls-10 {
+        fill: #4e5964;
+      }
+
+      .cls-3 {
+        stroke: #9aa4af;
+        stroke-width: 6px;
+      }
+
+      .cls-10 {
+        font-size: 42px;
+        letter-spacing: .19em;
+      }
+
+      .cls-12 {
+        letter-spacing: .12em;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="461.21" y1="562.64" x2="462.21" y2="561.64" gradientTransform="translate(-269126 407500) scale(584 -724)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#f3f5f8"/>
+    </linearGradient>
+  </defs>
+  <rect class="cls-1" width="1024" height="1024"/>
+  <g>
+    <path class="cls-2" d="M70,250h150"/>
+    <path class="cls-2" d="M70,380h150"/>
+    <path class="cls-2" d="M70,512h150"/>
+    <path class="cls-2" d="M70,644h150"/>
+    <path class="cls-2" d="M70,774h150"/>
+    <path class="cls-2" d="M804,250h150"/>
+    <path class="cls-2" d="M804,380h150"/>
+    <path class="cls-2" d="M804,512h150"/>
+    <path class="cls-2" d="M804,644h150"/>
+    <path class="cls-2" d="M804,774h150"/>
+  </g>
+  <rect class="cls-6" x="220" y="150" width="584" height="724" rx="60" ry="60"/>
+  <g>
+    <line class="cls-3" x1="300" y1="150" x2="300" y2="110"/>
+    <line class="cls-3" x1="380" y1="150" x2="380" y2="110"/>
+    <line class="cls-3" x1="460" y1="150" x2="460" y2="110"/>
+    <line class="cls-3" x1="540" y1="150" x2="540" y2="110"/>
+    <line class="cls-3" x1="620" y1="150" x2="620" y2="110"/>
+    <line class="cls-3" x1="700" y1="150" x2="700" y2="110"/>
+    <line class="cls-3" x1="300" y1="874" x2="300" y2="914"/>
+    <line class="cls-3" x1="380" y1="874" x2="380" y2="914"/>
+    <line class="cls-3" x1="460" y1="874" x2="460" y2="914"/>
+    <line class="cls-3" x1="540" y1="874" x2="540" y2="914"/>
+    <line class="cls-3" x1="620" y1="874" x2="620" y2="914"/>
+    <line class="cls-3" x1="700" y1="874" x2="700" y2="914"/>
+  </g>
+  <circle class="cls-11" cx="512" cy="390" r="120"/>
+  <text class="cls-10" transform="translate(387.12 575)"><tspan x="0" y="0">ELESSEN</tspan></text>
+  <text class="cls-5" transform="translate(351.56 625)"><tspan class="cls-8" x="0" y="0">CLARIT</tspan><tspan class="cls-12" x="123.43" y="0">Y</tspan><tspan class="cls-7" x="145.57" y="0" xml:space="preserve"> ENGINE™</tspan></text>
+  <path class="cls-4" d="M443.5,330.24h64v20h-75.5l11.5-20Z"/>
+  <path class="cls-9" d="M432,366.24h60v11l-7.5,8h-33v23.5h56.5l12,21h-88v-63.5Z"/>
+  <path class="cls-9" d="M520,330.24h20v78h42l10,21.5s-59-.5-59.5,0-7-5.5-7.5-6-5.5-10.5-5-10.5,0-83,0-83Z"/>
+</svg>
