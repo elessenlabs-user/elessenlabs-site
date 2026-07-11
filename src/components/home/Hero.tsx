@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import Engine from "../engine/Engine";
+import EngineScene from "../engine/EngineScene";
 
 export default function Hero() {
   return (
@@ -57,13 +57,14 @@ export default function Hero() {
         </div>
         {/* RIGHT */}
 
-        <div className="flex flex-1 items-center justify-center">
-
+        <div className="flex flex-1 items-center justify-end">
         <div className="relative flex w-full justify-center">
         
-        <Engine />
-
-  </div>
+    <div className="flex justify-center">
+        <EngineScene />
+    </div>
+    
+    </div>
 
 </div>
         
