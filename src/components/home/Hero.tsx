@@ -1,76 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import EngineScene from "../engine/EngineScene";
+import { openBookingPopup } from "../../lib/bookings";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#F8F9FB]">
-      <div className="mx-auto flex min-h-[90vh] max-w-[1600px] items-center px-8 py-20">
+    <section
+      id="top"
+      className="relative overflow-hidden bg-[#F8F9FB]"
+    >
+      <div className="mx-auto flex min-h-[680px] max-w-[1600px] flex-col items-center gap-10 px-6 py-16 lg:flex-row lg:px-8">
+        {/* Copy */}
 
-        {/* LEFT */}
-        <div className="w-full max-w-[650px]">
-
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FE5E04]">
-                Founder-led Digital Consultancy
-            </p>
-
-          <h1 className="mt-8 text-6xl font-bold leading-[1.02] tracking-tight text-[#4E5964] md:text-7xl">
-            Bringing clarity
-            <br />
-            to complexity.
-           
-          </h1>
-
-          <p className="mt-8 max-w-lg text-xl leading-9 text-[#4E5964]/75">
-            Helping governments, enterprises and founders transform complexity into trusted digital services, products and experiences.
+        <div className="w-full max-w-[680px]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#FE5E04]">
+            Founder-led Product Consultancy
           </p>
 
-          <div className="mt-10 flex gap-4">
-            <Link
-              href="#contact"
-              className="rounded-xl bg-[#FE5E04] px-6 py-4 font-semibold text-white transition hover:bg-[#E95404]"
+          <h1 className="mt-8 text-5xl font-bold leading-[1.02] tracking-tight text-[#4E5964] sm:text-6xl md:text-7xl">
+            Product &amp; Service Design.
+            <br />
+            Product Development.
+          </h1>
+
+          <p className="mt-8 max-w-xl text-xl leading-9 text-[#4E5964]/75">
+            We design and build websites, apps, platforms
+            and services—from the first idea to a live
+            product.
+          </p>
+
+          <div className="mt-10 flex flex-wrap gap-4">
+            <button
+              type="button"
+              onClick={openBookingPopup}
+              className="rounded-xl bg-[#FE5E04] px-6 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#E95404]"
             >
-              Let's Talk
-            </Link>
+              Let&apos;s Talk
+            </button>
 
             <Link
-              href="/experience"
-              className="rounded-xl border border-[#4E5964]/20 bg-white px-6 py-4 font-semibold text-[#4E5964]"
+              href="#work"
+              className="rounded-xl border border-[#4E5964]/20 bg-white px-6 py-4 font-semibold text-[#4E5964] transition hover:border-[#FE5E04]"
             >
-              View Impact 
+              View Our Work
             </Link>
           </div>
-
-          <div className="mt-12 text-sm text-[#4E5964]/55">
-            Experience includes
-          </div>
-
-          <div className="mt-4 flex gap-8 text-lg font-semibold text-[#4E5964]">
-            <span>PwC</span>
-            <span>Oliver Wyman</span>
-            <span>BDO</span>
-            <span>ENMAX</span>
-          </div>
-
         </div>
-        {/* RIGHT */}
 
-        <div className="flex flex-1 items-center justify-end">
-        <div className="relative flex w-full justify-center">
-        
-    <div className="flex justify-center">
-        <EngineScene />
-    </div>
-    
-    </div>
+        {/* Hero processor */}
 
-</div>
-        
-
-       
-
+        <div className="flex w-full flex-1 items-center justify-center lg:justify-end">
+          <div className="relative flex w-full justify-center">
+            <EngineScene />
+          </div>
+        </div>
       </div>
     </section>
   );

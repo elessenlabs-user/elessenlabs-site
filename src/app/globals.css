@@ -1,96 +1,306 @@
 @import "tailwindcss";
 
+/*
+  Enable Tailwind's dark: utility using the
+  .dark class placed on the <html> element.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* =========================================================
-   BRAND SYSTEM
+   TAILWIND THEME TOKENS
+   ========================================================= */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-strong: var(--surface-strong);
+
+  --color-foreground: var(--text);
+  --color-foreground-strong: var(--text-strong);
+  --color-muted: var(--muted-solid);
+
+  --color-border: var(--border-solid);
+
+  --color-brand: var(--color-orange);
+  --color-brand-hover: var(--color-orange-hover);
+}
+
+/* =========================================================
+   LIGHT THEME
    ========================================================= */
 
 :root {
+  /* Brand */
 
-  /* ---------- Brand ---------- */
+  --color-orange: #fe5e04;
+  --color-orange-hover: #e95404;
 
-  --color-orange: #FE5E04;
+  /* Backgrounds */
 
-  --color-slate: #4E5964;
+  --background: #f8f9fb;
+  --surface: #ffffff;
+  --surface-soft: #f2f4f7;
+  --surface-strong: #11161c;
 
-  /* ---------- Backgrounds ---------- */
+  /* Text */
 
-  --background: #F8F9FB;
+  --text: #4e5964;
+  --text-strong: #343e48;
+  --muted: rgba(78, 89, 100, 0.68);
+  --muted-solid: #78828c;
 
-  --surface: #FFFFFF;
+  /* Borders */
 
-  /* ---------- Text ---------- */
+  --border: rgba(78, 89, 100, 0.1);
+  --border-solid: #e3e7ec;
 
-  --text: #4E5964;
+  /* Navigation */
 
-  --muted: rgba(78,89,100,.68);
+  --header-background: rgba(
+    255,
+    255,
+    255,
+    0.84
+  );
 
-  /* ---------- Borders ---------- */
-
-  --border: rgba(78,89,100,.08);
-
-  /* ---------- Radius ---------- */
+  /* Radius */
 
   --radius-sm: 14px;
-
   --radius-md: 22px;
-
   --radius-lg: 34px;
 
-  /* ---------- Shadows ---------- */
+  /* Shadows */
 
   --shadow-sm:
-
-    0 8px 30px rgba(0,0,0,.04);
+    0 8px 30px rgba(0, 0, 0, 0.04);
 
   --shadow-md:
-
-    0 20px 60px rgba(0,0,0,.08);
+    0 20px 60px rgba(0, 0, 0, 0.08);
 
   --shadow-lg:
+    0 40px 100px rgba(0, 0, 0, 0.1);
 
-    0 40px 100px rgba(0,0,0,.10);
+  color-scheme: light;
+}
 
+/* =========================================================
+   DARK THEME
+   ========================================================= */
+
+.dark {
+  /* No pure-black page sections */
+
+  --background: #222c36;
+  --surface: #2c3742;
+  --surface-soft: #35414d;
+
+  /*
+    The Elessen brand slate is reserved for
+    contained brand panels, OLEDs and CTAs.
+  */
+  --surface-strong: #4e5964;
+
+  --text: #eef2f5;
+  --text-strong: #ffffff;
+
+  --muted: rgba(238, 242, 245, 0.68);
+  --muted-solid: #b5bec7;
+
+  --border: rgba(238, 242, 245, 0.12);
+  --border-solid: #46525e;
+
+  --header-background:
+    rgba(44, 55, 66, 0.9);
+
+  --shadow-sm:
+    0 8px 30px rgba(7, 11, 15, 0.22);
+
+  --shadow-md:
+    0 20px 60px rgba(7, 11, 15, 0.3);
+
+  --shadow-lg:
+    0 40px 100px rgba(7, 11, 15, 0.4);
+
+  color-scheme: dark;
+}
+
+/* =========================================================
+   DARK MODE — EXISTING COMPONENT BRIDGE
+   ========================================================= */
+
+/* Page sections */
+
+.dark .bg-\[\#F8F9FB\] {
+  background-color: var(--background) !important;
+}
+
+/* Cards and panels */
+
+.dark .bg-white {
+  background-color: var(--surface) !important;
+}
+
+.dark .bg-\[\#F1F4F8\],
+.dark .bg-\[\#F2F4F7\],
+.dark .bg-\[\#F3F5F8\],
+.dark .bg-\[\#F5F7FA\],
+.dark .bg-\[\#F6F7F9\],
+.dark .bg-\[\#FAFBFC\] {
+  background-color:
+    var(--surface-soft) !important;
+}
+
+/* Orange-tinted active panels */
+
+.dark .bg-\[\#FFF5EF\] {
+  background-color:
+    rgba(254, 94, 4, 0.12) !important;
+}
+
+/* Disabled controls */
+
+.dark .bg-\[\#E6E9ED\] {
+  background-color: #46515c !important;
+}
+
+/* Brand panels — never pure black */
+
+.dark .bg-\[\#11161C\],
+.dark .bg-\[\#12161B\] {
+  background-color: #4e5964 !important;
+}
+
+/* Primary slate text */
+
+.dark .text-\[\#4E5964\] {
+  color: var(--text) !important;
+}
+
+/* Muted slate text */
+
+.dark .text-\[\#4E5964\]\/75,
+.dark .text-\[\#4E5964\]\/72,
+.dark .text-\[\#4E5964\]\/70,
+.dark .text-\[\#4E5964\]\/68,
+.dark .text-\[\#4E5964\]\/65,
+.dark .text-\[\#4E5964\]\/60,
+.dark .text-\[\#4E5964\]\/55,
+.dark .text-\[\#4E5964\]\/50,
+.dark .text-\[\#4E5964\]\/45,
+.dark .text-\[\#4E5964\]\/40,
+.dark .text-\[\#4E5964\]\/35,
+.dark .text-\[\#4E5964\]\/30 {
+  color: var(--muted) !important;
+}
+
+/* Borders */
+
+.dark .border-\[\#E3E7EC\],
+.dark .border-\[\#E4E9EF\],
+.dark .border-\[\#E5EAF0\],
+.dark .border-\[\#E7EBF0\],
+.dark .border-\[\#E8ECF1\],
+.dark .border-\[\#D9E0E7\],
+.dark .border-\[\#DCE2E8\],
+.dark .border-\[\#DDE3E9\] {
+  border-color:
+    var(--border-solid) !important;
+}
+
+.dark .border-\[\#4E5964\]\/10,
+.dark .border-\[\#4E5964\]\/15,
+.dark .border-\[\#4E5964\]\/20 {
+  border-color: var(--border) !important;
 }
 
 /* =========================================================
    BASE PAGE
    ========================================================= */
 
-html,
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
 body {
+  min-height: 100vh;
 
   background: var(--background);
-
   color: var(--text);
 
-  font-family: var(--font-geist-sans),
-               Inter,
-               system-ui,
-               sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    Inter,
+    system-ui,
+    sans-serif;
 
   overflow-x: hidden;
 
+  transition:
+    background-color 240ms ease,
+    color 240ms ease;
 }
+
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(254, 94, 4, 0.22);
+  color: var(--text-strong);
+}
+
+/* =========================================================
+   SHARED THEME HELPERS
+   ========================================================= */
+
+.theme-background {
+  background: var(--background);
+}
+
+.theme-surface {
+  background: var(--surface);
+}
+
+.theme-surface-soft {
+  background: var(--surface-soft);
+}
+
+.theme-text {
+  color: var(--text);
+}
+
+.theme-muted {
+  color: var(--muted);
+}
+
+.theme-border {
+  border-color: var(--border);
 }
 
 /* =========================================================
    BUTTONS
    ========================================================= */
 
-
-
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 20px 60px rgba(11,16,32,.22);
-}
 
+  box-shadow:
+    0 20px 60px rgba(11, 16, 32, 0.22);
+}
 
 .btn-secondary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 50px rgba(11,16,32,.10);
+
+  box-shadow:
+    0 16px 50px rgba(11, 16, 32, 0.1);
 }
 
 /* =========================================================
@@ -100,7 +310,7 @@ a {
 .link {
   text-decoration: underline;
   text-underline-offset: 4px;
-  opacity: .85;
+  opacity: 0.85;
 }
 
 .link:hover {
@@ -114,40 +324,113 @@ a {
 .logo-tight {
   object-fit: contain;
   object-position: left center;
+
   transform: scale(1.25);
   transform-origin: left center;
 }
 
-
 /* =========================================================
-   ANIMATIONS
+   HEADER
    ========================================================= */
 
-
-.animate-float {
-  animation: floaty 7s ease-in-out infinite;
-}
-
-/* glass header polish */
 header {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Calendly popup overlay should sit above everything */
-.calendly-overlay,
-.calendly-popup {
-  z-index: 999999 !important;
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
-.calendly-overlay {
-  position: fixed !important;
-  inset: 0 !important;
+.animate-float {
+  animation: floaty 7s ease-in-out infinite;
+}
+
+@keyframes bannerScroll {
+  0% {
+    transform: translateY(0%);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-banner-scroll {
+  animation: bannerScroll 10s linear infinite;
+}
+
+@keyframes subtlePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.01);
+    opacity: 0.95;
+  }
+}
+
+.banner-pulse {
+  animation: subtlePulse 2.6s ease-in-out infinite;
+}
+
+@keyframes softOrangeBorder {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 122, 0, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 122, 0, 0.35),
+      0 0 18px rgba(255, 122, 0, 0.12);
+  }
+}
+
+.soft-orange-border {
+  animation:
+    softOrangeBorder 3.2s ease-in-out
+    infinite;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* =========================================================
    PRINT
    ========================================================= */
+
 @media print {
   .print-hide {
     display: none !important;
@@ -174,43 +457,4 @@ header {
     break-before: page;
     page-break-before: always;
   }
-}
-@keyframes bannerScroll {
-  0% {
-    transform: translateY(0%);
-  }
-  100% {
-    transform: translateY(-50%);
-  }
-}
-
-.animate-banner-scroll {
-  animation: bannerScroll 10s linear infinite;
-}
-
-@keyframes subtlePulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.01);
-    opacity: 0.95;
-  }
-}
-
-.banner-pulse {
-  animation: subtlePulse 2.6s ease-in-out infinite;
-}
-@keyframes softOrangeBorder {
-  0%, 100% {
-    box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 0 1px rgba(255, 122, 0, 0.35), 0 0 18px rgba(255, 122, 0, 0.12);
-  }
-}
-
-.soft-orange-border {
-  animation: softOrangeBorder 3.2s ease-in-out infinite;
 }

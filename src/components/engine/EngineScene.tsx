@@ -2,7 +2,7 @@
 
 import styles from "./EngineScene.module.css";
 import EngineCircuit from "./EngineCircuit";
-import EngineCore from "./EngineCore";
+import HeroEngineCore from "./HeroEngineCore";
 
 export default function EngineScene() {
   return (
@@ -11,12 +11,12 @@ export default function EngineScene() {
         {/* Ambient glow */}
         <div className={styles.glow} aria-hidden="true" />
 
-        {/* Circuit */}
+        {/* Animated hero circuitry */}
         <EngineCircuit />
 
-        {/* Engine */}
+        {/* Original hero processor with EL logo */}
         <div className={styles.core}>
-          <EngineCore />
+          <HeroEngineCore />
         </div>
       </div>
     </div>

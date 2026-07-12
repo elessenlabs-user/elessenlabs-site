@@ -2,31 +2,38 @@
 
 export default function Approach() {
   return (
-    <section className="bg-[#F8F9FB] py-28">
+    <section className="bg-[#F8F9FB] py-20">
       <div className="mx-auto max-w-7xl px-8">
+
+        {/* Header */}
 
         <div className="max-w-3xl">
           <div className="text-sm font-bold uppercase tracking-[0.18em] text-[#FE5E04]">
-            OUR APPROACH
+            THE ELESSEN ENGINE™
           </div>
 
           <h2 className="mt-4 text-5xl font-bold tracking-tight text-[#4E5964]">
-            How complexity becomes clarity.
+            A repeatable framework for
+            <br />
+            transforming complexity into clarity.
           </h2>
 
           <p className="mt-6 max-w-2xl text-xl leading-9 text-[#4E5964]/70">
-            Every engagement follows a structured approach that aligns
-            stakeholders, reduces delivery risk and creates digital
-            experiences people trust.
+            Every engagement follows a repeatable framework that transforms
+            complexity into clear strategy, intuitive experiences and measurable
+            outcomes.
           </p>
         </div>
 
-        <div className="mt-20">
+        {/* Timeline */}
 
-          <div className="flex flex-col gap-16">
+        <div className="mt-14">
+          <div className="flex flex-col gap-12">
+
+            {/* STEP 1 */}
 
             <div className="flex items-center gap-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
                 1
               </div>
 
@@ -36,35 +43,39 @@ export default function Approach() {
                 </h3>
 
                 <p className="mt-2 max-w-xl text-lg leading-8 text-[#4E5964]/70">
-                  We begin by understanding your goals, users, constraints and
-                  business context before proposing solutions.
+                  We understand your users, business goals, constraints and
+                  opportunities before making recommendations.
                 </p>
               </div>
             </div>
 
-            <div className="ml-8 h-20 w-px bg-[#FE5E04]/25" />
+            <div className="ml-8 h-14 w-px bg-[#FE5E04]/20" />
+
+            {/* STEP 2 */}
 
             <div className="flex items-center gap-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
                 2
               </div>
 
               <div>
                 <h3 className="text-3xl font-bold text-[#4E5964]">
-                  Discover
+                  Align
                 </h3>
 
                 <p className="mt-2 max-w-xl text-lg leading-8 text-[#4E5964]/70">
-                  We uncover opportunities through research, stakeholder
-                  workshops and service mapping.
+                  We align stakeholders around priorities, outcomes and a shared
+                  product vision before execution begins.
                 </p>
               </div>
             </div>
 
-            <div className="ml-8 h-20 w-px bg-[#FE5E04]/25" />
+            <div className="ml-8 h-14 w-px bg-[#FE5E04]/20" />
+
+            {/* STEP 3 */}
 
             <div className="flex items-center gap-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
                 3
               </div>
 
@@ -74,16 +85,18 @@ export default function Approach() {
                 </h3>
 
                 <p className="mt-2 max-w-xl text-lg leading-8 text-[#4E5964]/70">
-                  Together we create experiences, systems and interfaces that
-                  simplify complexity.
+                  We design products, services and systems that simplify
+                  complexity and create intuitive user experiences.
                 </p>
               </div>
             </div>
 
-            <div className="ml-8 h-20 w-px bg-[#FE5E04]/25" />
+            <div className="ml-8 h-14 w-px bg-[#FE5E04]/20" />
+
+            {/* STEP 4 */}
 
             <div className="flex items-center gap-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
                 4
               </div>
 
@@ -93,14 +106,34 @@ export default function Approach() {
                 </h3>
 
                 <p className="mt-2 max-w-xl text-lg leading-8 text-[#4E5964]/70">
-                  We support implementation with production-ready thinking,
-                  design systems and ongoing collaboration.
+                  We lead delivery from concept to implementation, partnering
+                  closely with engineering teams to ensure quality.
+                </p>
+              </div>
+            </div>
+
+            <div className="ml-8 h-14 w-px bg-[#FE5E04]/20" />
+
+            {/* STEP 5 */}
+
+            <div className="flex items-center gap-8">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#FE5E04] text-2xl font-bold text-white">
+                5
+              </div>
+
+              <div>
+                <h3 className="text-3xl font-bold text-[#4E5964]">
+                  Improve
+                </h3>
+
+                <p className="mt-2 max-w-xl text-lg leading-8 text-[#4E5964]/70">
+                  We measure outcomes, iterate continuously and help products
+                  evolve through evidence, learning and ongoing optimisation.
                 </p>
               </div>
             </div>
 
           </div>
-
         </div>
 
       </div>

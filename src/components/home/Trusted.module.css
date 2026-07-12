@@ -1,0 +1,131 @@
+.section {
+  padding: 36px 0 96px;
+}
+
+.container {
+  width: min(1180px, calc(100% - 80px));
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: #fe5e04;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.heading {
+  max-width: 760px;
+  margin: 0;
+  color: #4f5b69;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.subheading {
+  margin: 20px 0 54px;
+  color: #707b89;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.subheading span {
+  margin: 0 0.18rem;
+  color: #a9b1ba;
+}
+
+.logoGrid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 36px;
+}
+
+.logo {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  opacity: 0.68;
+  filter: grayscale(1);
+  transition:
+    opacity 220ms ease,
+    filter 220ms ease,
+    transform 220ms ease;
+}
+
+.logo:hover {
+  opacity: 1;
+  filter: grayscale(0);
+  transform: translateY(-2px);
+}
+
+.logo img {
+  max-height: 42px;
+  width: auto;
+  object-fit: contain;
+
+}
+
+/* Individual visual-weight corrections */
+
+.pwc {
+  max-width: 92px;
+}
+
+.bdo {
+  max-width: 86px;
+}
+
+.oliverWyman {
+  max-width: 145px;
+}
+
+.stc {
+  max-width: 82px;
+}
+
+.petroCanada {
+  max-width: 74px;
+}
+
+.enmax {
+  max-width: 122px;
+}
+
+
+@media (max-width: 1050px) {
+  .logoGrid {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 38px 54px;
+  }
+}
+
+@media (max-width: 700px) {
+  .section {
+    padding: 20px 0 72px;
+  }
+
+  .container {
+    width: min(100% - 40px, 1180px);
+  }
+
+  .logoGrid {
+    justify-content: flex-start;
+    gap: 30px 42px;
+  }
+
+  .heading {
+    font-size: 2rem;
+  }
+
+  .subheading {
+    margin-bottom: 42px;
+  }
+}
