@@ -1,0 +1,197 @@
+.scene {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.canvas {
+  position: relative;
+  width: min(100%, 1100px);
+  aspect-ratio: 12 / 7;
+  min-height: 560px;
+  isolation: isolate;
+}
+
+/* ---------------- Circuit ---------------- */
+
+.circuit {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---------------- Glow ---------------- */
+
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 58%;
+  transition:
+  opacity .25s ease,
+  transform .25s ease;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(254, 94, 4, 0.18) 0%,
+    rgba(254, 94, 4, 0.08) 38%,
+    rgba(254, 94, 4, 0) 72%
+  );
+
+  transform: translate(-50%, -50%);
+  animation: glowBreathe 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ---------------- Engine ---------------- */
+
+.core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 10;
+  width: 46%;
+  max-width: 500px;
+  transform: translate(-50%, -50%);
+}
+
+.core img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------------- Processing Mask ---------------- */
+
+.processingMask {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 330px;
+  height: 330px;
+  transform: translate(-50%, -50%);
+  border-radius: 42px;
+  overflow: hidden;
+  z-index: 8;
+  pointer-events: none;
+}
+
+/* ---------------- SVG Packet ---------------- */
+
+.packet {
+  fill: #FE5E04;
+  filter: drop-shadow(0 0 10px rgba(254, 94, 4, 0.75));
+}
+
+/* ---------------- Glow Animation ---------------- */
+
+@keyframes glowBreathe {
+
+  0%,
+  42%,
+  100%{
+
+    opacity:.18;
+    transform:translate(-50%,-50%) scale(.95);
+
+  }
+
+  50%{
+
+    opacity:.38;
+    transform:translate(-50%,-50%) scale(1.03);
+
+  }
+
+  58%{
+
+    opacity:.30;
+    transform:translate(-50%,-50%) scale(1.01);
+
+  }
+
+}
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 900px) {
+  .canvas {
+    min-height: 460px;
+  }
+
+  .core {
+    width: 52%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    animation: none;
+  }
+}
+
+.engine-screen{
+
+position:absolute;
+
+left:50%;
+
+top:50%;
+
+transform:translate(-50%,-50%);
+
+width:220px;
+
+height:125px;
+
+border-radius:14px;
+
+background:#1B1F23;
+
+display:flex;
+
+flex-direction:column;
+
+justify-content:center;
+
+align-items:center;
+
+box-shadow:
+0 0 18px rgba(0,0,0,.25),
+inset 0 0 20px rgba(255,255,255,.04);
+
+}
+
+.screen-header{
+
+font-size:10px;
+
+font-weight:700;
+
+letter-spacing:.18em;
+
+text-transform:uppercase;
+
+color:#FE5E04;
+
+margin-bottom:14px;
+
+}
+
+.screen-status{
+
+font-size:16px;
+
+font-weight:600;
+
+letter-spacing:.08em;
+
+color:#E9EDF2;
+
+}

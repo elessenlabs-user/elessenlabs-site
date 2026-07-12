@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 720">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8, .cls-9 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke: url(#linear-gradient-2);
+      }
+
+      .cls-2, .cls-3, .cls-4, .cls-5, .cls-7 {
+        stroke-width: 5px;
+      }
+
+      .cls-2, .cls-3, .cls-4, .cls-5, .cls-7, .cls-8, .cls-9 {
+        stroke-linecap: round;
+      }
+
+      .cls-3 {
+        stroke: url(#linear-gradient-5);
+      }
+
+      .cls-4 {
+        stroke: url(#linear-gradient-3);
+      }
+
+      .cls-5 {
+        stroke: url(#linear-gradient-4);
+      }
+
+      .cls-10 {
+        font-family: Arial-BoldMT, Arial;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: .18em;
+      }
+
+      .cls-10, .cls-11 {
+        isolation: isolate;
+      }
+
+      .cls-12 {
+        fill: rgba(254, 94, 4, .75);
+      }
+
+      .cls-13 {
+        fill: #fe5e04;
+      }
+
+      .cls-14 {
+        fill: rgba(254, 94, 4, .1);
+      }
+
+      .cls-15 {
+        fill: rgba(254, 94, 4, .2);
+      }
+
+      .cls-16 {
+        fill: url(#radial-gradient);
+      }
+
+      .cls-6 {
+        opacity: .34;
+        stroke: #fe5e04;
+        stroke-width: 2px;
+      }
+
+      .cls-17 {
+        fill: rgba(254, 94, 4, .35);
+      }
+
+      .cls-18 {
+        fill: rgba(254, 94, 4, .5);
+      }
+
+      .cls-19 {
+        filter: url(#glow);
+      }
+
+      .cls-20 {
+        font-family: ArialMT, Arial;
+        font-size: 17px;
+      }
+
+      .cls-21 {
+        fill: rgba(254, 94, 4, .05);
+      }
+
+      .cls-22 {
+        fill: #fff;
+      }
+
+      .cls-7 {
+        stroke: url(#linear-gradient);
+      }
+
+      .cls-8 {
+        stroke: #929da8;
+        stroke-width: 6px;
+      }
+
+      .cls-9 {
+        stroke: #d7dde4;
+      }
+
+      .cls-9, .cls-23 {
+        stroke-width: 3px;
+      }
+
+      .cls-24 {
+        letter-spacing: -.06em;
+      }
+
+      .cls-23 {
+        fill: url(#linear-gradient-6);
+        stroke: #dfe4e9;
+      }
+
+      .cls-25 {
+        filter: url(#shadow);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="719.47" y1="720" x2="1579.47" y2="720" gradientTransform="translate(-571370 890) scale(1040 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fe5e04" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fe5e04"/>
+      <stop offset=".55" stop-color="#fe5e04"/>
+      <stop offset="1" stop-color="#fe5e04" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="719.47" y1="720" x2="1579.47" y2="720" gradientTransform="translate(-571370 985) scale(1040 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fe5e04" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fe5e04"/>
+      <stop offset=".55" stop-color="#fe5e04"/>
+      <stop offset="1" stop-color="#fe5e04" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="719.47" y1="720" x2="1579.47" y2="720" gradientTransform="translate(-571370 1080) scale(1040 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fe5e04" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fe5e04"/>
+      <stop offset=".55" stop-color="#fe5e04"/>
+      <stop offset="1" stop-color="#fe5e04" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-4" x1="719.47" y1="720" x2="1579.47" y2="720" gradientTransform="translate(-571370 1175) scale(1040 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fe5e04" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fe5e04"/>
+      <stop offset=".55" stop-color="#fe5e04"/>
+      <stop offset="1" stop-color="#fe5e04" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-5" x1="719.47" y1="720" x2="1579.47" y2="720" gradientTransform="translate(-571370 1270) scale(1040 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fe5e04" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#fe5e04"/>
+      <stop offset=".55" stop-color="#fe5e04"/>
+      <stop offset="1" stop-color="#fe5e04" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="20" flood-color="#4E5964" flood-opacity="0.16" stdDeviation="24"/>
+    </filter>
+    <linearGradient id="linear-gradient-6" x1="549.08" y1="410.66" x2="550.08" y2="409.66" gradientTransform="translate(-329150 193135) scale(600 -470)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#f0f3f6"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient" cx="548.04" cy="410.96" fx="548.04" fy="410.96" r=".7" gradientTransform="translate(-122162 92348) scale(224 -224)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#46515d"/>
+      <stop offset="1" stop-color="#2b343d"/>
+    </radialGradient>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur result="blur" stdDeviation="7"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect class="cls-1" width="1200" height="720"/>
+  <g>
+    <path class="cls-9" d="M80,170h220"/>
+    <path class="cls-9" d="M80,265h220"/>
+    <path class="cls-9" d="M80,360h220"/>
+    <path class="cls-9" d="M80,455h220"/>
+    <path class="cls-9" d="M80,550h220"/>
+    <path class="cls-9" d="M900,170h220"/>
+    <path class="cls-9" d="M900,265h220"/>
+    <path class="cls-9" d="M900,360h220"/>
+    <path class="cls-9" d="M900,455h220"/>
+    <path class="cls-9" d="M900,550h220"/>
+  </g>
+  <g>
+    <path class="cls-7" d="M80,170h1040"/>
+    <path class="cls-2" d="M80,265h1040"/>
+    <path class="cls-4" d="M80,360h1040"/>
+    <path class="cls-5" d="M80,455h1040"/>
+    <path class="cls-3" d="M80,550h1040"/>
+  </g>
+  <g>
+    <line class="cls-8" x1="420" y1="125" x2="420" y2="85"/>
+    <line class="cls-8" x1="500" y1="125" x2="500" y2="85"/>
+    <line class="cls-8" x1="580" y1="125" x2="580" y2="85"/>
+    <line class="cls-8" x1="660" y1="125" x2="660" y2="85"/>
+    <line class="cls-8" x1="740" y1="125" x2="740" y2="85"/>
+    <line class="cls-8" x1="420" y1="595" x2="420" y2="635"/>
+    <line class="cls-8" x1="500" y1="595" x2="500" y2="635"/>
+    <line class="cls-8" x1="580" y1="595" x2="580" y2="635"/>
+    <line class="cls-8" x1="660" y1="595" x2="660" y2="635"/>
+    <line class="cls-8" x1="740" y1="595" x2="740" y2="635"/>
+  </g>
+  <g class="cls-25">
+    <rect class="cls-23" x="300" y="125" width="600" height="470" rx="56" ry="56"/>
+    <rect class="cls-6" x="330" y="155" width="540" height="410" rx="40" ry="40"/>
+  </g>
+  <g>
+    <circle class="cls-16" cx="600" cy="310" r="112"/>
+    <circle class="cls-14" cx="600" cy="310" r="126"/>
+    <circle class="cls-21" cx="600" cy="310" r="142"/>
+    <path class="cls-13" d="M536.5,250.5h64v20h-75.5l11.5-20Z"/>
+    <path class="cls-22" d="M525,286.5h60v11l-7.5,8h-33v23.5h56.5l12,21h-88v-63.5Z"/>
+    <path class="cls-22" d="M613,250.5h20v78h42l10,21.5s-59-.5-59.5,0-7-5.5-7.5-6-5.5-10.5-5-10.5,0-83,0-83Z"/>
+  </g>
+  <text class="cls-10" transform="translate(481.65 475)"><tspan x="0" y="0">PROCESSING</tspan></text>
+  <g class="cls-11">
+    <text class="cls-20" transform="translate(423.21 515)"><tspan x="0" y="0">Understand •</tspan><tspan class="cls-24" x="98.56" y="0"> </tspan><tspan x="102.35" y="0">Align • Design • Deliver • Improve</tspan></text>
+  </g>
+  <g>
+    <g class="cls-19">
+      <circle class="cls-13" cx="530" cy="555" r="5"/>
+    </g>
+    <circle class="cls-12" cx="555" cy="555" r="5"/>
+    <circle class="cls-18" cx="580" cy="555" r="5"/>
+    <circle class="cls-17" cx="605" cy="555" r="5"/>
+    <circle class="cls-15" cx="630" cy="555" r="5"/>
+  </g>
+</svg>

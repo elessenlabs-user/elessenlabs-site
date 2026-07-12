@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: none;
+      }
+
+      .cls-4, .cls-5, .cls-6, .cls-7 {
+        fill: #fe5e04;
+      }
+
+      .cls-8 {
+        fill: url(#radial-gradient);
+        stroke: #53606d;
+        stroke-width: 2px;
+      }
+
+      .cls-9, .cls-5, .cls-6, .cls-10, .cls-7 {
+        isolation: isolate;
+      }
+
+      .cls-5 {
+        letter-spacing: .1em;
+      }
+
+      .cls-5, .cls-6, .cls-10, .cls-7 {
+        font-family: ArialMT, Arial;
+      }
+
+      .cls-5, .cls-6, .cls-7 {
+        font-size: 28px;
+      }
+
+      .cls-11, .cls-7 {
+        letter-spacing: .14em;
+      }
+
+      .cls-2 {
+        stroke: #717c87;
+        stroke-width: 6px;
+      }
+
+      .cls-12 {
+        fill: #fff;
+      }
+
+      .cls-10 {
+        fill: #f4f6f8;
+        font-size: 42px;
+        letter-spacing: .19em;
+      }
+
+      .cls-13 {
+        letter-spacing: .12em;
+      }
+
+      .cls-3 {
+        stroke: #3a4652;
+        stroke-linecap: round;
+      }
+
+      .cls-3, .cls-14 {
+        stroke-width: 3px;
+      }
+
+      .cls-14 {
+        fill: url(#linear-gradient);
+        stroke: #2e3944;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="922.42" y1="-1.28" x2="923.42" y2="-.28" gradientTransform="translate(-538472 1074) scale(584 724)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#202733"/>
+      <stop offset="1" stop-color="#11161c"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient" cx="920.65" cy="-3.44" fx="920.65" fy="-3.44" r=".7" gradientTransform="translate(-220444 1194) scale(240)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3f4954"/>
+      <stop offset="1" stop-color="#232b34"/>
+    </radialGradient>
+  </defs>
+  <rect class="cls-1" width="1024" height="1024"/>
+  <g>
+    <path class="cls-3" d="M70,250h150"/>
+    <path class="cls-3" d="M70,380h150"/>
+    <path class="cls-3" d="M70,512h150"/>
+    <path class="cls-3" d="M70,644h150"/>
+    <path class="cls-3" d="M70,774h150"/>
+    <path class="cls-3" d="M804,250h150"/>
+    <path class="cls-3" d="M804,380h150"/>
+    <path class="cls-3" d="M804,512h150"/>
+    <path class="cls-3" d="M804,644h150"/>
+    <path class="cls-3" d="M804,774h150"/>
+  </g>
+  <g>
+    <circle class="cls-4" cx="88" cy="250" r="5"/>
+    <circle class="cls-4" cx="126" cy="380" r="4"/>
+    <circle class="cls-4" cx="160" cy="512" r="5"/>
+    <circle class="cls-4" cx="110" cy="644" r="4"/>
+    <circle class="cls-4" cx="145" cy="774" r="5"/>
+    <circle class="cls-4" cx="936" cy="250" r="5"/>
+    <circle class="cls-4" cx="898" cy="380" r="4"/>
+    <circle class="cls-4" cx="864" cy="512" r="5"/>
+    <circle class="cls-4" cx="914" cy="644" r="4"/>
+    <circle class="cls-4" cx="879" cy="774" r="5"/>
+  </g>
+  <g>
+    <rect class="cls-14" x="220" y="150" width="584" height="724" rx="60" ry="60"/>
+    <rect class="cls-1" x="246" y="176" width="532" height="672" rx="44" ry="44"/>
+  </g>
+  <g>
+    <line class="cls-2" x1="300" y1="150" x2="300" y2="110"/>
+    <line class="cls-2" x1="380" y1="150" x2="380" y2="110"/>
+    <line class="cls-2" x1="460" y1="150" x2="460" y2="110"/>
+    <line class="cls-2" x1="540" y1="150" x2="540" y2="110"/>
+    <line class="cls-2" x1="620" y1="150" x2="620" y2="110"/>
+    <line class="cls-2" x1="700" y1="150" x2="700" y2="110"/>
+    <line class="cls-2" x1="300" y1="874" x2="300" y2="914"/>
+    <line class="cls-2" x1="380" y1="874" x2="380" y2="914"/>
+    <line class="cls-2" x1="460" y1="874" x2="460" y2="914"/>
+    <line class="cls-2" x1="540" y1="874" x2="540" y2="914"/>
+    <line class="cls-2" x1="620" y1="874" x2="620" y2="914"/>
+    <line class="cls-2" x1="700" y1="874" x2="700" y2="914"/>
+  </g>
+  <g>
+    <rect class="cls-4" x="296" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="376" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="456" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="536" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="616" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="696" y="104" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="296" y="908" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="376" y="908" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="456" y="908" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="536" y="908" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="616" y="908" width="8" height="12" rx="2" ry="2"/>
+    <rect class="cls-4" x="696" y="908" width="8" height="12" rx="2" ry="2"/>
+  </g>
+  <circle class="cls-8" cx="512" cy="390" r="120"/>
+  <g class="cls-9">
+    <text class="cls-10" transform="translate(403.44 575.5)"><tspan x="0" y="0">ELESSEN</tspan></text>
+  </g>
+  <g class="cls-9">
+    <text class="cls-6" transform="translate(364.56 625)"><tspan class="cls-11" x="0" y="0">CLARI</tspan><tspan class="cls-13" x="102.07" y="0">T</tspan></text>
+    <text class="cls-5" transform="translate(487.99 625)"><tspan x="0" y="0">Y</tspan></text>
+    <text class="cls-7" transform="translate(510.13 625)"><tspan x="0" y="0" xml:space="preserve"> ENGINE™</tspan></text>
+  </g>
+  <path class="cls-4" d="M451.46,340.24h64v20h-75.5l11.5-20Z"/>
+  <path class="cls-12" d="M439.96,376.24h60v11l-7.5,8h-33v23.5h56.5l12,21h-88v-63.5Z"/>
+  <path class="cls-12" d="M527.96,340.24h20v78h42l10,21.5s-59-.5-59.5,0-7-5.5-7.5-6-5.5-10.5-5-10.5,0-83,0-83Z"/>
+</svg>

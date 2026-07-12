@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Elessen Orange Glow</title>
+  <desc id="desc">A reusable transparent orange glow asset for the Elessen Clarity Engine visual system.</desc>
+
+  <defs>
+    <radialGradient id="glowFill" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FE5E04" stop-opacity="0.42"/>
+      <stop offset="32%" stop-color="#FE5E04" stop-opacity="0.24"/>
+      <stop offset="68%" stop-color="#FE5E04" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FE5E04" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="softBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+
+    <style>
+      .glow {
+        animation: breathe 3.2s ease-in-out infinite;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      @keyframes breathe {
+        0%, 100% {
+          opacity: .72;
+          transform: scale(.96);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.04);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .glow {
+          animation: none;
+        }
+      }
+    </style>
+  </defs>
+
+  <rect width="512" height="512" fill="none"/>
+
+  <g class="glow">
+    <circle cx="256" cy="256" r="210" fill="url(#glowFill)" filter="url(#softBlur)"/>
+    <circle cx="256" cy="256" r="150" fill="url(#glowFill)"/>
+  </g>
+</svg>
