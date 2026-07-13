@@ -4,7 +4,7 @@ import styles from "./Trusted.module.css";
 const logos = [
   {
     name: "PwC",
-    src: "/client logos/pwc.webp",
+    src: "/client logos/pwc.png",
     className: "pwc",
   },
   {
@@ -19,17 +19,17 @@ const logos = [
   },
   {
     name: "STC",
-    src: "/client logos/stc.jpg",
+    src: "/client logos/stc.png",
     className: "stc",
   },
   {
     name: "Petro-Canada",
-    src: "/client logos/petro-canada.jpeg",
+    src: "/client logos/petro-canada.png",
     className: "petroCanada",
   },
   {
     name: "ENMAX",
-    src: "/client logos/enmax.jpeg",
+    src: "/client logos/enmax.png",
     className: "enmax",
   },
   

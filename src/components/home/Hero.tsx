@@ -51,10 +51,13 @@ export default function Hero() {
         {/* Hero processor */}
 
         <div className="flex w-full flex-1 items-center justify-center lg:justify-end">
-          <div className="relative flex w-full justify-center">
-            <EngineScene />
-          </div>
-        </div>
+        <div className="relative flex w-full justify-center">
+        <div className="w-[125%] max-w-[520px] sm:w-[115%] md:w-[100%] lg:w-full">
+      <EngineScene />
+    </div>
+
+  </div>
+</div>
       </div>
     </section>
   );
