@@ -186,7 +186,7 @@ export default function AppShell({
 
             {/* Header actions */}
 
-            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -270,8 +270,8 @@ export default function AppShell({
                 <button
                   type="button"
                   onClick={handleBooking}
-                  className="mt-3 rounded-xl bg-[#FE5E04] px-5 py-3.5 font-semibold text-white transition hover:bg-[#E95404] sm:hidden"
-                >
+                  className="inline-flex h-11 items-center rounded-xl bg-[#FE5E04] px-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#E95404] sm:px-5 sm:text-base"
+>
                   Let&apos;s Talk
                 </button>
               </div>

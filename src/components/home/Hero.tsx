@@ -26,8 +26,8 @@ export default function Hero() {
 
           <p className="mt-8 max-w-xl text-xl leading-9 text-[#4E5964]/75">
             We design and build websites, apps, platforms
-            and services—from the first idea to a live
-            product.
+            and services. From idea to a live,
+            scalable product.
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
@@ -50,15 +50,14 @@ export default function Hero() {
 
         {/* Hero processor */}
 
-        <div className="flex w-full flex-1 items-center justify-center lg:justify-end">
-        <div className="relative flex w-full justify-center">
-        <div className="w-[125%] max-w-[520px] sm:w-[115%] md:w-[100%] lg:w-full">
-      <EngineScene />
+        <div className="mt-8 flex w-full flex-1 items-center justify-center lg:mt-0 lg:justify-end">
+            <div className="relative flex w-full justify-center">
+            <div className="w-[130%] max-w-[560px] sm:w-[120%] md:w-[105%] lg:w-[720px]">
+            <EngineScene />
     </div>
-
   </div>
 </div>
-      </div>
+</div>
     </section>
   );
 }
