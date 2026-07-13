@@ -61,6 +61,7 @@ export default function Trusted() {
                 alt={logo.name}
                 width={220}
                 height={90}
+                className={styles.logoImage}
               />
             </div>
           ))}
