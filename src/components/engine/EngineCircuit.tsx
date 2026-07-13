@@ -9,14 +9,14 @@ const inputParticles = [
     radius: 4,
     begin: "0s",
     duration: "3.1s",
-    opacity: 0.95,
+    opacity: 1.0,
   },
   {
     pathId: "input-2",
     radius: 5,
     begin: "0.85s",
     duration: "4.7s",
-    opacity: 0.78,
+    opacity: 0.95,
   },
   {
     pathId: "input-3",
@@ -30,14 +30,14 @@ const inputParticles = [
     radius: 6,
     begin: "0.35s",
     duration: "5.4s",
-    opacity: 0.82,
+    opacity: 0.9,
   },
   {
     pathId: "input-5",
     radius: 4,
     begin: "2.3s",
     duration: "4.1s",
-    opacity: 0.7,
+    opacity: 1.0,
   },
 ];
 
@@ -47,14 +47,14 @@ const outputParticles = [
     radius: 4,
     begin: "0.45s",
     duration: "3.4s",
-    opacity: 0.92,
+    opacity: 1.0,
   },
   {
     pathId: "output-2",
     radius: 5,
     begin: "2.1s",
     duration: "4.9s",
-    opacity: 0.78,
+    opacity: 0.95,
   },
   {
     pathId: "output-3",
@@ -68,14 +68,14 @@ const outputParticles = [
     radius: 6,
     begin: "1.6s",
     duration: "5.2s",
-    opacity: 0.84,
+    opacity: 0.9,
   },
   {
     pathId: "output-5",
     radius: 4,
     begin: "2.8s",
     duration: "4.3s",
-    opacity: 0.7,
+    opacity: 1.0,
   },
 ];
 
@@ -137,7 +137,7 @@ export default function EngineCircuit() {
           width="400%"
           height="400%"
         >
-          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feGaussianBlur stdDeviation="4.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -148,11 +148,12 @@ export default function EngineCircuit() {
       {/* Visible traces remain visible throughout the cycle */}
       <g
         fill="none"
-        stroke="#D5DBE2"
+        stroke="currentColor"
+        color="var(--engine-trace)"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
-      >
+>
         <use href="#input-1" />
         <use href="#input-2" />
         <use href="#input-3" />
@@ -176,10 +177,13 @@ export default function EngineCircuit() {
   filter="url(#particle-glow)"
 >
   <animateMotion
-    begin={particle.begin}
-    dur={particle.duration}
-    repeatCount="indefinite"
-  >
+  begin={particle.begin}
+  dur={particle.duration}
+  repeatCount="indefinite"
+  keySplines=".42 0 .22 1"
+  keyTimes="0;1"
+  calcMode="spline"
+>
       <mpath href={`#${particle.pathId}`} />
     </animateMotion>
   </circle>
@@ -193,10 +197,13 @@ export default function EngineCircuit() {
     filter="url(#particle-glow)"
   >
     <animateMotion
-      begin={particle.begin}
-      dur={particle.duration}
-      repeatCount="indefinite"
-    >
+  begin={particle.begin}
+  dur={particle.duration}
+  repeatCount="indefinite"
+  keySplines=".42 0 .22 1"
+  keyTimes="0;1"
+  calcMode="spline"
+>
       <mpath href={`#${particle.pathId}`} />
     </animateMotion>
   </circle>

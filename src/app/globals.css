@@ -458,3 +458,10 @@ header {
     page-break-before: always;
   }
 }
+:root{
+  --engine-trace:#D5DBE2;
+}
+
+.dark{
+  --engine-trace:#BFC9D6;
+}

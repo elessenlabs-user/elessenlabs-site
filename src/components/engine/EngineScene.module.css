@@ -45,7 +45,7 @@
   );
 
   transform: translate(-50%, -50%);
-  animation: glowBreathe 5s ease-in-out infinite;
+  animation: glowBreathe 6.3s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -120,22 +120,22 @@
 
 /* ---------------- Responsive ---------------- */
 
-@media (max-width: 900px) {
+@media (max-width:900px){
 
-  .canvas{
+.canvas{
     width:100%;
-    aspect-ratio:12 / 7;
+    aspect-ratio:12/7;
     min-height:auto;
-  }
+}
 
-  .core{
-    width:82%;
+.core{
+    width:76%;
     max-width:none;
-  }
+}
 
-  .glow{
-    width:98%;
-  }
+.glow{
+    width:92%;
+}
 
 }
 
