@@ -146,24 +146,37 @@ export default function AppShell({
     <>
       {/* Navigation */}
 
-      <header className="fixed left-0 right-0 top-0 z-50 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mt-4 max-w-7xl">
-          <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--header-background)] px-5 py-3 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:px-6 lg:px-8 lg:py-4">
+      <header className="fixed left-0 right-0 top-0 z-50 px-3 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-3 max-w-7xl sm:mt-4">
+          <div className="flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--header-background)] px-3 py-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:px-6 sm:py-3 lg:px-8 lg:py-4">
             {/* Logo */}
 
             <Link
               href="/#top"
               onClick={closeMenu}
               aria-label="Elessen Labs home"
-              className="flex shrink-0 items-center rounded-xl transition-colors dark:bg-white dark:px-2 dark:py-1"
+              className="flex min-w-0 shrink items-center"
             >
+              {/* Light logo */}
+
               <Image
                 src="/logo.png"
                 alt="Elessen Labs"
                 width={240}
                 height={90}
                 priority
-                className="h-10 w-auto object-contain sm:h-12"
+                className="block h-9 w-auto object-contain dark:hidden sm:h-12 lg:h-14"
+              />
+
+              {/* Dark logo */}
+
+              <Image
+                src="/logo-dark.png"
+                alt="Elessen Labs"
+                width={240}
+                height={90}
+                priority
+                className="hidden h-9 w-auto object-contain dark:block sm:h-12 lg:h-14"
               />
             </Link>
 
@@ -186,7 +199,7 @@ export default function AppShell({
 
             {/* Header actions */}
 
-              <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -201,7 +214,7 @@ export default function AppShell({
                     ? "Switch to light mode"
                     : "Switch to dark mode"
                 }
-                className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] text-[var(--text)] transition-all hover:-translate-y-0.5 hover:border-[#FE5E04] hover:text-[#FE5E04] disabled:opacity-0"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-soft)] text-[var(--text)] transition-all hover:-translate-y-0.5 hover:border-[#FE5E04] hover:text-[#FE5E04] disabled:opacity-0 sm:h-11 sm:w-11 sm:rounded-xl"
               >
                 {mounted ? (
                   resolvedTheme === "dark" ? (
@@ -214,10 +227,12 @@ export default function AppShell({
                 )}
               </button>
 
+              {/* Visible outside the hamburger on mobile */}
+
               <button
                 type="button"
                 onClick={handleBooking}
-                className="hidden rounded-xl bg-[#FE5E04] px-5 py-3 font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E95404] hover:shadow-[0_12px_30px_rgba(254,94,4,0.22)] sm:inline-flex"
+                className="inline-flex h-10 whitespace-nowrap items-center rounded-lg bg-[#FE5E04] px-2.5 text-[12px] font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E95404] sm:h-11 sm:rounded-xl sm:px-5 sm:text-base"
               >
                 Let&apos;s Talk
               </button>
@@ -236,7 +251,7 @@ export default function AppShell({
                     (current) => !current,
                   )
                 }
-                className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:border-[#FE5E04] hover:text-[#FE5E04] lg:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] transition hover:border-[#FE5E04] hover:text-[#FE5E04] sm:h-11 sm:w-11 sm:rounded-xl lg:hidden"
               >
                 {isMenuOpen ? (
                   <CloseIcon />
@@ -266,21 +281,13 @@ export default function AppShell({
                     {item.label}
                   </Link>
                 ))}
-
-                <button
-                  type="button"
-                  onClick={handleBooking}
-                  className="inline-flex h-11 items-center rounded-xl bg-[#FE5E04] px-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#E95404] sm:px-5 sm:text-base"
->
-                  Let&apos;s Talk
-                </button>
               </div>
             </nav>
           )}
         </div>
       </header>
 
-      <main className="pt-28 sm:pt-32">
+      <main className="pt-24 sm:pt-32">
         {children}
       </main>
 

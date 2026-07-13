@@ -122,11 +122,17 @@
 
 @media (max-width: 900px) {
   .canvas {
-    min-height: 460px;
+    min-height: 0;
+    aspect-ratio: 12 / 7;
   }
 
   .core {
-    width: 52%;
+    width: 68%;
+    max-width: none;
+  }
+
+  .glow {
+    width: 86%;
   }
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import EngineScene from "../engine/EngineScene";
 import { openBookingPopup } from "../../lib/bookings";
 
@@ -10,7 +11,7 @@ export default function Hero() {
       id="top"
       className="relative overflow-hidden bg-[#F8F9FB]"
     >
-      <div className="mx-auto flex min-h-[680px] max-w-[1600px] flex-col items-center gap-10 px-6 py-16 lg:flex-row lg:px-8">
+      <div className="mx-auto flex max-w-[1600px] flex-col items-center gap-0 px-6 py-12 sm:gap-2 sm:py-14 lg:min-h-[680px] lg:flex-row lg:gap-10 lg:px-8 lg:py-16">
         {/* Copy */}
 
         <div className="w-full max-w-[680px]">
@@ -26,8 +27,8 @@ export default function Hero() {
 
           <p className="mt-8 max-w-xl text-xl leading-9 text-[#4E5964]/75">
             We design and build websites, apps, platforms
-            and services. From idea to a live,
-            scalable product.
+            and services. From idea to a live, scalable
+            product.
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
@@ -50,14 +51,14 @@ export default function Hero() {
 
         {/* Hero processor */}
 
-        <div className="mt-8 flex w-full flex-1 items-center justify-center lg:mt-0 lg:justify-end">
-            <div className="relative flex w-full justify-center">
-            <div className="w-[130%] max-w-[560px] sm:w-[120%] md:w-[105%] lg:w-[720px]">
-            <EngineScene />
-    </div>
-  </div>
-</div>
-</div>
+        <div className="-mt-4 flex w-full flex-1 items-center justify-center sm:-mt-2 lg:mt-0 lg:justify-end">
+          <div className="relative flex w-full justify-center">
+            <div className="w-[132%] max-w-[560px] sm:w-[120%] md:w-[108%] lg:w-[820px] lg:max-w-none xl:w-[900px]">
+              <EngineScene />
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
