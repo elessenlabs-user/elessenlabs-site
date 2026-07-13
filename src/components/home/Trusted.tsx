@@ -17,16 +17,19 @@ const logos: {
   {
     name: "BDO",
     src: "/client logos/bdo.png",
+    darkSrc: "/client logos/bdo-dark.png",
     className: "bdo",
   },
   {
     name: "Oliver Wyman",
     src: "/client logos/oliver-wyman.png",
+    darkSrc: "/client logos/oliver-wyman-dark.png",
     className: "oliverWyman",
   },
   {
     name: "STC",
     src: "/client logos/stc.png",
+    darkSrc: "/client logos/stc-dark.png",
     className: "stc",
   },
   {
@@ -38,6 +41,7 @@ const logos: {
   {
     name: "ENMAX",
     src: "/client logos/enmax.png",
+    darkSrc: "/client logos/enmax-dark.png",
     className: "enmax",
   },
   
