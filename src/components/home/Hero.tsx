@@ -51,7 +51,7 @@ export default function Hero() {
 
         {/* Hero processor */}
 
-        <div className="-mt-4 flex w-full flex-1 items-center justify-center sm:-mt-2 lg:mt-0 lg:justify-end">
+        <div className="mt-4 flex w-full flex-1 items-center justify-center sm:mt-2 lg:mt-0 lg:justify-end">
           <div className="relative flex w-full justify-center">
             <div className="w-[132%] max-w-[560px] sm:w-[120%] md:w-[108%] lg:w-[820px] lg:max-w-none xl:w-[900px]">
               <EngineScene />

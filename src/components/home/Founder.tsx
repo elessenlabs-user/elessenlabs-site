@@ -44,7 +44,7 @@ export default function Founder() {
                 Elessen is intentionally small. Every
                 engagement is led from discovery through
                 delivery by senior product and service
-                design leadership—not passed through layers
+                design leadership, not passed through layers
                 of account management.
               </p>
 

@@ -4,19 +4,79 @@ import styles from "./EngineScene.module.css";
 
 
 const inputParticles = [
-  { pathId: "input-1", radius: 4, begin: "0s" },
-  { pathId: "input-2", radius: 4, begin: "0.12s" },
-  { pathId: "input-3", radius: 5, begin: "0.24s" },
-  { pathId: "input-4", radius: 4, begin: "0.36s" },
-  { pathId: "input-5", radius: 4, begin: "0.48s" },
+  {
+    pathId: "input-1",
+    radius: 4,
+    begin: "0s",
+    duration: "3.1s",
+    opacity: 0.95,
+  },
+  {
+    pathId: "input-2",
+    radius: 5,
+    begin: "0.85s",
+    duration: "4.7s",
+    opacity: 0.78,
+  },
+  {
+    pathId: "input-3",
+    radius: 4,
+    begin: "1.9s",
+    duration: "3.8s",
+    opacity: 1,
+  },
+  {
+    pathId: "input-4",
+    radius: 6,
+    begin: "0.35s",
+    duration: "5.4s",
+    opacity: 0.82,
+  },
+  {
+    pathId: "input-5",
+    radius: 4,
+    begin: "2.3s",
+    duration: "4.1s",
+    opacity: 0.7,
+  },
 ];
 
 const outputParticles = [
-  { pathId: "output-1", radius: 4, begin: "0s" },
-  { pathId: "output-2", radius: 4, begin: "0.12s" },
-  { pathId: "output-3", radius: 5, begin: "0.24s" },
-  { pathId: "output-4", radius: 4, begin: "0.36s" },
-  { pathId: "output-5", radius: 4, begin: "0.48s" },
+  {
+    pathId: "output-1",
+    radius: 4,
+    begin: "0.45s",
+    duration: "3.4s",
+    opacity: 0.92,
+  },
+  {
+    pathId: "output-2",
+    radius: 5,
+    begin: "2.1s",
+    duration: "4.9s",
+    opacity: 0.78,
+  },
+  {
+    pathId: "output-3",
+    radius: 4,
+    begin: "0.8s",
+    duration: "3.6s",
+    opacity: 1,
+  },
+  {
+    pathId: "output-4",
+    radius: 6,
+    begin: "1.6s",
+    duration: "5.2s",
+    opacity: 0.84,
+  },
+  {
+    pathId: "output-5",
+    radius: 4,
+    begin: "2.8s",
+    duration: "4.3s",
+    opacity: 0.7,
+  },
 ];
 
 export default function EngineCircuit() {    
@@ -108,17 +168,18 @@ export default function EngineCircuit() {
 
       {/* Input particles */}
 {inputParticles.map((particle) => (
-  <circle
-    key={`input-${particle.pathId}`}
-    r={particle.radius}
-    fill="#FE5E04"
-    filter="url(#particle-glow)"
+ <circle
+  key={`input-${particle.pathId}`}
+  r={particle.radius}
+  fill="#FE5E04"
+  opacity={particle.opacity}
+  filter="url(#particle-glow)"
+>
+  <animateMotion
+    begin={particle.begin}
+    dur={particle.duration}
+    repeatCount="indefinite"
   >
-    <animateMotion
-      begin={particle.begin}
-      dur="3.8s"
-      repeatCount="indefinite"
-    >
       <mpath href={`#${particle.pathId}`} />
     </animateMotion>
   </circle>
@@ -128,11 +189,12 @@ export default function EngineCircuit() {
     key={`output-${particle.pathId}`}
     r={particle.radius}
     fill="#FE5E04"
+    opacity={particle.opacity}
     filter="url(#particle-glow)"
   >
     <animateMotion
       begin={particle.begin}
-      dur="3.8s"
+      dur={particle.duration}
       repeatCount="indefinite"
     >
       <mpath href={`#${particle.pathId}`} />
