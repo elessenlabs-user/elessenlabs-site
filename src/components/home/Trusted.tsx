@@ -1,12 +1,19 @@
 import Image from "next/image";
 import styles from "./Trusted.module.css";
+import { useTheme } from "../theme/ThemeProvider";
 
-const logos = [
-  {
-    name: "PwC",
-    src: "/client logos/pwc.png",
-    className: "pwc",
-  },
+const logos: {
+  name: string;
+  src: string;
+  darkSrc?: string;
+  className: string;
+}[] = [
+{
+  name: "PwC",
+  src: "/client logos/pwc.png",
+  darkSrc: "/client logos/pwc-dark.png",
+  className: "pwc",
+},
   {
     name: "BDO",
     src: "/client logos/bdo.png",
@@ -23,10 +30,11 @@ const logos = [
     className: "stc",
   },
   {
-    name: "Petro-Canada",
-    src: "/client logos/petro-canada.png",
-    className: "petroCanada",
-  },
+  name: "Petro-Canada",
+  src: "/client logos/petro-canada.png",
+  darkSrc: "/client logos/petro-canada-dark.png",
+  className: "petroCanada",
+},
   {
     name: "ENMAX",
     src: "/client logos/enmax.png",
@@ -36,6 +44,9 @@ const logos = [
 ];
 
 export default function Trusted() {
+
+    const { resolvedTheme } = useTheme();
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
@@ -57,12 +68,17 @@ export default function Trusted() {
               className={`${styles.logo} ${styles[logo.className]}`}
             >
               <Image
-                src={logo.src}
+                src={
+                resolvedTheme === "dark" && logo.darkSrc
+                ? logo.darkSrc
+                : logo.src
+                }
+                
                 alt={logo.name}
                 width={220}
                 height={90}
                 className={styles.logoImage}
-              />
+            />
             </div>
           ))}
         </div>
