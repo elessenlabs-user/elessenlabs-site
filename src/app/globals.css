@@ -94,9 +94,7 @@
   --background: #222c36;
   --surface: #2c3742;
   --surface-soft: #35414d;
-  --text: #F4F6F8;
-  --muted: rgba(244, 246, 248, 0.68);
-  --border: rgba(255, 255, 255, 0.12);
+  
 
   /*
     The Elessen brand slate is reserved for
@@ -460,11 +458,4 @@ header {
     break-before: page;
     page-break-before: always;
   }
-}
-:root{
-  --engine-trace:#D5DBE2;
-}
-
-.dark{
-  --engine-trace:#BFC9D6;
 }

@@ -19,22 +19,24 @@
 .heading {
   max-width: 760px;
   margin: 0;
-  color: #4f5b69;
+  color: var(--text);
   font-size: clamp(2rem, 3vw, 3rem);
   line-height: 1.08;
   letter-spacing: -0.025em;
+  transition: color .25s ease;
 }
 
 .subheading {
   margin: 20px 0 54px;
-  color: #707b89;
+  color: var(--muted);
   font-size: 1.05rem;
   line-height: 1.7;
+  transition: color .25s ease;
 }
 
 .subheading span {
-  margin: 0 0.18rem;
-  color: #a9b1ba;
+  margin: 0 .18rem;
+  color: #FE5E04;
 }
 
 .logoGrid {
@@ -46,17 +48,19 @@
 }
 
 .logo {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  height: 56px;
-  opacity: 0.68;
-  filter: grayscale(1);
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  height:56px;
+
+  opacity:.72;
+  filter:grayscale(1);
+
   transition:
-    opacity 220ms ease,
-    filter 220ms ease,
-    transform 220ms ease;
+    opacity .25s ease,
+    filter .25s ease,
+    transform .25s ease;
 }
 
 .logo:hover {
@@ -128,4 +132,21 @@
   .subheading {
     margin-bottom: 42px;
   }
+}
+.logoImage{
+  transition:
+    filter .25s ease,
+    opacity .25s ease;
+}
+
+:global(.dark) .logoImage{
+  filter:
+    brightness(0)
+    invert(1);
+
+  opacity:.82;
+}
+
+:global(.dark) .logo:hover .logoImage{
+  opacity:1;
 }
