@@ -1,5 +1,5 @@
 export const BOOKINGS_URL =
-  "https://outlook.office.com/book/ElessenLabs@pawzy.app/?ismsaljsauthenabled";
+  "https://outlook.office.com/book/ElessenLabs@pawzy.app/";
 
 export function openBookingPopup(): void {
   if (typeof window === "undefined") {
