@@ -62,8 +62,7 @@ export default function Contact() {
               </h3>
 
               <p className="mt-5 leading-8 text-white/65">
-                Microsoft Bookings will open securely while this page remains
-                available in the background.
+               Choose a convenient time and we'll meet over Microsoft Teams to discuss your product, service or platform.
               </p>
 
               <button
