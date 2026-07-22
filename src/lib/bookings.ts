@@ -1,6 +1,6 @@
 export const BOOKINGS_URL =
-  "https://outlook.office.com/bookwithme/user/a7459ba37ae34c429fbebe4e10eafdf8@elessenlabs.com/meetingtype/VQKRsgRyq0CoZRb7njk3Vw2";
-
+  "https://outlook.office.com/bookwithme/user/a7459ba37ae34c429fbebe4e10eafdf8@elessenlabs.com/meetingtype/VQKRsgRyq0CoZRb7njk3Vw2?anonymous";
+  
 export function openBookingPopup(): void {
   if (typeof window === "undefined") {
     return;
