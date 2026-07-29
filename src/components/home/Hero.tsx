@@ -20,9 +20,9 @@ export default function Hero() {
           </p>
 
           <h1 className="mt-8 text-5xl font-bold leading-[1.02] tracking-tight text-[#4E5964] sm:text-6xl md:text-7xl">
-            Product &amp; Service Design.
+            Product Design
             <br />
-            Product Development.
+            & Development.
           </h1>
 
           <p className="mt-8 max-w-xl text-xl leading-9 text-[#4E5964]/75">

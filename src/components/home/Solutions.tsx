@@ -24,7 +24,7 @@ const services = [
   {
     title: "Digital Product Development",
     description:
-      "Partner with engineering teams to design and deliver production-ready digital products.",
+      "Transform validated concepts into production-ready digital products. We build scalable web applications, mobile apps, SaaS platforms and AI-powered solutions using modern technologies.",
   },
   {
     title: "Design Systems",
