@@ -29,11 +29,22 @@ export default function AboutMotionPanel() {
 
   const pausedRef = useRef(false);
 
+  const interactiveRef = useRef(false);
+
+const mouseYRef = 
+  useRef(0);
+
+const lastInteractionRef =
+  useRef(0);
+
   const [isPaused, setIsPaused] =
     useState(false);
 
-  const [hitCount, setHitCount] =
-    useState(0);
+  const [pipelineStep, setPipelineStep] =
+  useState(0);
+
+  const [interactive, setInteractive] =
+  useState(false);
 
   useEffect(() => {
     pausedRef.current = isPaused;
@@ -42,9 +53,33 @@ export default function AboutMotionPanel() {
   useEffect(() => {
     const canvas = canvasRef.current;
 
+
     if (!canvas) {
       return;
     }
+
+    const handlePointerMove = (
+  event: PointerEvent,
+) => {
+  const bounds =
+    canvas.getBoundingClientRect();
+
+  mouseYRef.current =
+    event.clientY - bounds.top;
+
+  lastInteractionRef.current =
+    performance.now();
+
+  if (!interactiveRef.current) {
+    interactiveRef.current = true;
+    setInteractive(true);
+  }
+};
+
+const handlePointerLeave = () => {
+  lastInteractionRef.current =
+    performance.now();
+};
 
     const context = canvas.getContext("2d");
 
@@ -173,13 +208,32 @@ export default function AboutMotionPanel() {
         rightImpactFlash = 1;
       }
 
-      setHitCount(
-        (current) => current + 1,
-      );
+      setPipelineStep((current) => {
+        if (current >= 4) {
+        return 0;
+        }
+
+  return current + 1;
+});
     };
 
     const update = (delta: number) => {
+
+    if (
+  interactiveRef.current &&
+  performance.now() -
+    lastInteractionRef.current >
+      3000
+) {
+  interactiveRef.current = false;
+
+  requestAnimationFrame(() => {
+    setInteractive(false);
+  });
+}
       const leftPaddleX = paddleMargin;
+
+
 
       const rightPaddleX =
         width -
@@ -203,29 +257,43 @@ export default function AboutMotionPanel() {
         delta * 8,
       );
 
-      if (ball.velocityX < 0) {
-        leftPaddleY +=
-          (targetPaddleY -
-            leftPaddleY) *
-          trackingSpeed;
+      if (interactiveRef.current) {
+  leftPaddleY = clamp(
+    mouseYRef.current -
+      paddleHeight / 2,
+    12,
+    height -
+      paddleHeight -
+      12,
+  );
 
-        rightPaddleY +=
-          (height / 2 -
-            paddleHeight / 2 -
-            rightPaddleY) *
-          Math.min(1, delta * 2);
-      } else {
-        rightPaddleY +=
-          (targetPaddleY -
-            rightPaddleY) *
-          trackingSpeed;
+  rightPaddleY +=
+    (targetPaddleY -
+      rightPaddleY) *
+    trackingSpeed;
+} else if (ball.velocityX < 0) {
+  leftPaddleY +=
+    (targetPaddleY -
+      leftPaddleY) *
+    trackingSpeed;
 
-        leftPaddleY +=
-          (height / 2 -
-            paddleHeight / 2 -
-            leftPaddleY) *
-          Math.min(1, delta * 2);
-      }
+  rightPaddleY +=
+    (height / 2 -
+      paddleHeight / 2 -
+      rightPaddleY) *
+    Math.min(1, delta * 2);
+} else {
+  rightPaddleY +=
+    (targetPaddleY -
+      rightPaddleY) *
+    trackingSpeed;
+
+  leftPaddleY +=
+    (height / 2 -
+      paddleHeight / 2 -
+      leftPaddleY) *
+    Math.min(1, delta * 2);
+}
 
       ball.x += ball.velocityX * delta;
       ball.y += ball.velocityY * delta;
@@ -680,25 +748,45 @@ export default function AboutMotionPanel() {
         );
     };
 
-    const resizeObserver =
-      new ResizeObserver(resizeCanvas);
+    canvas.addEventListener(
+  "pointermove",
+  handlePointerMove,
+);
 
-    resizeObserver.observe(canvas);
-    resizeCanvas();
+canvas.addEventListener(
+  "pointerleave",
+  handlePointerLeave,
+);
 
-    animationFrame =
-      window.requestAnimationFrame(
-        renderFrame,
-      );
+const resizeObserver =
+  new ResizeObserver(resizeCanvas);
 
-    return () => {
-      resizeObserver.disconnect();
+resizeObserver.observe(canvas);
+resizeCanvas();
 
-      window.cancelAnimationFrame(
-        animationFrame,
-      );
-    };
-  }, []);
+animationFrame =
+  window.requestAnimationFrame(
+    renderFrame,
+  );
+
+return () => {
+  canvas.removeEventListener(
+    "pointermove",
+    handlePointerMove,
+  );
+
+  canvas.removeEventListener(
+    "pointerleave",
+    handlePointerLeave,
+  );
+
+  resizeObserver.disconnect();
+
+  window.cancelAnimationFrame(
+    animationFrame,
+  );
+};
+}, []);
 
   return (
     <div className="relative mt-10 overflow-hidden rounded-[30px] border border-white/15 bg-white/[0.06] p-5 shadow-[0_18px_50px_rgba(26,32,38,0.14)]">
@@ -707,17 +795,21 @@ export default function AboutMotionPanel() {
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#FE5E04]">
-            SIGNAL FIELD
+            {interactive
+            ? "YOUR TURN"
+            : "SIGNAL FIELD"}
           </p>
 
           <p className="mt-2 text-sm text-white/65">
-            Less handoff. More progress.
+           {interactive
+            ? "Can you beat the Elessen Engine?"
+            : "Less handoff. More progress."}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/60">
-            {hitCount} hits
+            PIPELINE
           </span>
 
           <button
@@ -752,15 +844,24 @@ export default function AboutMotionPanel() {
           "Design",
           "Build",
           "Improve",
-        ].map((item) => (
+      ].map((item, index) => {
+        const active = index < pipelineStep;
+
+        return (
           <span
             key={item}
-            className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-white/70"
+            className={`rounded-full border px-3 py-1 text-xs transition-all duration-300 ${
+              active
+                ? "border-[#FE5E04] bg-[#FE5E04]/20 text-[#FE5E04]"
+                : "border-white/10 bg-white/[0.05] text-white/70"
+            }`}
           >
+            {active ? "✓ " : ""}
             {item}
           </span>
-        ))}
-      </div>
+         );
+      })}
+    </div>
     </div>
   );
 }

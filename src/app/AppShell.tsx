@@ -153,7 +153,6 @@ export default function AppShell({
 
             <Link
               href="/#top"
-              onClick={closeMenu}
               aria-label="Elessen Labs home"
               className="flex min-w-0 shrink items-center"
             >
@@ -275,7 +274,6 @@ export default function AppShell({
                   <Link
                     key={item.label}
                     href={item.href}
-                    onClick={closeMenu}
                     className="rounded-xl px-4 py-3 font-semibold transition hover:bg-[var(--surface-soft)] hover:text-[#FE5E04]"
                   >
                     {item.label}
