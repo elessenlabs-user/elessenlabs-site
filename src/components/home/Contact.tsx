@@ -44,7 +44,7 @@ export default function Contact() {
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-[#4E5964]/60">
-                    We&apos;ll discuss the challenge and practical next steps.
+                    We'll discuss the challenge and practical next steps.
                   </p>
                 </div>
               </div>
@@ -62,7 +62,8 @@ export default function Contact() {
               </h3>
 
               <p className="mt-5 leading-8 text-white/65">
-               Choose a convenient time and we'll meet over Microsoft Teams to discuss your product, service or platform.
+                Choose a convenient time and we'll meet online to discuss your
+                product, service or platform.
               </p>
 
               <button
@@ -75,7 +76,7 @@ export default function Contact() {
               </button>
 
               <p className="mt-5 text-center text-xs text-white/40">
-                Opens Microsoft Bookings securely
+                Opens securely in a new window
               </p>
 
               <a

@@ -1,6 +1,5 @@
 export const BOOKINGS_URL =
-  "https://outlook.office.com/bookwithme/user/a7459ba37ae34c429fbebe4e10eafdf8@elessenlabs.com/meetingtype/VQKRsgRyq0CoZRb7njk3Vw2?anonymous";
-  
+ "https://outlook.office.com/bookwithme/user/6c2f5400b6674880b8376b062b0038e0@elessenlabs.com/meetingtype/JkKbY6DPCkGENdC4_lvn1Q2?anonymous&ismsaljsauthenabled&ep=mLinkFromTile"
 export function openBookingPopup(): void {
   if (typeof window === "undefined") {
     return;
@@ -12,7 +11,8 @@ export function openBookingPopup(): void {
 
   /*
    * Mobile browsers generally ignore popup dimensions.
-   * Open Microsoft Bookings in a full browser tab instead.
+  * Open the booking page in a full browser tab instead.
+
    */
   if (isMobile) {
     window.open(
