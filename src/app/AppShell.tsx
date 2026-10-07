@@ -136,7 +136,7 @@ export default function AppShell({
     setIsMenuOpen(false);
   };
 
-  
+
   return (
     <>
       {/* Navigation */}
@@ -223,13 +223,13 @@ export default function AppShell({
 
               {/* Visible outside the hamburger on mobile */}
 
-              <Link
-                href="/#contact"
+              <a
+                href="mailto:hello@elessenlabs.com?subject=Let%27s%20Talk%20%E2%80%94%20Elessen%20Labs"
                 onClick={closeMenu}
                 className="inline-flex h-10 whitespace-nowrap items-center rounded-lg bg-[#FE5E04] px-2.5 text-[12px] font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E95404] sm:h-11 sm:rounded-xl sm:px-5 sm:text-base"
               >
                 Let's Talk
-            </Link>
+              </a>
 
               <button
                 type="button"

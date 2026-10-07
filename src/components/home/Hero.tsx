@@ -32,12 +32,12 @@ export default function Hero() {
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="#contact"
+            <a
+              href="mailto:hello@elessenlabs.com?subject=Let%27s%20Talk%20%E2%80%94%20Elessen%20Labs"
               className="rounded-xl bg-[#FE5E04] px-6 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#E95404]"
-          >
-          Let's Talk
-    </Link>
+>
+            Let's Talk
+</a>
 
             <Link
               href="#work"
