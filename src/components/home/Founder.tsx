@@ -1,6 +1,6 @@
 "use client";
 
-import { openBookingPopup } from "../../lib/bookings";
+import Link from "next/link";
 import AboutMotionPanel from "./AboutMotionPanel";
 
 export default function Founder() {
@@ -93,14 +93,13 @@ export default function Founder() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={openBookingPopup}
+              <Link
+                href="/#contact"
                 className="mt-9 inline-flex items-center gap-2 rounded-xl bg-[#FE5E04] px-6 py-4 font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E95404] hover:shadow-[0_16px_40px_rgba(254,94,4,0.25)]"
-              >
-                Book a discovery session
-                <span aria-hidden="true">→</span>
-              </button>
+            >
+              Start a conversation
+            <span aria-hidden="true">→</span>
+            </Link>
             </div>
           </div>
         </div>

@@ -9,7 +9,6 @@ import { usePathname } from "next/navigation";
 
 import { useTheme } from "../components/theme/ThemeProvider";
 import { useConsent } from "../components/privacy/ConsentProvider";
-import { openBookingPopup } from "../lib/bookings";
 
 const navigation = [
   {
@@ -137,11 +136,7 @@ export default function AppShell({
     setIsMenuOpen(false);
   };
 
-  const handleBooking = () => {
-    closeMenu();
-    openBookingPopup();
-  };
-
+  
   return (
     <>
       {/* Navigation */}
@@ -228,13 +223,13 @@ export default function AppShell({
 
               {/* Visible outside the hamburger on mobile */}
 
-              <button
-                type="button"
-                onClick={handleBooking}
+              <Link
+                href="/#contact"
+                onClick={closeMenu}
                 className="inline-flex h-10 whitespace-nowrap items-center rounded-lg bg-[#FE5E04] px-2.5 text-[12px] font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E95404] sm:h-11 sm:rounded-xl sm:px-5 sm:text-base"
               >
-                Let&apos;s Talk
-              </button>
+                Let's Talk
+            </Link>
 
               <button
                 type="button"
