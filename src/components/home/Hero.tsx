@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import EngineScene from "../engine/EngineScene";
-import { openBookingPopup } from "../../lib/bookings";
+
 
 export default function Hero() {
   return (
@@ -32,13 +32,12 @@ export default function Hero() {
           </p>
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <button
-              type="button"
-              onClick={openBookingPopup}
+            <Link
+              href="#contact"
               className="rounded-xl bg-[#FE5E04] px-6 py-4 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#E95404]"
-            >
-              Let&apos;s Talk
-            </button>
+          >
+          Let's Talk
+    </Link>
 
             <Link
               href="#work"
